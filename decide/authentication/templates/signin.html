@@ -21,8 +21,9 @@
     </div>
 	<!--<div>
 		<h3>{% trans "Log in with Facebook"%}</h3><a href="/"><img src="{% static 'facebook.png'%}" width="5%"></a> <br>
-		<h3>{% trans "Log in with Google"%}</h3><a href="/"><img src="{% static 'google.jpg'%}" width="7%"></a> <br>
 	</div>-->
+		<h3>{% trans "Log in with Google"%}</h3><a href="/accounts/google/login/callback/"><img src="{% static 'google.jpg'%}" width="7%"></a> <br>
+
   {% endif %}
 
 {% endblock %}
@@ -62,7 +63,7 @@
             postData("{{auth_url}}" + "/authentication/getuser/", data)
               .then(data => {
                 user = data;
-         
+
               }).catch(error => {
                 alert("Error:" + error);
               });

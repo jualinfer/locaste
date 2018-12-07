@@ -47,12 +47,15 @@ INSTALLED_APPS = [
     #Required by the django-rest-auth package
     'rest_auth',
     'rest_auth.registration',
-    
+
     #Required by the allauth package
     'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+
+    #Required for authentication with google
+    'allauth.socialaccount.providers.google',
 ]
 
 SITE_ID = 1
