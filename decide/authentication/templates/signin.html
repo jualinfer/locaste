@@ -3,6 +3,7 @@
 
 {% block content %}
 
+
 {% if not user.is_authenticated %}
 	<div>
 		<h1>Sign in</h1>
@@ -21,8 +22,9 @@
     </div>
 	<!--<div>
 		<h3>{% trans "Log in with Facebook"%}</h3><a href="/"><img src="{% static 'facebook.png'%}" width="5%"></a> <br>
-	</div>-->
-		<h3>{% trans "Log in with Google"%}</h3><a href="/accounts/google/login/callback/"><img src="{% static 'google.jpg'%}" width="7%"></a> <br>
+</div>-->
+		<h3>{% trans "Log in with Google"%}</h3><a href="https://accounts.google.com/signin/oauth/identifier?client_id=479028502719-ums97b8c1dmn9hmdugmuibcrbma4eq9i.apps.googleusercontent.com&as=AGmcO_aQ-ZxxCdPSUuvdgQ&destination=http%3A%2F%2Flocalhost%3A8000&approval_state=!ChRXQTQxTEkyVi0zdnVPVEp4aTJtSRIfWXdvZ3pSZDgzZHdXUUhVU2RlLXNqMHg3ZnNmWWVCWQ%E2%88%99APNbktkAAAAAXAz6lBA0PPZryW1q2_DVxExs_6XtbM1m&oauthgdpr=1&xsrfsig=AHgIfE_jnbYXzqp0AlZCLFPsVnAKnRKtmA&flowName=GeneralOAuthFlow"><img src="{% static 'google.jpg'%}" width="7%"></a> <br>
+
 
   {% endif %}
 
