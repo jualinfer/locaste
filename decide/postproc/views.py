@@ -31,6 +31,9 @@ class PostProcView(APIView):
                 aux = next((o for o in out if o['option'] == opt['option']), None)
                 aux['postproc'] = aux['postproc'] + 1
 
+            aux = next((o for o in out if o['option'] == opt['option']), None)
+            opt['votes'] = aux['votes']//(aux['postproc'] + 1)
+
         return Response(out)
 
     def post(self, request):
@@ -47,9 +50,12 @@ class PostProcView(APIView):
         """
 
         t = request.data.get('type', 'IDENTITY')
+        seats = request.data.get('seats')
         opts = request.data.get('options', [])
 
         if t == 'IDENTITY':
             return self.identity(opts)
+        elif t == 'DHONDT':
+            return self.dhondt(opts, seats)
 
         return Response({})
