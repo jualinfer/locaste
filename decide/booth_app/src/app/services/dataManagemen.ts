@@ -1,7 +1,6 @@
 import { RestService } from './restService';
 import { Injectable } from "@angular/core";
 
-
 @Injectable()
 export class DataManagement {
 
@@ -24,12 +23,10 @@ export class DataManagement {
     }
 
     public login(username: string, pass: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            return this.restService.login(username, pass).then((data) => {
-                resolve(data);
-            }).catch((error) => {
-                reject('error');
-            })
+        return this.restService.login(username, pass).then((data) => {
+            return Promise.resolve(data);
+        }).catch((error) => {
+            return Promise.reject('error');
         })
     }
 

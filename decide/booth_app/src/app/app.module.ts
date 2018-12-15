@@ -1,4 +1,4 @@
-import { HttpClient, HttpHandler } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { DataManagement } from './services/dataManagemen';
 import { LoginPage } from './../pages/login/login';
 import { ConfigService } from './../config/configService';
@@ -22,6 +22,7 @@ import { RestService } from './services/restService';
     LoginPage,
   ],
   imports: [
+    HttpClientModule,
     BrowserModule,
     IonicModule.forRoot(MyApp),
   ],
@@ -34,14 +35,13 @@ import { RestService } from './services/restService';
   ],
   providers: [
     LoginPage,
-    HttpHandler,
     HttpClient,
     RestService,
     DataManagement,
     ConfigService,
     StatusBar,
     SplashScreen,
-    {provide: ErrorHandler, useClass: IonicErrorHandler}
+    { provide: ErrorHandler, useClass: IonicErrorHandler }
   ]
 })
-export class AppModule {}
+export class AppModule { }

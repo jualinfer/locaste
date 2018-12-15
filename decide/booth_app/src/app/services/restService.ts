@@ -30,12 +30,13 @@ export class RestService extends AbstractService {
         fd.append('username', username);
         fd.append('password', pass);
 
-        return this.makePostRequest(this.path + 'login', fd).then((res) => {
-            return Promise.resolve(res);
+        return this.makePostRequest(this.path + 'rest-auth/login/', fd).then((res) => {
             console.log("Se ha logueado exitosamente");
+            return Promise.resolve(res);
         }).catch((error) => {
-            return Promise.reject(error);
             console.log("Error: " + error);
+            return Promise.reject(error);
+
         })
     }
 

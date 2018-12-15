@@ -10,23 +10,23 @@ export class AbstractService {
 
     }
 
-    private getHeaders() : Promise<HttpHeaders> {
+    private getHeaders(): Promise<HttpHeaders> {
         return new Promise((resolve) => {
             let headers = new HttpHeaders().set("Accept", "application/json");
-            resolve (headers);
+            resolve(headers);
         })
     }
 
-    protected makeGetRequest(path : string, paramsRequest: any): Promise<any> {
-        if(!paramsRequest)
+    protected makeGetRequest(path: string, paramsRequest: any): Promise<any> {
+        if (!paramsRequest)
             paramsRequest = {};
-        
+
         return this.getHeaders().then((result) => {
-            return new Promise((resolve, reject) =>{
-                this.http.get(path, { headers : result, params : paramsRequest }).subscribe(response  => {
+            return new Promise((resolve, reject) => {
+                this.http.get(path, { headers: result, params: paramsRequest }).subscribe(response => {
                     resolve(response);
                 }, error => {
-                    if(error.status == 200) {
+                    if (error.status == 200) {
                         resolve(null);
                     } else {
                         console.log(error);
@@ -36,16 +36,16 @@ export class AbstractService {
             });
         });
     }
-    
-    protected makePostRequest(path : string, data : any): Promise<any> {
+
+    protected makePostRequest(path: string, data: any): Promise<any> {
         return this.getHeaders().then((result) => {
-            return this.http.post(path, data, { headers : result })
-            .toPromise()
-            .then((result: HttpResponse<any>) => {
-                return Promise.resolve(result);
-            }).catch((err) => {
-                return Promise.reject(err);
-            });
+            return this.http.post(path, data, { headers: result })
+                .toPromise()
+                .then((result: HttpResponse<any>) => {
+                    return Promise.resolve(result);
+                }).catch((err) => {
+                    return Promise.reject(err);
+                });
         });
     }
 
