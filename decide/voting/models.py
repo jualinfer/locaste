@@ -74,10 +74,9 @@ class Voting(models.Model):
         return [[i['a'], i['b']] for i in votes]
 
     def get_voters(self, token=''):
-        # gettings votes from store
-        voters = mods.get('census', params={'voting_id': self.id}, HTTP_AUTHORIZATION='Token ' + token)
-        # anon votes
-        return len(voters['voters'])
+        # getting the len of the census of the current voting
+        census = mods.get('census', params={'voting_id': self.id}, HTTP_AUTHORIZATION='Token ' + token)
+        return len(census['voters'])
 
     def tally_votes(self, token=''):
         '''
@@ -109,11 +108,11 @@ class Voting(models.Model):
             pass
         self.tally = response.json()
         self.save()
-        voters = self.get_voters(token)
+        census = self.get_voters(token)
 
-        return self.do_postproc(voters)
+        return self.do_postproc(census)
 
-    def do_postproc(self, voters):
+    def do_postproc(self, census):
         tally = self.tally
         options = self.question.options.all()
 
@@ -129,7 +128,7 @@ class Voting(models.Model):
                 'votes': votes
             })
 
-        data = {'type': 'IDENTITY', 'options': opts, 'voters': voters}
+        data = {'type': 'IDENTITY', 'options': opts, 'census': census}
         directory = "voting/tallies/"
         if not os.path.exists(directory):
             os.makedirs(directory)
