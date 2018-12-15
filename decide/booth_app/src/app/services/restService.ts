@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { ConfigService } from './../../config/configService';
 import { AbstractService } from './abstractService';
 import { Injectable } from "@angular/core";
+import { ftruncate } from 'fs';
 
 
 @Injectable()
@@ -23,7 +24,21 @@ export class RestService extends AbstractService {
             return Promise.resolve(res);
         }).catch((error) => {
             return Promise.reject(error);
-        }); 
+        });
+    }
+
+    public login(username: string, pass: string): Promise<any> {
+        let fd = new FormData();
+        fd.append('username', username);
+        fd.append('password', pass);
+
+        return this.makePostRequest(this.path + 'login', fd).then((res) => {
+            return Promise.resolve(res);
+            console.log("Se ha logueado exitosamente");
+        }).catch((error) => {
+            return Promise.reject(error);
+            console.log("Error: " + error);
+        })
     }
 
 }
