@@ -6,7 +6,8 @@ TOKEN = os.getenv("TOKEN")
 
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import ReplyKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, RegexHandler, ConversationHandler
 import logging
 
 # Enable logging
@@ -15,14 +16,44 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
+reply_keyboard = [['Log in', 'Cancel']]
+markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+
+CHOOSING, TYPING_USERNAME, TYPING_PASSWORD  = range(3)
 
 def start(bot, update):
     """Send welcome messages when the command /start is issued."""
     update.message.reply_text('Welcome!')
     update.message.reply_text("I'm DecideLocasteBoothBot, the Telegram virtual booth assistant for Decide Locaste")
+    update.message.reply_text("First of all, you need to log in with your Decide Locaste credentials in order to access your votings",
+    reply_markup=markup)
+
+    return CHOOSING
     
+def introduce_username(bot, update):
+    update.message.reply_text("Introduce your username")
 
+    return TYPING_USERNAME
 
+def introduce_password(bot, update, user_data):
+    text = update.message.text
+    user_data['username'] = text
+    update.message.reply_text("Introduce your password")
+
+    return TYPING_PASSWORD
+
+def login(bot, update, user_data):
+    text = update.message.text
+    user_data['password'] = text
+    update.message.reply_text("USER( username="+user_data['username']+ " password="+user_data['password'] + " )")
+
+    return ConversationHandler.END    
+
+def cancel(bot, update):
+    update.message.reply_text('I just wanted to be useful, but another time maybe!')
+    update.message.reply_text('If you need me again you can call me by introducing /start. See you!')
+    
+    return ConversationHandler.END
 
 def error(bot, update, error):
     """Log Errors caused by Updates."""
@@ -35,8 +66,30 @@ def main():
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
 
-    # Register command - Answer
-    dp.add_handler(CommandHandler("start", start))
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start)],
+
+        states={
+            CHOOSING: [RegexHandler('^(Log\s+in)$',
+                                    introduce_username),
+                       RegexHandler('^Cancel$',
+                                    cancel),
+                       ],
+
+            TYPING_USERNAME: [MessageHandler(Filters.text,
+                                          introduce_password,
+                                          pass_user_data=True),
+                           ],
+
+            TYPING_PASSWORD: [MessageHandler(Filters.text,
+                                          login,
+                                          pass_user_data=True),
+                           ],
+        },
+        fallbacks=[RegexHandler('^Cancel$', cancel)]
+    )
+
+    dp.add_handler(conv_handler)
 
     # log all errors
     dp.add_error_handler(error)
