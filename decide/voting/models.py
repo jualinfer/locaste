@@ -130,7 +130,6 @@ class Voting(models.Model):
         file_name = 'tally_voting'+str(self.id)
         with open(directory+file_name+'.json', 'w') as outfile:
             json.dump(data, outfile)
-            print("JSON tally dumped")
 
         postp = mods.post('postproc', json=data)
 
