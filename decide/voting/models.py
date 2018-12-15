@@ -47,6 +47,7 @@ class Voting(models.Model):
     auths = models.ManyToManyField(Auth, related_name='votings')
 
     custom_url = models.CharField(max_length=100, blank=True)
+    public_voting = models.BooleanField(default=False)
 
     tally = JSONField(blank=True, null=True)
     postproc = JSONField(blank=True, null=True)
@@ -129,7 +130,6 @@ class Voting(models.Model):
         file_name = 'tally_voting'+str(self.id)
         with open(directory+file_name+'.json', 'w') as outfile:
             json.dump(data, outfile)
-            print("JSON tally dumped")
 
         postp = mods.post('postproc', json=data)
 
