@@ -73,6 +73,12 @@ class Voting(models.Model):
         # anon votes
         return [[i['a'], i['b']] for i in votes]
 
+    def get_voters(self, token=''):
+        # gettings votes from store
+        voters = mods.get('census', params={'voting_id': self.id}, HTTP_AUTHORIZATION='Token ' + token)
+        # anon votes
+        return len(voters['voters'])
+
     def tally_votes(self, token=''):
         '''
         The tally is a shuffle and then a decrypt
@@ -101,13 +107,13 @@ class Voting(models.Model):
         if response.status_code != 200:
             # TODO: manage error
             pass
-
         self.tally = response.json()
         self.save()
+        voters = self.get_voters(token)
 
-        return self.do_postproc()
+        return self.do_postproc(voters)
 
-    def do_postproc(self):
+    def do_postproc(self, voters):
         tally = self.tally
         options = self.question.options.all()
 
@@ -123,7 +129,7 @@ class Voting(models.Model):
                 'votes': votes
             })
 
-        data = {'type': 'IDENTITY', 'options': opts}
+        data = {'type': 'IDENTITY', 'options': opts, 'voters': voters}
         directory = "voting/tallies/"
         if not os.path.exists(directory):
             os.makedirs(directory)
