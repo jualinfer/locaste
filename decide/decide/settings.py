@@ -192,3 +192,9 @@ except ImportError:
 
 
 INSTALLED_APPS = INSTALLED_APPS + MODULES
+
+
+#Overrides rest-auth register serializer
+REST_AUTH_REGISTER_SERIALIZERS = {                                                                            
+    'REGISTER_SERIALIZER': 'authentication.serializers.UserSignupSerializer'
+ }
