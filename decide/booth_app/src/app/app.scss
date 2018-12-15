@@ -14,3 +14,12 @@
 // To declare rules for a specific mode, create a child rule
 // for the .md, .ios, or .wp mode classes. The mode class is
 // automatically applied to the <body> element in the app.
+
+.toolbar-background-md {
+    background: rgba(201, 204, 22, .86);
+}
+
+ion-content, .item-md {
+    //background-image: url(/src/assets/imgs/background-image_0.jpg); No funciona
+    background-color: rgba(100, 204, 204, .32) !important;
+}

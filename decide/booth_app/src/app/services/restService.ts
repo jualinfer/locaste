@@ -2,8 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { ConfigService } from './../../config/configService';
 import { AbstractService } from './abstractService';
 import { Injectable } from "@angular/core";
-import { ftruncate } from 'fs';
-
 
 @Injectable()
 export class RestService extends AbstractService {

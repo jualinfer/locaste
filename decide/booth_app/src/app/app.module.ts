@@ -1,3 +1,5 @@
+import { HttpClient, HttpHandler } from '@angular/common/http';
+import { DataManagement } from './services/dataManagemen';
 import { LoginPage } from './../pages/login/login';
 import { ConfigService } from './../config/configService';
 import { BrowserModule } from '@angular/platform-browser';
@@ -10,6 +12,7 @@ import { ListPage } from '../pages/list/list';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+import { RestService } from './services/restService';
 
 @NgModule({
   declarations: [
@@ -26,9 +29,15 @@ import { SplashScreen } from '@ionic-native/splash-screen';
   entryComponents: [
     MyApp,
     HomePage,
-    ListPage
+    ListPage,
+    LoginPage,
   ],
   providers: [
+    LoginPage,
+    HttpHandler,
+    HttpClient,
+    RestService,
+    DataManagement,
     ConfigService,
     StatusBar,
     SplashScreen,
