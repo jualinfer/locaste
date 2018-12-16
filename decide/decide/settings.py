@@ -185,4 +185,11 @@ except ImportError:
 
 INSTALLED_APPS = INSTALLED_APPS + MODULES
 
+
 LOGIN_REDIRECT_URL = '/'
+
+
+#Overrides rest-auth register serializer
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'authentication.serializers.UserSignupSerializer'
+ }

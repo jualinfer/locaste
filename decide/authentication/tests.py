@@ -83,13 +83,18 @@ class AuthTestCase(APITestCase):
         self.assertEqual(Token.objects.filter(user__username='voter1').count(), 0)
 
     def test_signup(self):
-        data = {'username': 'newvoter', 'password1': '1234abcd', 'password2': '1234abcd'}
+        data = {'username': 'newvoter', 'password1': '1234abcd', 'password2': '1234abcd','gender':'Male','birthdate':'2018-12-08T02:03'}
         response = self.client.post('/authentication/signup/', data, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(User.objects.filter(username='newvoter').count(), 1)
+        self.assertEqual(User.objects.get(username='newvoter').userprofile.gender, 'Male')
 
     def test_signup_duplicated_username(self):
-        data = {'username': 'voter1', 'password1': '1234abcd', 'password2': '1234abcd'}
+        data = {'username': 'newvoter', 'password1': '1234abcd', 'password2': '1234abcd','gender':'Male','birthdate':'2018-12-08T02:03'}
         response = self.client.post('/authentication/signup/', data, format='json')
-        self.assertEqual(response.status_code, 400)
+        
+        data2 = {'username': 'newvoter', 'password1': '1234abcd', 'password2': '1234abcd','gender':'Male','birthdate':'2018-12-08T02:03'}
+        response2 = self.client.post('/authentication/signup/', data, format='json')
+        
+        self.assertEqual(response2.status_code, 400)
         self.assertEqual(User.objects.filter(username='voter1').count(), 1)
