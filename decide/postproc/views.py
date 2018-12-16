@@ -45,7 +45,7 @@ class PostProcView(APIView):
                 aux['postproc'] = aux['postproc'] + 1
 
             aux = next((o for o in out if o['option'] == opt['option']), None)
-            opt['votes'] = (2*aux['votes'])//(aux['postproc'] +1)
+            opt['votes'] = (aux['votes'])//(2*aux['postproc'] +1)
 
         out.append({
             'participation': self.participation(census,voters)
@@ -100,5 +100,7 @@ class PostProcView(APIView):
             return self.identity(opts, census)
         elif t == 'DHONDT':
             return self.dhondt(opts, seats, census)
+        elif t == 'SAINTLAGUE':
+            return self.saintlague(opts,seats,census)
 
         return Response({})

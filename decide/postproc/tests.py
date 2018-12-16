@@ -71,29 +71,29 @@ class PostProcTestCase(APITestCase):
         values = response.json()
         self.assertEqual(values, expected_result)
 
-        def test_saintlague(self):
-            data = {
-                'type': 'SAINTLAGUE',
-                'seats': 7,
-                'census': 900000,
-                'options': [
-                    { 'option': 'Option 1', 'number': 1, 'votes': 340000 },
-                    { 'option': 'Option 2', 'number': 2, 'votes': 280000 },
-                    { 'option': 'Option 3', 'number': 3, 'votes': 160000 },
-                    { 'option': 'Option 4', 'number': 4, 'votes': 60000 },
-                ]
-            }
-
-            expected_result = [
-                { 'option': 'Option 1', 'number': 1, 'votes': 340000, 'postproc': 3 },
-                { 'option': 'Option 2', 'number': 2, 'votes': 280000, 'postproc': 2 },
-                { 'option': 'Option 3', 'number': 3, 'votes': 160000, 'postproc': 1 },
-                { 'option': 'Option 4', 'number': 4, 'votes': 60000, 'postproc': 1 },
-                { 'participation': 93.33},
+    def test_saintlague(self):
+        data = {
+            'type': 'SAINTLAGUE',
+            'seats': 8,
+            'census': 230000,
+            'options': [
+                { 'option': 'Option 1', 'number': 1, 'votes': 100000 },
+                { 'option': 'Option 2', 'number': 2, 'votes': 80000 },
+                { 'option': 'Option 3', 'number': 3, 'votes': 30000 },
+                { 'option': 'Option 4', 'number': 4, 'votes': 20000 },
             ]
+        }
 
-            response = self.client.post('/postproc/', data, format='json')
-            self.assertEqual(response.status_code, 200)
+        expected_result = [
+            { 'option': 'Option 1', 'number': 1, 'votes': 100000, 'postproc': 3 },
+            { 'option': 'Option 2', 'number': 2, 'votes': 80000, 'postproc': 3 },
+            { 'option': 'Option 3', 'number': 3, 'votes': 30000, 'postproc': 1 },
+            { 'option': 'Option 4', 'number': 4, 'votes': 20000, 'postproc': 1 },
+            { 'participation': 100.00},
+        ]
 
-            values = response.json()
-            self.assertEqual(values, expected_result)
+        response = self.client.post('/postproc/', data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        values = response.json()
+        self.assertEqual(values, expected_result)
