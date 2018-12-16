@@ -18,7 +18,9 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 reply_keyboard = [['Log in', 'Cancel']]
+reply_keyboard_tryagain = [['Try again', 'Cancel']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+markup_tryagain = ReplyKeyboardMarkup(reply_keyboard_tryagain, one_time_keyboard=True)
 
 CHOOSING, TYPING_USERNAME, TYPING_PASSWORD  = range(3)
 
@@ -57,6 +59,12 @@ def login(bot, update, user_data):
         update.message.reply_text("Logged succesfully")
         user_data['key'] = r.json()['key']
     
+    else:
+        update.message.reply_text("Oops, something went wrong")
+        update.message.reply_text("Check your credentials and try it again",
+        reply_markup=markup_tryagain)
+
+        return CHOOSING
 
     return ConversationHandler.END    
 
@@ -81,7 +89,7 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [RegexHandler('^(Log\s+in)$',
+            CHOOSING: [RegexHandler('^(Log\s+in|Try\s+again)$',
                                     introduce_username),
                        RegexHandler('^Cancel$',
                                     cancel),
