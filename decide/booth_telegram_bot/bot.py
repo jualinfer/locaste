@@ -7,7 +7,7 @@ TOKEN = os.getenv("TOKEN")
 
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from telegram import ReplyKeyboardMarkup, ParseMode
+from telegram import ReplyKeyboardMarkup, ParseMode, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, RegexHandler, ConversationHandler
 import logging
 
@@ -20,9 +20,10 @@ logger = logging.getLogger(__name__)
 reply_keyboard = [['Log in', 'Cancel']]
 reply_keyboard_tryagain = [['Try again', 'Cancel']]
 reply_keyboard_logged = [['Access to a voting', 'Log out']]
-markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
-markup_tryagain = ReplyKeyboardMarkup(reply_keyboard_tryagain, one_time_keyboard=True)
-markup_logged = ReplyKeyboardMarkup(reply_keyboard_logged, one_time_keyboard=True)
+markup = ReplyKeyboardMarkup(reply_keyboard )
+markup_tryagain = ReplyKeyboardMarkup(reply_keyboard_tryagain)
+markup_logged = ReplyKeyboardMarkup(reply_keyboard_logged)
+markup_quit = ReplyKeyboardRemove()
 
 CHOOSING, TYPING_USERNAME, TYPING_PASSWORD, TYPING_VOTING_ID  = range(4)
 
@@ -36,7 +37,7 @@ def start(bot, update):
     return CHOOSING
     
 def introduce_username(bot, update):
-    update.message.reply_text("Good choice!")
+    update.message.reply_text("Good choice!", reply_markup=markup_quit)
     update.message.reply_text("Introduce your username, please")
 
     return TYPING_USERNAME
@@ -72,7 +73,7 @@ def login(bot, update, user_data):
     return CHOOSING
 
 def introduce_voting_id(bot, update, user_data):
-    update.message.reply_text("Please "+user_data['username']+ ", introduce the voting id you want to access in")
+    update.message.reply_text("Please "+user_data['username']+ ", introduce the voting id you want to access in", reply_markup=markup_quit)
 
     return TYPING_VOTING_ID
 
@@ -98,7 +99,7 @@ def get_voting(bot, update, user_data):
 
 
 def logout(bot, update, user_data):
-    update.message.reply_text('Bye ' + user_data['username'] + ", have a nice day!")
+    update.message.reply_text('Bye ' + user_data['username'] + ", have a nice day!", reply_markup=markup_quit)
     update.message.reply_text("Don't forget I'm still here, just wake me up by introducing /start if you need me")
     del user_data['username']
     del user_data['key']
@@ -106,7 +107,7 @@ def logout(bot, update, user_data):
     return ConversationHandler.END
 
 def cancel(bot, update):
-    update.message.reply_text('I just wanted to be useful, but another time maybe!')
+    update.message.reply_text('I just wanted to be useful, but another time maybe!', reply_markup=markup_quit)
     update.message.reply_text('If you need me again you can call me by introducing /start. See you!')
     
     return ConversationHandler.END
@@ -115,6 +116,9 @@ def error(bot, update, error):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, error)
 
+def unknown_command(bot, update,  user_data):
+    update.message.reply_text('Sorry It seems like I can not understand your petition')
+    
 
 def main():
     updater = Updater(TOKEN)
@@ -123,7 +127,8 @@ def main():
     dp = updater.dispatcher
 
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
+        allow_reentry=True,
+        entry_points=[CommandHandler('start', start),],
 
         states={
             CHOOSING: [RegexHandler('^(Log\s+in|Try\s+again)$',introduce_username),
@@ -141,7 +146,7 @@ def main():
             TYPING_VOTING_ID: [MessageHandler(Filters.text, get_voting, pass_user_data=True),
                            ],
         },
-        fallbacks=[RegexHandler('^Cancel$', cancel)]
+        fallbacks=[MessageHandler(Filters.text, unknown_command, pass_user_data=True)]
     )
 
     dp.add_handler(conv_handler)
