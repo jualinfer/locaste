@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 import os
+import requests
 
 TOKEN = os.getenv("TOKEN")
 
@@ -31,21 +32,31 @@ def start(bot, update):
     return CHOOSING
     
 def introduce_username(bot, update):
-    update.message.reply_text("Introduce your username")
+    update.message.reply_text("Good choice!")
+    update.message.reply_text("Introduce your username, please")
 
     return TYPING_USERNAME
 
 def introduce_password(bot, update, user_data):
     text = update.message.text
     user_data['username'] = text
-    update.message.reply_text("Introduce your password")
+    update.message.reply_text("Got it")
+    update.message.reply_text("Now, introduce your password")
 
     return TYPING_PASSWORD
 
 def login(bot, update, user_data):
     text = update.message.text
     user_data['password'] = text
-    update.message.reply_text("USER( username="+user_data['username']+ " password="+user_data['password'] + " )")
+
+    url = "http://localhost:8000/rest-auth/login/"
+    r = requests.post(url, data={'username': user_data['username'], 'password': user_data['password']})
+    
+    if r.status_code == 200:
+        update.message.reply_text("Great!")
+        update.message.reply_text("Logged succesfully")
+        user_data['key'] = r.json()['key']
+    
 
     return ConversationHandler.END    
 
