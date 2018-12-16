@@ -4,6 +4,8 @@
 {% block content %}
     <h1>{{ voting.id }} - {{ voting.name }}</h1>
 
+    {% if not voting.id %}
+        <h2>{% trans 'This voting does not exist. Please, verify the voting number is correct.' %}</h2>
     {% if not voting.start_date %}
         <h2>{% trans 'Voting not started' %}</h2>
     {% elif not voting.end_date %}
