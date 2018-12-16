@@ -32,27 +32,26 @@ class PostProcView(APIView):
         return Response(out)
 
     def saintlague(self,options,seats,census):
-        out = []
+        results = []
         voters = sum(opt['votes'] for opt in options)
 
         for seat in range(seats):
             opt = max(options, key=lambda opt: opt['votes'])
 
-            if not any(d.get('option', None) == opt['option'] for d in out):
-                out.append({
+            if not any(d.get('option', None) == opt['option'] for d in results):
+                results.append({
                     **opt,
                     'postproc' :1,
                 });
             else:
-                aux = next((o for o in out if o['option'] == opt['option']), None)
+                aux = next((o for o in results if o['option'] == opt['option']), None)
                 aux['postproc'] = aux['postproc'] + 1
 
-            aux = next((o for o in out if o['option'] == opt['option']), None)
-            opt['votes'] = (aux['votes'])//(2*aux['postproc'] +1)
+            aux = next((o for o in results if o['option'] == opt['option']), None)
+            opt['votes'] = aux['votes']//(2*aux['postproc'] +1)
 
-        out.append({
-            'participation': self.participation(census,voters)
-        })
+        part = self.participation(census, voters)
+        out = {'results': results, 'participation': part}
 
         return Response(out)
 
