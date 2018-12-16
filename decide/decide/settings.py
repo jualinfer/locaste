@@ -56,6 +56,9 @@ INSTALLED_APPS = [
 
     #Required for authentication with google
     'allauth.socialaccount.providers.google',
+
+    #Required for authentication with twitter
+    'allauth.socialaccount.providers.twitter',
 ]
 
 SITE_ID = 1
@@ -193,3 +196,5 @@ LOGIN_REDIRECT_URL = '/'
 REST_AUTH_REGISTER_SERIALIZERS = {
     'REGISTER_SERIALIZER': 'authentication.serializers.UserSignupSerializer'
  }
+
+ACCOUNT_LOGOUT_ON_GET = True
