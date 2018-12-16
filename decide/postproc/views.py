@@ -87,7 +87,7 @@ class PostProcView(APIView):
         seatsleft = seats
 
         for option in options:
-            e = floor(option['votes'] / q)
+            e = option['votes'] // q
             seatsleft = seatsleft - e
             results.append({
                 **option,
