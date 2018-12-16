@@ -7,7 +7,7 @@ TOKEN = os.getenv("TOKEN")
 
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from telegram import ReplyKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, ParseMode
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, RegexHandler, ConversationHandler
 import logging
 
@@ -19,12 +19,12 @@ logger = logging.getLogger(__name__)
 
 reply_keyboard = [['Log in', 'Cancel']]
 reply_keyboard_tryagain = [['Try again', 'Cancel']]
-reply_keyboard_logged = [['Hola', 'Log out']]
+reply_keyboard_logged = [['Access to a voting', 'Log out']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
 markup_tryagain = ReplyKeyboardMarkup(reply_keyboard_tryagain, one_time_keyboard=True)
 markup_logged = ReplyKeyboardMarkup(reply_keyboard_logged, one_time_keyboard=True)
 
-CHOOSING, TYPING_USERNAME, TYPING_PASSWORD  = range(3)
+CHOOSING, TYPING_USERNAME, TYPING_PASSWORD, TYPING_VOTING_ID  = range(4)
 
 def start(bot, update):
     """Send welcome messages when the command /start is issued."""
@@ -70,7 +70,33 @@ def login(bot, update, user_data):
         reply_markup=markup_tryagain)
 
     return CHOOSING
-   
+
+def introduce_voting_id(bot, update, user_data):
+    update.message.reply_text("Please "+user_data['username']+ ", introduce the voting id you want to access in")
+
+    return TYPING_VOTING_ID
+
+def get_voting(bot, update, user_data):
+    update.message.reply_text("Got it")
+    update.message.reply_text("Let's search for the voting...")
+    id = update.message.text
+
+    url = "http://localhost:8000/voting/?id="+id
+    r = requests.get(url)
+    if r.json() != []:
+        update.message.reply_text("Here It is:")
+        update.message.reply_text("*"+str(r.json()[0]['id']) + " - " + r.json()[0]['name'] + "*", parse_mode=ParseMode.MARKDOWN)
+        update.message.reply_text("*" + r.json()[0]['question']['desc'] + "*", parse_mode=ParseMode.MARKDOWN)
+
+    else:
+        update.message.reply_text("Sorry, It seems like the voting doesn't exist in Decide Locaste system")
+        update.message.reply_text("Check the id introduced or contact with the admin")
+        update.message.reply_text("What are we doing next " + user_data['username'] + "?",
+        reply_markup=markup_logged)
+
+        return CHOOSING
+
+
 def logout(bot, update, user_data):
     update.message.reply_text('Bye ' + user_data['username'] + ", have a nice day!")
     update.message.reply_text("Don't forget I'm still here, just wake me up by introducing /start if you need me")
@@ -102,13 +128,17 @@ def main():
         states={
             CHOOSING: [RegexHandler('^(Log\s+in|Try\s+again)$',introduce_username),
                        RegexHandler('^Cancel$',cancel),
-                       RegexHandler('^Log\s+out$',logout, pass_user_data=True)
+                       RegexHandler('^Log\s+out$',logout, pass_user_data=True),
+                       RegexHandler('^Access\s+to\s+a\s+voting$',introduce_voting_id, pass_user_data=True),
                        ],
 
             TYPING_USERNAME: [MessageHandler(Filters.text,introduce_password,pass_user_data=True),
                            ],
 
             TYPING_PASSWORD: [MessageHandler(Filters.text, login, pass_user_data=True),
+                           ],
+
+            TYPING_VOTING_ID: [MessageHandler(Filters.text, get_voting, pass_user_data=True),
                            ],
         },
         fallbacks=[RegexHandler('^Cancel$', cancel)]
