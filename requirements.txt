@@ -14,4 +14,5 @@ django-allauth==0.38.0
 #Booth Telegram bot requirements
 python-telegram-bot
 python-dotenv
+requests
 

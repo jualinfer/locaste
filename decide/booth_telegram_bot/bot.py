@@ -19,8 +19,10 @@ logger = logging.getLogger(__name__)
 
 reply_keyboard = [['Log in', 'Cancel']]
 reply_keyboard_tryagain = [['Try again', 'Cancel']]
+reply_keyboard_logged = [['Hola', 'Log out']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
 markup_tryagain = ReplyKeyboardMarkup(reply_keyboard_tryagain, one_time_keyboard=True)
+markup_logged = ReplyKeyboardMarkup(reply_keyboard_logged, one_time_keyboard=True)
 
 CHOOSING, TYPING_USERNAME, TYPING_PASSWORD  = range(3)
 
@@ -57,16 +59,25 @@ def login(bot, update, user_data):
     if r.status_code == 200:
         update.message.reply_text("Great!")
         update.message.reply_text("Logged succesfully")
+        del user_data['password']
         user_data['key'] = r.json()['key']
+        update.message.reply_text("What are we doing next " + user_data['username'] + "?",
+        reply_markup=markup_logged)
     
     else:
         update.message.reply_text("Oops, something went wrong")
         update.message.reply_text("Check your credentials and try it again",
         reply_markup=markup_tryagain)
 
-        return CHOOSING
+    return CHOOSING
+   
+def logout(bot, update, user_data):
+    update.message.reply_text('Bye ' + user_data['username'] + ", have a nice day!")
+    update.message.reply_text("Don't forget I'm still here, just wake me up by introducing /start if you need me")
+    del user_data['username']
+    del user_data['key']
 
-    return ConversationHandler.END    
+    return ConversationHandler.END
 
 def cancel(bot, update):
     update.message.reply_text('I just wanted to be useful, but another time maybe!')
@@ -89,20 +100,15 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [RegexHandler('^(Log\s+in|Try\s+again)$',
-                                    introduce_username),
-                       RegexHandler('^Cancel$',
-                                    cancel),
+            CHOOSING: [RegexHandler('^(Log\s+in|Try\s+again)$',introduce_username),
+                       RegexHandler('^Cancel$',cancel),
+                       RegexHandler('^Log\s+out$',logout, pass_user_data=True)
                        ],
 
-            TYPING_USERNAME: [MessageHandler(Filters.text,
-                                          introduce_password,
-                                          pass_user_data=True),
+            TYPING_USERNAME: [MessageHandler(Filters.text,introduce_password,pass_user_data=True),
                            ],
 
-            TYPING_PASSWORD: [MessageHandler(Filters.text,
-                                          login,
-                                          pass_user_data=True),
+            TYPING_PASSWORD: [MessageHandler(Filters.text, login, pass_user_data=True),
                            ],
         },
         fallbacks=[RegexHandler('^Cancel$', cancel)]
