@@ -8,10 +8,12 @@ from rest_framework.status import (
         HTTP_204_NO_CONTENT as ST_204,
         HTTP_400_BAD_REQUEST as ST_400,
         HTTP_401_UNAUTHORIZED as ST_401,
+        HTTP_403_FORBIDDEN as ST_403,
         HTTP_409_CONFLICT as ST_409
 )
 
-from base.perms import UserIsStaff
+#from base.perms import UserIsStaff
+#from rest_framework.permissions import AllowAny
 from .models import Census
 from django.http import Http404
 
@@ -19,9 +21,13 @@ from base import mods
 
 
 class CensusCreate(generics.ListCreateAPIView):
-    permission_classes = (UserIsStaff,)
+    #permission_classes = (AllowAny,)
 
     def create(self, request, *args, **kwargs):
+        #if not request.user.is_authenticated:
+        #    return Response('Unauthorized', status=ST_401)
+        #if not request.user.is_staff:
+        #    return Response('Forbidden', status=ST_403)
         voting_id = request.data.get('voting_id')
         voters = request.data.get('voters')
         try:
@@ -34,8 +40,16 @@ class CensusCreate(generics.ListCreateAPIView):
 
     def list(self, request, *args, **kwargs):
         voting_id = request.GET.get('voting_id')
-        voters = Census.objects.filter(voting_id=voting_id).values_list('voter_id', flat=True)
-        return Response({'voters': voters})
+        if voting_id is None:
+            voter_id = request.GET.get('voter_id')
+            if voter_id is None:
+                return Response('', status=ST_400)
+            else:
+                voting = Census.objects.filter(voter_id=voter_id).values_list('voting_id', flat=True)
+                return Response({'voting': voting})
+        else:
+            voters = Census.objects.filter(voting_id=voting_id).values_list('voter_id', flat=True)
+            return Response({'voters': voters})
 
 
 class CensusDetail(generics.RetrieveDestroyAPIView):

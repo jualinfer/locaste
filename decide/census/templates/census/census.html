@@ -2,5 +2,126 @@
 {% load i18n static %}
 
 {% block content %}
-    <h1>{{ voting.id }} - {{ voting.name }}</h1>
+    <h1>{{ voting.name }}</h1>
+
+    <div id="census_form">
+        <label for="voter_id">{% trans "User IDs" %}</label>
+        <input type="text" id="voter_id" name="voter_id" value=""/>
+        {%trans "(You can put multiples IDs, separating them by commas)" %}
+        <br/><br/>
+        <input type="submit" value="{% trans "Add to census" %}" onClick="addToCensus()"/>
+        <input type="submit" value="{% trans "Remove from census" %}" onClick="removeFromCensus()"/>
+    </div>
+<script>
+        //var token = null;
+        //var user = null;
+
+        function getData(url) {
+            // Default options are marked with *
+            var fdata = {
+                method: 'GET',
+            };
+
+            //if (token) {
+            //    fdata.headers['Authorization'] = 'Token ' + token;
+            //}
+
+            return fetch(url, fdata)
+            .then(response => {
+                if (response.status === 200) {
+                    return response.json();
+                } else {
+                    return Promise.reject(response.statusText);
+                }
+            });
+        }
+
+        function postData(url, data) {
+            // Default options are marked with *
+            var fdata = {
+                body: JSON.stringify(data),
+                headers: {
+                    'content-type': 'application/json',
+                },
+                method: 'POST',
+            };
+
+            //if (token) {
+            //    fdata.headers['Authorization'] = 'Token ' + token;
+            //}
+
+            return fetch(url, fdata)
+            .then(response => {
+                if (response.status === 201) {
+                    return response.json();
+                } else {
+                    return Promise.reject(response.statusText);
+                }
+            });
+        }
+
+        function deleteData(url, data) {
+            // Default options are marked with *
+            var fdata = {
+                body: JSON.stringify(data),
+                headers: {
+                    'content-type': 'application/json',
+                },
+                method: 'DELETE',
+            };
+
+            //if (token) {
+            //    fdata.headers['Authorization'] = 'Token ' + token;
+            //}
+
+            return fetch(url, fdata)
+            .then(response => {
+                if (response.status === 204) {
+                    return "Voters deleted from census";
+                } else {
+                    return Promise.reject(response.statusText);
+                }
+            });
+        }
+
+        function addToCensus() {
+            var voters = document.querySelector("#voter_id").value.split(",");
+            var data = {
+                voting_id: {{voting.id}},
+                voters: voters
+            };
+            //getData("{{census_url}}" + "/census/?voting_id="+{{voting.id}})
+            postData("{{census_url}}" + "/census/", data)
+            .then(data => {
+                //document.cookie = 'decide='+data.token+';';
+                //token = data.token;
+                alert(data);
+            })
+            .catch(error => {
+                alert("{% trans "Error: " %}" + error);
+                console.error(error);
+            });
+        }
+
+        function removeFromCensus() {
+            var voters = document.querySelector("#voter_id").value.split(",");
+            var data = {
+                voters: voters
+            };
+            deleteData("{{census_url}}" + "/census/" + {{voting.id}} + "/", data)
+            .then(data => {
+                //document.cookie = 'decide='+data.token+';';
+                //token = data.token;
+                alert(data);
+            })
+            .catch(error => {
+                alert("{% trans "Error: " %}" + error);
+                console.error(error);
+            });
+        }
+    </script>
+{% endblock %}
+
+{% block extrabody %}
+
 {% endblock %}
