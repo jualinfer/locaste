@@ -1,24 +1,29 @@
-language: python 
-python: 
-- "3.6"
-- "3.5"
+language: python
+python:
+- '3.6'
+- '3.5'
 services:
 - postgresql
-env: 
+env:
 - DJANGO=2.0 DB=postgres
 global:
-  - PGPORT=5432
-before_install: 
+- PGPORT=5432
+before_install:
 - cd decide
-install: 
+install:
 - pip install -r ../requirements.txt
-before_script: 
+before_script:
 - cp local_settings.example.py local_settings.py
 - psql -c "create user decide with password 'decide'"
 - psql -c "create database decide owner decide"
 - python manage.py makemigrations
 - python manage.py migrate
-script: 
+script:
 - python manage.py test
 addons:
-    postgresql: "9.6"
+  postgresql: '9.6'
+deploy:
+  provider: heroku
+  api_key:
+    secure: V0B5G/GtPNh3wafqrcL1+beljwxiBGKRjND3y5s6AqMKbWnptLS3s4gStEjWDX1dy0ABPS3S09tbCNDgBnXq8xzJjhTm7Zhlkis6CbjSJF9x61QAh0PalxR482VZopUsMw8xy7ocE2qphCpvsWsHTysg1gdkjaysx/YZYBwkOkm6Pb9fD7idmvjudtpqICRieDjzpDCzyZQ4m/udf3GhVVFP1GCxwaApXdURc7vt3p3z30zQQSpHkz3yQuisHznRLfpK98m8TGQlMQJSUfBARW1FbWX7a5Hj7NHFjtMhG/kzDriYnqnznYLPpfTDSGLzYllTMqR8BGEJGM7KmbW2/hzWSMsD88PKAwmNqDvVsXgBmhfmrt/QTRKEtLENKNy7U7Js+b/qEUBuH2wMO5iLlZ+qL4TwGS+5GadIro3SpFyLMwf/LhxsmOtn6FVc8nKlktlFFmWcdH1LzAKF2NWLF5tXgBefLt/3tEU1thLNkJIw/dhjW+9/I8XnZuZ0C2lF2GgbFPWs7MJtANwCE0Wr5ITC52boGxiOXnVbDT3+Tg0byuEutSR32FVDQ5Nr3srSMLKLBdCKT1TFwx0iF5XKLlltBgMLRaEhCGp4HMw/lJy2Ru/oqxuOjBtUdBdKEqZVfH8tNRBI7/sRxo1biJOPbu6xJjpdaLtFAq9/x3KijTg=
+  app: locaste-decide
