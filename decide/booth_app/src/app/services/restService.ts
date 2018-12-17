@@ -36,8 +36,23 @@ export class RestService extends AbstractService {
         }).catch((error) => {
             console.log("Error: " + error);
             return Promise.reject(error);
-
         })
     }
+
+    public signUp(username: string, password: string) {
+        let fd = new FormData();
+        fd.append('username', username);
+        fd.append('password1', password);
+        fd.append('password2', password);
+
+        return this.makePostRequest(this.path + 'authentication/signup/', fd).then((res) => {
+            console.log("Se ha registrado correctamente");
+            return Promise.resolve(res);
+        }).catch((error) => {
+            console.log("Error " + error);
+            return Promise.reject(error);
+        });
+    }
+
 
 }
