@@ -79,6 +79,34 @@ class PostProcView(APIView):
 
         return Response(out)
 
+    def majorrest(self, options, seats, census):
+        results = []
+        voters = sum(opt['votes'] for opt in options)
+        q = round(voters/seats)
+        seatsleft = seats
+
+        for option in options:
+            e = floor(option['votes'] / q)
+            seatsleft = seatsleft - e
+            results.append({
+                **option,
+                'postproc': e,
+                'residualvotes': option['votes'] - (q*e),
+            });
+
+        resultscopy = results
+        for seat in range(seatsleft):
+            opt = max(resultscopy, key=lambda opt: opt['residualvotes'])
+            aux = next((o for o in results if o['option'] == opt['option']), None)
+            aux['postproc'] = aux['postproc'] + 1
+            resultscopy.remove({**opt});
+
+
+        part = self.participation(census, voters)
+        out = {'results': results, 'participation': part}
+
+        return Response(out)
+
     def post(self, request):
         """
          * type: IDENTITY | EQUALITY | WEIGHT
@@ -103,5 +131,7 @@ class PostProcView(APIView):
             return self.dhondt(opts, seats, census)
         elif t == 'SAINTLAGUE':
             return self.saintlague(opts,seats,census)
+        elif t == 'MAJORREST':
+            return self.majorrest(opts, seats, census)
 
         return Response({})
