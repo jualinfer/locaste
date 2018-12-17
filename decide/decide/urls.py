@@ -17,6 +17,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_swagger.views import get_swagger_view
+from authentication.views import IndexView
 
 
 schema_view = get_swagger_view(title='Decide API')
@@ -26,6 +27,8 @@ urlpatterns = [
     path('doc/', schema_view),
     path('accounts/', include('allauth.urls')),
     path('rest-auth/',include('rest_auth.urls')),
+    path('authentication/', include('authentication.urls')),
+    path('',IndexView.as_view(),name='index')
 ]
 
 for module in settings.MODULES:

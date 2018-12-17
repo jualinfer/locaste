@@ -1,11 +1,11 @@
-{% extends "base.html" %}
+{% extends "base_template.html" %}
 {% load i18n static %}
 
 {% block content %}
     <h1>{{ voting.id }} - {{ voting.name }}</h1>
 
     <div id="login">
-        <p>If you have not created an account yet, then please <button onClick="panel('signup')">Sign up</button></p>
+        <p>If you have not created an account yet, then please <button onClick="window.location.href='/authentication/sign-up'">Sign up</button></p>
         <label for="username">{% trans "Username" %}</label>
         <input type="text" id="username" name="username" value=""/>
         <br/>
@@ -29,20 +29,6 @@
         {% endfor %}
 
         <input type="submit" value="{% trans "Vote" %}" onClick="decideSend()"/>
-    </div>
-
-    <div id="signup">
-        <p>Already have an account? <button onClick="panel('login')">Log in</button></p>
-        <label for="username">{% trans "Username" %}</label>
-        <input type="text" id="username_signup" name="username" value=""/>
-        <br/>
-        <label for="password1">{% trans "Password" %}</label>
-        <input type="password" id="password1" name="password1" value=""/>
-        <br/>
-        <label for="password2">{% trans "Password(again)" %}</label>
-        <input type="password" id="password2" name="password2" value=""/>
-        <br/>
-        <input type="submit" value="{% trans "Sign up" %}" onClick="signUp()"/>
     </div>
 
 {% endblock %}
@@ -79,14 +65,12 @@
             },
             method: 'POST',
           };
-
           if (token) {
               fdata.headers['Authorization'] = 'Token ' + token;
           }
-
           return fetch(url, fdata)
           .then(response => {
-            if (response.status === 200 || response.status === 201) {
+            if (response.status === 200) {
                 return response.json();
             } else {
                 return Promise.reject(response.statusText);
@@ -97,6 +81,7 @@
         function decideEncrypt() {
             var msg = document.querySelector("input[name=question]:checked").value;
             var bigmsg = BigInt.fromJSONObject(msg);
+            console.log(bigmsg);
             var cipher = ElGamal.encrypt(bigpk, bigmsg);
             return cipher;
         }
@@ -108,10 +93,10 @@
                 voting: {{voting.id}},
                 voter: user.id,
                 token: token
-            }
+            };
             postData("{{store_url}}" + "/store/", data)
               .then(data => {
-                alert("{% trans "Congratulations. Your vote has been sent" %}")
+                alert("{% trans "Congratulations. Your vote has been sent" %}");
                 console.log(v);
               })
               .catch(error => {
@@ -125,8 +110,9 @@
 
             token = null;
             user = null;
-            document.cookie = 'decide=;';
+            document.cookie = 'decide=; path=/';
             panel('login');
+            window.location.href = "/authentication/logout";
         }
 
         function decideUser() {
@@ -147,7 +133,7 @@
             };
             postData("{{auth_url}}" + "/rest-auth/login/", data)
               .then(data => {
-                document.cookie = 'decide='+data.key+';';
+                document.cookie = 'decide='+data.key+'; path=/';
                 token = data.key;
                 decideUser();
               })
@@ -157,48 +143,22 @@
               });
         }
 
-        function signUp() {
-            var data = {
-                username: document.querySelector("#username_signup").value,
-                password1: document.querySelector("#password1").value,
-                password2: document.querySelector("#password2").value
-            };
-            postData("{{auth_url}}" + "/authentication/signup/", data)
-              .then(data => {
-                document.cookie = 'decide='+data.key+';';
-                token = data.key;
-                decideUser();
-              })
-              .catch(error => {
-                alert("{% trans "Error: " %}" + error);
-                console.error(error);
-              });
-        }
-
-        function panel(p) {
+         function panel(p) {
             switch(p) {
                 case 'login':
                     document.querySelector("#voting").style.display = "none";
                     document.querySelector("#login").style.display = "block";
-                    document.querySelector("#signup").style.display = "none";
                     break;
                 case 'voting':
                 default:
                     document.querySelector("#voting").style.display = "block";
                     document.querySelector("#login").style.display = "none";
-                    document.querySelector("#signup").style.display = "none";
-                    break;
-                case 'signup':
-                    document.querySelector("#voting").style.display = "none";
-                    document.querySelector("#login").style.display = "none";
-                    document.querySelector("#signup").style.display = "block";
                     break;
             };
         }
 
         function init() {
             panel('login');
-
             var cookies = document.cookie.split("; ");
             cookies.forEach((c) => {
                 var cs = c.split("=");
@@ -208,8 +168,9 @@
                 }
             });
         }
-
         init();
     </script>
 </body>
 {% endblock %}
+
+

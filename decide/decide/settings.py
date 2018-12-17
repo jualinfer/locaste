@@ -47,13 +47,19 @@ INSTALLED_APPS = [
     #Required by the django-rest-auth package
     'rest_auth',
     'rest_auth.registration',
-    
+
     #Required by the allauth package
     'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.facebook',
+
+    #Required for authentication with google
+    'allauth.socialaccount.providers.google',
+
+    #Required for authentication with twitter
+    'allauth.socialaccount.providers.twitter',
 ]
 
 SITE_ID = 1
@@ -173,6 +179,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [ os.path.join(BASE_DIR,"static")]
 # number of bits for the key, all auths should use the same number of bits
 KEYBITS = 256
 
@@ -183,3 +190,14 @@ except ImportError:
 
 
 INSTALLED_APPS = INSTALLED_APPS + MODULES
+
+
+LOGIN_REDIRECT_URL = '/'
+
+
+#Overrides rest-auth register serializer
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'authentication.serializers.UserSignupSerializer'
+ }
+
+ACCOUNT_LOGOUT_ON_GET = True
