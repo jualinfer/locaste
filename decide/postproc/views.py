@@ -81,6 +81,7 @@ class PostProcView(APIView):
 
     def majorrest(self, options, seats, census):
         results = []
+        residualvoteslist = []
         voters = sum(opt['votes'] for opt in options)
         q = round(voters/seats)
         seatsleft = seats
@@ -91,15 +92,18 @@ class PostProcView(APIView):
             results.append({
                 **option,
                 'postproc': e,
+            });
+            residualvoteslist.append({
+                **option,
                 'residualvotes': option['votes'] - (q*e),
             });
 
         resultscopy = results
         for seat in range(seatsleft):
-            opt = max(resultscopy, key=lambda opt: opt['residualvotes'])
+            opt = max(residualvoteslist, key=lambda opt: opt['residualvotes'])
             aux = next((o for o in results if o['option'] == opt['option']), None)
             aux['postproc'] = aux['postproc'] + 1
-            resultscopy.remove({**opt});
+            residualvoteslist.remove({**opt});
 
 
         part = self.participation(census, voters)
