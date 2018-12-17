@@ -103,5 +103,3 @@ ENV/
 
 *.xml
 
-# Heroku deployment
-Procfile
