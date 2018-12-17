@@ -98,6 +98,25 @@ class PostProcTestCase(APITestCase):
              'participation': 100.00,
         }
 
+    def test_borda(self):
+        data = {
+            'type': 'BORDA',
+            'census': 10,
+            'options': [
+                { 'option': 'Option 1', 'number': 1, 'votes': [5, 2, 3] },
+                { 'option': 'Option 2', 'number': 2, 'votes': [5, 0, 5] },
+                { 'option': 'Option 3', 'number': 3, 'votes': [3, 1, 6] },
+            ]
+        }
+
+        expected_result = {
+            'results': [
+                { 'option': 'Option 1', 'number': 1, 'votes': [5, 2, 3], 'postproc': 22 },
+                { 'option': 'Option 2', 'number': 2, 'votes': [5, 0, 5], 'postproc': 20 },
+                { 'option': 'Option 3', 'number': 3, 'votes': [3, 1, 6], 'postproc': 17 },
+            ],
+        }
+
         response = self.client.post('/postproc/', data, format='json')
         self.assertEqual(response.status_code, 200)
 

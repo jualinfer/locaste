@@ -13,6 +13,36 @@ class PostProcView(APIView):
 
         return out
 
+    def order(self, results):
+        results.sort(key=lambda x: -x['postproc'])
+
+    def maximum(self, options):
+        return max(options, key=lambda opt: opt['votes'])
+
+    def update_results(self, opt, results, arg):
+        if not any(d.get('option', None) == opt['option'] for d in results):
+            results.append({
+                **opt,
+                'postproc': arg,
+            })
+        else:
+            aux = next((o for o in results if o['option'] == opt['option']), None)
+            aux['postproc'] = aux['postproc'] + arg
+
+    def borda(self, options):
+        results = []
+        max_points = len(options)
+
+        for opt in options:
+            for i in range(max_points):
+                points = opt['votes'][i]*(max_points-i)
+                self.update_results(opt, results, points)
+
+        self.order(results)
+        out = {'results': results}
+
+        return Response(out)
+
     def identity(self, options, census):
         results = []
         voters = 0
@@ -36,16 +66,8 @@ class PostProcView(APIView):
         voters = sum(opt['votes'] for opt in options)
 
         for seat in range(seats):
-            opt = max(options, key=lambda opt: opt['votes'])
-
-            if not any(d.get('option', None) == opt['option'] for d in results):
-                results.append({
-                    **opt,
-                    'postproc' :1,
-                });
-            else:
-                aux = next((o for o in results if o['option'] == opt['option']), None)
-                aux['postproc'] = aux['postproc'] + 1
+            opt = self.maximum(options)
+            self.update_results(opt, results, 1)
 
             aux = next((o for o in results if o['option'] == opt['option']), None)
             opt['votes'] = aux['votes']//(2*aux['postproc'] +1)
@@ -60,16 +82,8 @@ class PostProcView(APIView):
         voters = sum(opt['votes'] for opt in options)
 
         for seat in range(seats):
-            opt = max(options, key=lambda opt: opt['votes'])
-
-            if not any(d.get('option', None) == opt['option'] for d in results):
-                results.append({
-                    **opt,
-                    'postproc': 1,
-                });
-            else:
-                aux = next((o for o in results if o['option'] == opt['option']), None)
-                aux['postproc'] = aux['postproc'] + 1
+            opt = self.maximum(options)
+            self.update_results(opt, results, 1)
 
             aux = next((o for o in results if o['option'] == opt['option']), None)
             opt['votes'] = aux['votes']//(aux['postproc'] + 1)
@@ -80,18 +94,6 @@ class PostProcView(APIView):
         return Response(out)
 
     def post(self, request):
-        """
-         * type: IDENTITY | EQUALITY | WEIGHT
-         * options: [
-            {
-             option: str,
-             number: int,
-             votes: int,
-             ...extraparams
-            }
-           ]
-        """
-
         t = request.data.get('type', 'IDENTITY')
         seats = request.data.get('seats')
         census = request.data.get('census')
@@ -103,5 +105,7 @@ class PostProcView(APIView):
             return self.dhondt(opts, seats, census)
         elif t == 'SAINTLAGUE':
             return self.saintlague(opts,seats,census)
+        elif t == 'BORDA':
+            return self.borda(opts)
 
         return Response({})
