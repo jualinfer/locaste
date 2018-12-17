@@ -3,6 +3,7 @@ load_dotenv()
 import os
 import requests
 
+
 TOKEN = os.getenv("TOKEN")
 
 #!/usr/bin/env python
@@ -61,7 +62,13 @@ def login(bot, update, user_data):
         update.message.reply_text("Great!")
         update.message.reply_text("Logged succesfully")
         del user_data['password']
-        user_data['key'] = r.json()['key']
+        user_data['token'] = r.json()['key']
+
+        #Now we have the token, so we can request the user id to the Decide Locaste API
+        url = "http://localhost:8000/authentication/getuser/"
+        r = requests.post(url, data={'token': user_data['token'], })
+        user_data['user_id'] = r.json()['id']
+
         update.message.reply_text("What are we doing next " + user_data['username'] + "?",
         reply_markup=markup_logged)
     
@@ -86,9 +93,21 @@ def get_voting(bot, update, user_data):
     r = requests.get(url)
     if r.json() != []:
         update.message.reply_text("Here It is:")
-        update.message.reply_text("*"+str(r.json()[0]['id']) + " - " + r.json()[0]['name'] + "*", parse_mode=ParseMode.MARKDOWN)
-        update.message.reply_text("*" + r.json()[0]['question']['desc'] + "*", parse_mode=ParseMode.MARKDOWN)
-
+        msg = "------------------------------------------------------------\n*"+str(r.json()[0]['id']) + " - " + r.json()[0]['name'] + "*\n\n*" + r.json()[0]['question']['desc'] + "*\n\n"
+        reply_keyboard_logged = []
+        options_dict = {}
+        for option in r.json()[0]['question']['options']:
+            options_dict[option['number']-1] = option['option']
+            msg += str(option['number']-1) + ". " + option['option'] + "\n"
+        update.message.reply_text(msg + "\n" + 
+            "------------------------------------------------------------", parse_mode=ParseMode.MARKDOWN)
+        if r.json()[0]['end_date'] != None:
+            update.message.reply_text("This voting has already ended, exactly at " + r.json()[0]['end_date'].split('.')[0].replace('T',' '))
+            update.message.reply_text("Votes are not allowed for this voting anymore")
+            update.message.reply_text("What are we doing next " + user_data['username'] + "?",
+            reply_markup=markup_logged)
+            
+            return CHOOSING
     else:
         update.message.reply_text("Sorry, It seems like the voting doesn't exist in Decide Locaste system")
         update.message.reply_text("Check the id introduced or contact with the admin")
@@ -102,7 +121,8 @@ def logout(bot, update, user_data):
     update.message.reply_text('Bye ' + user_data['username'] + ", have a nice day!", reply_markup=markup_quit)
     update.message.reply_text("Don't forget I'm still here, just wake me up by introducing /start if you need me")
     del user_data['username']
-    del user_data['key']
+    del user_data['token']
+    del user_data['user_id']
 
     return ConversationHandler.END
 
