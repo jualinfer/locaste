@@ -12,6 +12,7 @@ export class LoginPage {
 
     username: string;
     password: string;
+    password2: string;
     error: string;
 
     constructor(
@@ -34,5 +35,12 @@ export class LoginPage {
         });
     }
 
+    public signUp() {
+        this.dm.signUp(this.username, this.password, this.password2).then((data) => {
+            console.log("Registrado correctamente");
+        }).catch((error) => {
+            console.log("Ha habido un error en el registro");
+        });
+    }
 
 }
