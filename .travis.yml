@@ -22,10 +22,14 @@ script:
 - python manage.py test
 addons:
   postgresql: '9.6'
-before_deploy:
-    - cd ..
-deploy:
-  provider: heroku
-  api_key:
-    secure: V0B5G/GtPNh3wafqrcL1+beljwxiBGKRjND3y5s6AqMKbWnptLS3s4gStEjWDX1dy0ABPS3S09tbCNDgBnXq8xzJjhTm7Zhlkis6CbjSJF9x61QAh0PalxR482VZopUsMw8xy7ocE2qphCpvsWsHTysg1gdkjaysx/YZYBwkOkm6Pb9fD7idmvjudtpqICRieDjzpDCzyZQ4m/udf3GhVVFP1GCxwaApXdURc7vt3p3z30zQQSpHkz3yQuisHznRLfpK98m8TGQlMQJSUfBARW1FbWX7a5Hj7NHFjtMhG/kzDriYnqnznYLPpfTDSGLzYllTMqR8BGEJGM7KmbW2/hzWSMsD88PKAwmNqDvVsXgBmhfmrt/QTRKEtLENKNy7U7Js+b/qEUBuH2wMO5iLlZ+qL4TwGS+5GadIro3SpFyLMwf/LhxsmOtn6FVc8nKlktlFFmWcdH1LzAKF2NWLF5tXgBefLt/3tEU1thLNkJIw/dhjW+9/I8XnZuZ0C2lF2GgbFPWs7MJtANwCE0Wr5ITC52boGxiOXnVbDT3+Tg0byuEutSR32FVDQ5Nr3srSMLKLBdCKT1TFwx0iF5XKLlltBgMLRaEhCGp4HMw/lJy2Ru/oqxuOjBtUdBdKEqZVfH8tNRBI7/sRxo1biJOPbu6xJjpdaLtFAq9/x3KijTg=
-  app: locaste-decide
+jobs:
+    include:
+        - stage: deploy
+          script: skip
+          before_deploy:
+              - cd ..
+          deploy:
+            provider: heroku
+            api_key:
+                secure: VekKUTMR3hMO3YFgH9tLRMP61lAiqyqorIy76BrifCsK/Nfx/5vG2HjzcS8m8SdHW1Bcd8DF4AIo/8kMPLk7PoE8f9dBKo3CL7P+I/LpRWUk1cPDx+FtRkLVIQfjDigcJXWC6zRS85858LFwqpGSAq3ERPaCSNK9JXQyfXhpTtqOEuAdMkrzthN6yzafpHOzu1f+lv/1PHB1VQe4OhOl+kg7+EAwLDDkoYGE77H5whp5+HljlI/zHqrIvwTRWpE+/KqZ5Lzk0bqLME3f9VDQAxGb2/XDcWiqsfFlLkAxvaUvuLOpx4BfF5Ldemq/mjlfaulPttvV7yOcqm2N3tcFZpjs3aoh6nwgzkpoEbdwzBQ5dCG3DyRtrs9UKga+2zeQJz6vWBVV8HLJ1NSk6HE5FnRlmJukjS3Fwz8IalsMx03ap7K5HDOOcRaVkV6J2l5Cyxx4KVpq9aMthUB4xuZA9yIOAyphDmYfP3X83Z2nHxGApIdDZmGTRC7e0Fh8+sMLvOL1XkP+ffZno18vgzJVI3ruf8PO2lNxhsBVnjz06Oaa9g9hca+m9AEM9nGzWl18cYsQ9kwmenDRZwTCGrDA4ZHAkTDBi9UTf3bNiom1Z5G8IG2XRSa+8JeMhze5zyEG3+YFplpiFUKZGrt6owMMGgGUX/vPkxTz0wy/AGidj4Y=
+            app: locaste-decide
