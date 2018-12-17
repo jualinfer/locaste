@@ -13,6 +13,9 @@ export class LoginPage {
     username: string;
     password: string;
     password2: string;
+
+    status: string = 'login';
+
     error: string;
 
     constructor(
@@ -21,6 +24,17 @@ export class LoginPage {
         public dm: DataManagement
     ) {
 
+    }
+
+    private changeStatus(status: string) {
+        switch(status) {
+            case 'login':
+                this.status = 'login';
+                break;
+            case 'signUp':
+                this.status = 'signUp';
+                break;
+        }
     }
 
     public login() {

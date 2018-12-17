@@ -2,7 +2,7 @@
     <ion-row>
         <ion-col col-xl-4 col-0></ion-col>
         <ion-col col-xl-4 col-12>
-            <div>
+            <div *ngIf="status == 'login'">
                 <ion-navbar>
                     <ion-title>Login</ion-title>
                 </ion-navbar>
@@ -17,12 +17,41 @@
                             <ion-input [(ngModel)]="password" type="password"></ion-input>
                         </ion-item>
                     </ion-list>
-                    <button class="botton" ion-button block (click)="login()">Log in</button>
+                    <button class="botton" ion-button block (click)="login()">Send</button>
+                    <button class="botton" ion-button block (click)="changeStatus('signUp')">Sign Up</button>
                 </div>
                 <div *ngIf="error !=null" class="error">
                     error
                 </div>
             </div>
+
+            <div *ngIf="status == 'signUp'">
+                <ion-navbar>
+                    <ion-title>Login</ion-title>
+                </ion-navbar>
+                <div class="login-form">
+                    <ion-list>
+                        <ion-item>
+                            <ion-label stacked>Username:</ion-label>
+                            <ion-input [(ngModel)]="username" type="text"></ion-input>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label stacked>Password:</ion-label>
+                            <ion-input [(ngModel)]="password" type="password"></ion-input>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label stacked>Repeat your password:</ion-label>
+                            <ion-input [(ngModel)]="password2" type="password"></ion-input>
+                        </ion-item>
+                    </ion-list>
+                    <button class="botton" ion-button block (click)="signUp()">Send</button>
+                    <button class="botton" ion-button block (click)="changeStatus('login')">Log in</button>
+                </div>
+                <div *ngIf="error !=null" class="error">
+                    error
+                </div>
+            </div>
+
         </ion-col>
         <ion-col col-xl-4 col-0></ion-col>
     </ion-row>
