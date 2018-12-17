@@ -39,7 +39,7 @@ export class RestService extends AbstractService {
         })
     }
 
-    public signUp(username: string, password: string) {
+    public signUp(username: string, password: string): Promise<any> {
         let fd = new FormData();
         fd.append('username', username);
         fd.append('password1', password);
@@ -54,7 +54,7 @@ export class RestService extends AbstractService {
         });
     }
 
-    public getPulls() {
+    public getPollsUserLogged(): Promise<any> {
         return this.makeGetRequest(this.path + '', null).then((res) => {
             return Promise.resolve(res);
         }).catch((error) => {
