@@ -10,7 +10,7 @@ export class PullListPage {
   url: string;
 
   constructor() {
-    this.url = "..\\..\\assets\\imgs\\pet_talks.png";
+    this.url = "..\\..\\assets\\imgs\\Pet.png";
   }
 
 
