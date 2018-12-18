@@ -1,12 +1,22 @@
 [
-    {
-      "model": "socialaccount.socialapp",
-      "pk": 100,
-      "fields": {
-        "provider": "facebook",
-        "name": "Facebook App",
-        "client_id": "2046681465554360",
-        "secret": "ef8d0a022314910a0ce88632c13e9c8d"
-      }
+  {
+    "model": "socialaccount.socialapp",
+    "pk": 100,
+    "fields": {
+      "provider": "facebook",
+      "name": "Facebook App",
+      "client_id": "2046681465554360",
+      "secret": "ef8d0a022314910a0ce88632c13e9c8d"
     }
-  ]
+  },
+
+  {
+    "model": "socialaccount.socialapp_sites",
+    "pk": 100,
+    "fields": {
+      "socialapp_id": 100,
+      "site_id": 1
+    }
+  }
+
+]
