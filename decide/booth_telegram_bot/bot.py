@@ -11,6 +11,12 @@ TOKEN = os.getenv("TOKEN")
 from telegram import ReplyKeyboardMarkup, ParseMode, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, RegexHandler, ConversationHandler
 import logging
+import numpy
+import sys
+sys.path.insert(0, '../decide')
+
+import settings
+
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -26,7 +32,7 @@ markup_tryagain = ReplyKeyboardMarkup(reply_keyboard_tryagain)
 markup_logged = ReplyKeyboardMarkup(reply_keyboard_logged)
 markup_quit = ReplyKeyboardRemove()
 
-CHOOSING, TYPING_USERNAME, TYPING_PASSWORD, TYPING_VOTING_ID  = range(4)
+CHOOSING_NOT_LOGGED,CHOOSING_LOGGED,OPTION_VOTED, TYPING_USERNAME, TYPING_PASSWORD, TYPING_VOTING_ID  = range(6)
 
 def start(bot, update):
     """Send welcome messages when the command /start is issued."""
@@ -35,7 +41,7 @@ def start(bot, update):
     update.message.reply_text("First of all, you need to log in with your Decide Locaste credentials in order to access your votings",
     reply_markup=markup)
 
-    return CHOOSING
+    return CHOOSING_NOT_LOGGED
     
 def introduce_username(bot, update):
     update.message.reply_text("Good choice!", reply_markup=markup_quit)
@@ -55,7 +61,7 @@ def login(bot, update, user_data):
     text = update.message.text
     user_data['password'] = text
 
-    url = "http://localhost:8000/rest-auth/login/"
+    url = settings.BASEURL + "/rest-auth/login/"
     r = requests.post(url, data={'username': user_data['username'], 'password': user_data['password']})
     
     if r.status_code == 200:
@@ -65,19 +71,21 @@ def login(bot, update, user_data):
         user_data['token'] = r.json()['key']
 
         #Now we have the token, so we can request the user id to the Decide Locaste API
-        url = "http://localhost:8000/authentication/getuser/"
+        url = settings.BASEURL +"/authentication/getuser/"
         r = requests.post(url, data={'token': user_data['token'], })
         user_data['user_id'] = r.json()['id']
 
         update.message.reply_text("What are we doing next " + user_data['username'] + "?",
         reply_markup=markup_logged)
+
+        return CHOOSING_LOGGED
     
     else:
         update.message.reply_text("Oops, something went wrong")
         update.message.reply_text("Check your credentials and try it again",
         reply_markup=markup_tryagain)
-
-    return CHOOSING
+        
+        return CHOOSING_NOT_LOGGED
 
 def introduce_voting_id(bot, update, user_data):
     update.message.reply_text("Please "+user_data['username']+ ", introduce the voting id you want to access in", reply_markup=markup_quit)
@@ -89,33 +97,59 @@ def get_voting(bot, update, user_data):
     update.message.reply_text("Let's search for the voting...")
     id = update.message.text
 
-    url = "http://localhost:8000/voting/?id="+id
+    url = settings.BASEURL + "/voting/?id="+id
     r = requests.get(url)
     if r.json() != []:
         update.message.reply_text("Here It is:")
         msg = "------------------------------------------------------------\n*"+str(r.json()[0]['id']) + " - " + r.json()[0]['name'] + "*\n\n*" + r.json()[0]['question']['desc'] + "*\n\n"
-        reply_keyboard_logged = []
+        reply_keyboard_options = []
         options_dict = {}
         for option in r.json()[0]['question']['options']:
-            options_dict[option['number']-1] = option['option']
+            options_dict[str(option['number']-1)] = option['option']
             msg += str(option['number']-1) + ". " + option['option'] + "\n"
+        user_data['options_dict'] = options_dict
         update.message.reply_text(msg + "\n" + 
             "------------------------------------------------------------", parse_mode=ParseMode.MARKDOWN)
         if r.json()[0]['end_date'] != None:
             update.message.reply_text("This voting has already ended, exactly at " + r.json()[0]['end_date'].split('.')[0].replace('T',' '))
             update.message.reply_text("Votes are not allowed for this voting anymore")
-            update.message.reply_text("What are we doing next " + user_data['username'] + "?",
-            reply_markup=markup_logged)
             
-            return CHOOSING
+        else:
+            #If the user can vote for this voting we need to store voting pub_key in order to encrypt the user vote
+            user_data['pub_key'] = r.json()[0]['pub_key']
+
+            reply_keyboard_options.append(numpy.asarray(list(options_dict.keys())))
+            reply_keyboard_options.append(['Cancel'])
+            markup_options = ReplyKeyboardMarkup(reply_keyboard_options)
+            update.message.reply_text("What option are you voting, " + user_data['username'] + "?",
+            reply_markup=markup_options)
+
+            return OPTION_VOTED
+
     else:
         update.message.reply_text("Sorry, It seems like the voting doesn't exist in Decide Locaste system")
         update.message.reply_text("Check the id introduced or contact with the admin")
-        update.message.reply_text("What are we doing next " + user_data['username'] + "?",
-        reply_markup=markup_logged)
+    
+    update.message.reply_text("What are we doing next " + user_data['username'] + "?",
+    reply_markup=markup_logged)
 
-        return CHOOSING
+    return CHOOSING_LOGGED
 
+def option_voted(bot, update, user_data):
+    options_dict = user_data['options_dict']
+    if(update.message.text in list(options_dict.keys())):
+        update.message.reply_text("You have voted option: " + update.message.text + ". " + options_dict[update.message.text], reply_markup=markup_quit)
+        #Aquí la encriptación del voto etc
+    else:
+        update.message.reply_text("There is no option " + update.message.text + " in the possible options")
+
+def cancel_vote(bot, update, user_data):
+    update.message.reply_text("Ok, vote cancelled")
+    update.message.reply_text("What are we doing next " + user_data['username'] + "?",
+    reply_markup=markup_logged)
+    
+    return CHOOSING_LOGGED
+    
 
 def logout(bot, update, user_data):
     update.message.reply_text('Bye ' + user_data['username'] + ", have a nice day!", reply_markup=markup_quit)
@@ -151,11 +185,17 @@ def main():
         entry_points=[CommandHandler('start', start),],
 
         states={
-            CHOOSING: [RegexHandler('^(Log\s+in|Try\s+again)$',introduce_username),
-                       RegexHandler('^Cancel$',cancel),
-                       RegexHandler('^Log\s+out$',logout, pass_user_data=True),
-                       RegexHandler('^Access\s+to\s+a\s+voting$',introduce_voting_id, pass_user_data=True),
-                       ],
+            CHOOSING_NOT_LOGGED: [RegexHandler('^(Log\s+in|Try\s+again)$',introduce_username),
+                        RegexHandler('^Cancel$',cancel),
+                        ],
+
+            CHOOSING_LOGGED: [RegexHandler('^Log\s+out$',logout, pass_user_data=True),
+                        RegexHandler('^Access\s+to\s+a\s+voting$',introduce_voting_id, pass_user_data=True),
+                        ],
+
+            OPTION_VOTED: [RegexHandler('^\d+$',option_voted, pass_user_data=True),
+                        RegexHandler('^Cancel$',cancel_vote, pass_user_data=True),
+                        ],
 
             TYPING_USERNAME: [MessageHandler(Filters.text,introduce_password,pass_user_data=True),
                            ],

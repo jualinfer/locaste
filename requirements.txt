@@ -15,4 +15,5 @@ django-allauth==0.38.0
 python-telegram-bot
 python-dotenv
 requests
+numpy
 
