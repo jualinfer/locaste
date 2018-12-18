@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class ConfigService {
-    
+
     constructor() {
-    
+
     }
 
     public getConfig(): any {
-        let urlPrefix = 'http://localhost:8000/';
+        let urlPrefix = 'http://locaste-decide.herokuapp.com/';
         let urlApi = '';
 
         return {
