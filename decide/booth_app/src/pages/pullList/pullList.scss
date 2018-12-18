@@ -1,6 +1,9 @@
 .img-pet {
     margin-top: 5%;
     background-color: rgba($color: #FFF, $alpha: 0.0);
+    width: 100% !important;
+    height: 100% !important;
     margin-right: auto;
     margin-left: auto;
+    min-height: 220px !important;
 }
