@@ -1,19 +1,20 @@
 from django.views.generic import TemplateView
 from django.db.utils import IntegrityError
+from django.core.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.status import (
-        HTTP_201_CREATED as ST_201,
-        HTTP_204_NO_CONTENT as ST_204,
-        HTTP_400_BAD_REQUEST as ST_400,
-        HTTP_401_UNAUTHORIZED as ST_401,
-        HTTP_403_FORBIDDEN as ST_403,
-        HTTP_409_CONFLICT as ST_409
+    HTTP_201_CREATED as ST_201,
+    HTTP_204_NO_CONTENT as ST_204,
+    HTTP_400_BAD_REQUEST as ST_400,
+    HTTP_401_UNAUTHORIZED as ST_401,
+    HTTP_403_FORBIDDEN as ST_403,
+    HTTP_409_CONFLICT as ST_409
 )
 
-#from base.perms import UserIsStaff
-#from rest_framework.permissions import AllowAny
+# from base.perms import UserIsStaff
+# from rest_framework.permissions import AllowAny
 from .models import Census
 from django.http import Http404
 
@@ -21,21 +22,23 @@ from base import mods
 
 
 class CensusCreate(generics.ListCreateAPIView):
-    #permission_classes = (AllowAny,)
+    # permission_classes = (AllowAny,)
 
     def create(self, request, *args, **kwargs):
-        #if not request.user.is_authenticated:
+        # if not request.user.is_authenticated:
         #    return Response('Unauthorized', status=ST_401)
-        #if not request.user.is_staff:
+        # if not request.user.is_staff:
         #    return Response('Forbidden', status=ST_403)
         voting_id = request.data.get('voting_id')
         voters = request.data.get('voters')
         try:
             for voter in voters:
-                census = Census(voting_id=voting_id, voter_id=voter)
+                census = Census.create(voting_id=voting_id, voter_id=voter)
                 census.save()
         except IntegrityError:
             return Response('Error try to create census', status=ST_409)
+        except ValidationError as e:
+            return Response(str(e), status=400)
         return Response('Census created', status=ST_201)
 
     def list(self, request, *args, **kwargs):
