@@ -2,21 +2,27 @@
 {% load i18n static %}
 
 {% block content %}
-    <h1>{{ voting.id }} - {{ voting.name }}</h1>
-
-    {% if not voting.id %}
-        <h2>{% trans 'This voting does not exist. Please, verify the voting number is correct.' %}</h2>
-    {% if not voting.start_date %}
-        <h2>{% trans 'Voting not started' %}</h2>
-    {% elif not voting.end_date %}
-        <h2>{% trans 'Voting is opened' %}</h2>
+    {% if url_not_found != 'true' %}
+        <h1>{{ voting.id }} - {{ voting.name }}</h1>
+        
+        {% if not voting.start_date %}
+            <h2>{% trans 'Voting not started' %}</h2>
+        {% elif not voting.end_date %}
+            <h2>{% trans 'Voting is opened' %}</h2>
+        {% else %}
+            <h2>{% trans 'Results: ' %}</h2>
+            <ul>
+                {% for option in voting.postproc %}
+                    <li>{{option.option}}: {{option.postproc}} <span>({{option.votes}})</span></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
     {% else %}
-        <h2>{% trans 'Results: ' %}</h2>
-        <ul>
-            {% for option in voting.postproc %}
-                <li>{{option.option}}: {{option.postproc}} <span>({{option.votes}})</span></li>
-            {% endfor %}
-        </ul>
+        <h1>{% trans 'Sorry!' %}</h1>
+
+        <h2>{% trans 'This resource is not available' %}</h2>
+
+        <h2>{% trans 'Please check that the resource identifier is correct' %}</h2>
     {% endif %}
 
 {% endblock %}
