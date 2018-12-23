@@ -5,6 +5,7 @@ import { ConfigService } from './../config/configService';
 import { BrowserModule } from '@angular/platform-browser';
 import { ErrorHandler, NgModule } from '@angular/core';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
+import { CookieService } from 'ngx-cookie-service';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
@@ -45,6 +46,7 @@ import { RestService } from './services/restService';
     ConfigService,
     StatusBar,
     SplashScreen,
+    CookieService,
     { provide: ErrorHandler, useClass: IonicErrorHandler }
   ]
 })

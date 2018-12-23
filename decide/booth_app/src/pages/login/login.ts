@@ -1,6 +1,8 @@
-import { NavController, NavParams } from 'ionic-angular';
-import { Component } from '@angular/core';
+import { CookieService } from 'ngx-cookie-service';
+import { NavController, NavParams, LoadingController, Loading } from 'ionic-angular';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { DataManagement } from '../../app/services/dataManagemen'
+import { HomePage } from '../home/home';
 import { PullListPage } from '../pullList/pullList';
 
 @Component({
@@ -10,9 +12,12 @@ import { PullListPage } from '../pullList/pullList';
 
 export class LoginPage {
 
-    username: string;
-    password: string;
+    username: string = "user0";
+    password: string = "practica";
     password2: string;
+    @Output()
+    logged: EventEmitter<boolean> = new EventEmitter<boolean>();
+    loading: Loading;
 
     status: string = 'login';
 
@@ -21,9 +26,13 @@ export class LoginPage {
     constructor(
         public navCtrl: NavController,
         public navParams: NavParams,
-        public dm: DataManagement
+        public dm: DataManagement,
+        public loadingCtrl: LoadingController,
+        private cookieService: CookieService,
     ) {
-
+        this.loading = this.loadingCtrl.create({
+            content: 'Logging in, please wait...',
+        });
     }
 
     public changeStatus(status: string) {
@@ -38,14 +47,14 @@ export class LoginPage {
     }
 
     public login() {
+        this.loading.present();
         this.dm.login(this.username, this.password).then((data) => {
-            this.navCtrl.setRoot(PullListPage).then((data) => {
-                console.log(data);
-            }).catch((error) => {
-                console.log(error);
-            })
+            this.cookieService.set('decide', data.key, this.getTimeToExpire());
+            this.logged.emit(false);
+            this.loading.dismiss();
         }).catch((error) => {
             this.error = error;
+            this.loading.dismiss();
         });
     }
 
@@ -55,6 +64,12 @@ export class LoginPage {
         }).catch((error) => {
             console.log("Ha habido un error en el registro");
         });
+    }
+
+    private getTimeToExpire(): Date {
+        let now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 2);
+        //return new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds() + 10);
     }
 
 }
