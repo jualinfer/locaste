@@ -73,6 +73,11 @@ class Voting(models.Model):
         # anon votes
         return [[i['a'], i['b']] for i in votes]
 
+    def get_voters(self, token=''):
+        # getting the len of the census of the current voting
+        census = mods.get('census', params={'voting_id': self.id}, HTTP_AUTHORIZATION='Token ' + token)
+        return len(census['voters'])
+
     def tally_votes(self, token=''):
         '''
         The tally is a shuffle and then a decrypt
@@ -101,13 +106,13 @@ class Voting(models.Model):
         if response.status_code != 200:
             # TODO: manage error
             pass
-
         self.tally = response.json()
         self.save()
+        census = self.get_voters(token)
 
-        return self.do_postproc()
+        return self.do_postproc(census)
 
-    def do_postproc(self):
+    def do_postproc(self, census):
         tally = self.tally
         options = self.question.options.all()
 
@@ -123,14 +128,13 @@ class Voting(models.Model):
                 'votes': votes
             })
 
-        data = {'type': 'IDENTITY', 'options': opts}
+        data = {'type': 'IDENTITY', 'options': opts, 'census': census}
         directory = "voting/tallies/"
         if not os.path.exists(directory):
             os.makedirs(directory)
         file_name = 'tally_voting'+str(self.id)
         with open(directory+file_name+'.json', 'w') as outfile:
             json.dump(data, outfile)
-            print("JSON tally dumped")
 
         postp = mods.post('postproc', json=data)
 
