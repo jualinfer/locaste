@@ -55,7 +55,7 @@ export class RestService extends AbstractService {
     }
 
     public getPollsUserLogged(): Promise<any> {
-        return this.makeGetRequest(this.path + '', null).then((res) => {
+        return this.makeGetRequest(this.path + 'voting/', null).then((res) => {
             return Promise.resolve(res);
         }).catch((error) => {
             console.log("Error " + error);
