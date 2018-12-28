@@ -22,8 +22,8 @@ def votingForm(request):
     global voting_form
     global auth_form
     global auth_forms
-    print(request.POST)
-    print(voting_form)
+    global question_forms
+    global question_option_forms
     if request.method == 'POST' and ('start_date' in request.POST.keys()):
         voting_form = VotingForm(request.POST)
         if voting_form.is_valid():
@@ -31,8 +31,6 @@ def votingForm(request):
             return render(request, 'voting/form.html', {'form': auth_form, 'is_auth': True})
 
     elif request.method == 'POST' and voting_form is not None and voting_form.is_valid() and ('url' in request.POST.keys()):
-        print(request.POST)
-
         for i in range(len(request.POST.getlist('name'))):
 
             name = request.POST.getlist('name')[i]
@@ -46,13 +44,10 @@ def votingForm(request):
             question_option_form = QuestionOptionForm()
             return render(request, 'voting/questionForm.html', {'question_form': question_form, 'question_option_form': question_option_form, 'voting_url': 'http://127.0.0.1:8000/voting/create/'}, )
         else:
-            print(auth_form.errors)
-
             return render(request, 'voting/form.html', {'form': auth_form, 'is_auth': True})
 
     elif request.method == 'POST' and voting_form is not None and voting_form.is_valid()  and auth_form is not None and auth_form.is_valid() and ('descs[]' in request.POST.keys()):
 
-        print(request.POST)
         index = 0
         for i, j in request.POST.items():
             if "desc" in i:
@@ -72,18 +67,39 @@ def votingForm(request):
                     break
             if valid:
                 for question in question_forms:
-                    saved_questions.append(question.save())
+                    model_question = Question(desc=question["desc"].value())
+                    model_question.save()
+                    saved_questions.append(model_question)
                 for i, question_options in enumerate(question_option_forms):
                     for j, question_option in enumerate(question_options):
-                        question_option = QuestionOption(option=question_option["option"],question=saved_questions[i], number=j)
+                        question_option = QuestionOption(option=question_option["option"].value(),question=saved_questions[i], number=j)
                         question_option.save()
                 for auth in auth_forms:
-                    saved_auths.append(auth.save())
-                voting = Voting(name=voting_form["name"], desc=voting_form["desc"], question=saved_questions,
-                                gender=voting_form["gender"], max_age=voting_form["max_age"], min_age=voting_form["min_age"],
-                                auths=saved_auths, custom_url=voting_form["custom_url"],
-                                public_voting=voting_form["public_voting"])
+                    model_auth = Auth(name=auth["name"].value(), url=auth["url"].value())
+                    model_auth.save()
+                    saved_auths.append(model_auth)
+
+                voting = Voting(name=voting_form["name"].value(), desc=voting_form["desc"].value())
+                if voting_form["gender"].value() != '':
+                    voting.gender = voting_form["gender"].value()
+                if voting_form["max_age"].value() != '':
+                    voting.max_age = voting_form["max_age"].value()
+                if voting_form["min_age"].value() != '':
+                    voting.min_age = voting_form["min_age"].value()
+                if voting_form["custom_url"].value() != '':
+                    voting.custom_url = voting_form["custom_url"].value()
+                if voting_form["public_voting"].value() != '':
+                    voting.public_voting = voting_form["public_voting"].value()
                 voting.save()
+                voting.question.set(saved_questions)
+                voting.auths.set(saved_auths)
+                voting.save()
+
+                voting_form = None
+                question_forms = []
+                auth_form = None
+                auth_forms = []
+                question_option_forms = []
                 print('voting saved')
         else:
             question_form = QuestionForm()
