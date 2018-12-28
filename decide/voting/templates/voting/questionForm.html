@@ -1,0 +1,69 @@
+<script src="https://code.jquery.com/jquery-3.3.1.js"
+			  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+			  crossorigin="anonymous"></script>
+<form id="question_form">
+    {% csrf_token %}
+    <div id="content">
+        <div id="question">
+            {{ question_form }}
+            <br/>
+            <button type="button" onclick="add_answer(event);">Add answer</button>
+            <br/>
+            <div id="answer">
+                {{ question_option_form }}
+            </div>
+
+        </div>
+    </div>
+    <button type="button" onclick="add_question();">add question</button>
+    <select id="question_type" name="question_type">
+        {% for type in types %}
+            <option>{{ type }}</option>
+        {% endfor %}
+    </select>
+
+    <input type="button" value="Enviar preguntas" onclick="submit_questions();"/>
+</form>
+
+
+<script>
+    function add_question() {
+        var question_formulary = $('#question').clone().first();
+        var empty_input = question_formulary;
+        empty_input.find('textarea').val('');
+        empty_input.find('div').first().find('textarea').val('');
+        var len = empty_input.find('#answer').length
+        for(var i=1; i<len; i++){
+            empty_input.find('#answer')[0].remove()
+        }
+        $('#content').append(empty_input);
+
+    }
+     function add_answer(event) {
+        //alert(event.target);
+        var question_formulary = $('#question_form').clone();
+        var empty_input = question_formulary.find('div').first().find('div').first().find('div').first();
+
+        empty_input.find('textarea').val('');
+        //$('#question_form').find('div').first().append(empty_input);
+         $(event.target).parent().append(empty_input);
+
+    }
+
+    function submit_questions(){
+        var descs = [];
+        var answers = [];
+        var question_formulary = $('#content').children('#question');
+
+        for (var i=0; i<question_formulary.length; i++){
+            answers[i] = [];
+            descs[i] = $(question_formulary[i]).find('#id_desc').val();
+             for(var j=0; j< $(question_formulary[i]).find('div').length; j++){
+                answers[i][j] = $($(question_formulary[i]).find('div')[j]).find('textarea').val();
+             }
+        }
+        alert(descs);
+        alert(answers);
+        $.post("{{ voting_url }}", {'descs': descs, "answers": answers, 'csrfmiddlewaretoken':$('#question_form').find('input').first().val()});
+    }
+</script>
