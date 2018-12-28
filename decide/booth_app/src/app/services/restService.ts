@@ -39,11 +39,14 @@ export class RestService extends AbstractService {
         })
     }
 
-    public signUp(username: string, password: string): Promise<any> {
+    public signUp(username: string, password: string, birthday: Date, gender: string): Promise<any> {
         let fd = new FormData();
         fd.append('username', username);
         fd.append('password1', password);
         fd.append('password2', password);
+        fd.append('birthday', birthday.toString());
+        fd.append('gender', gender);
+
 
         return this.makePostRequest(this.path + 'authentication/signup/', fd).then((res) => {
             console.log("Se ha registrado correctamente");

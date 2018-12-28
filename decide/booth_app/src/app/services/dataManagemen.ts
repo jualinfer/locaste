@@ -30,10 +30,10 @@ export class DataManagement {
         })
     }
 
-    public signUp(username: string, password1: string, password2: string): Promise<any> {
+    public signUp(username: string, password1: string, password2: string, birthdate: Date, gender: string): Promise<any> {
         return new Promise((resolve, reject) => {
             if (password1 === password2) {
-                return this.restService.signUp(username, password1).then((data) => {
+                return this.restService.signUp(username, password1, birthdate, gender).then((data) => {
                     resolve(data);
                 }).catch((error) => {
                     reject(error);
@@ -52,5 +52,5 @@ export class DataManagement {
             return Promise.reject(error);
         })
     }
-    
+
 }

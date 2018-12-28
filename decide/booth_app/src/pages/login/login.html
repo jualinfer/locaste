@@ -17,7 +17,13 @@
                             <ion-input [(ngModel)]="password" type="password"></ion-input>
                         </ion-item>
                     </ion-list>
+<<<<<<< Updated upstream
                     <button class="botton" ion-button block (click)="login()">Send</button>
+=======
+                    <button class="botton" ion-button block (click)="login()">
+                        Send
+                    </button>
+>>>>>>> Stashed changes
                     <button class="botton" ion-button block (click)="changeStatus('signUp')">Sign Up</button>
                 </div>
                 <div *ngIf="error !=null" class="error">
@@ -43,6 +49,26 @@
                             <ion-label stacked>Repeat your password:</ion-label>
                             <ion-input [(ngModel)]="password2" type="password"></ion-input>
                         </ion-item>
+                        <ion-item>
+                            <ion-label floating>Birthdate</ion-label>
+                            <ion-datetime displayFormat="DD/MM/YYYY" [(ngModel)]="birthdate"></ion-datetime>
+                        </ion-item>
+
+                        <ion-list radio-group [(ngModel)]="Gender">
+                            <ion-label floating>Gender</ion-label>
+                            <ion-item>
+                                <ion-label>Male</ion-label>
+                                <ion-radio value="male" checked></ion-radio>
+                            </ion-item>
+                            <ion-item>
+                                <ion-label>Female</ion-label>
+                                <ion-radio value="female"></ion-radio>
+                            </ion-item>
+                            <ion-item>
+                                <ion-label>Other</ion-label>
+                                <ion-radio value="other"></ion-radio>
+                            </ion-item>
+                        </ion-list>
                     </ion-list>
                     <button class="botton" ion-button block (click)="signUp()">Send</button>
                     <button class="botton" ion-button block (click)="changeStatus('login')">Log in</button>

@@ -13,6 +13,14 @@ export class LoginPage {
     username: string;
     password: string;
     password2: string;
+<<<<<<< Updated upstream
+=======
+    birthdate: Date;
+    gender: string;
+    @Output()
+    logged: EventEmitter<boolean> = new EventEmitter<boolean>();
+    loading: Loading;
+>>>>>>> Stashed changes
 
     status: string = 'login';
 
@@ -50,7 +58,7 @@ export class LoginPage {
     }
 
     public signUp() {
-        this.dm.signUp(this.username, this.password, this.password2).then((data) => {
+        this.dm.signUp(this.username, this.password, this.password2, this.birthdate, this.gender).then((data) => {
             console.log("Registrado correctamente");
         }).catch((error) => {
             console.log("Ha habido un error en el registro");
