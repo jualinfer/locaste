@@ -35,9 +35,11 @@ class VotingTestCase(BaseTestCase):
         q = Question(desc='test question')
         q.save()
         for i in range(5):
-            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt = QuestionOption(question=q, option='option {}'.format(i + 1))
             opt.save()
-        v = Voting(name='test voting', question=q)
+        v = Voting(name='test voting')
+        v.save()
+        v.question.set([q])
         v.save()
 
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
@@ -67,20 +69,21 @@ class VotingTestCase(BaseTestCase):
         voter = voters.pop()
 
         clear = {}
-        for opt in v.question.options.all():
-            clear[opt.number] = 0
-            for i in range(random.randint(0, 5)):
-                a, b = self.encrypt_msg(opt.number, v)
-                data = {
-                    'voting': v.id,
-                    'voter': voter.voter_id,
-                    'vote': { 'a': a, 'b': b },
-                }
-                clear[opt.number] += 1
-                user = self.get_or_create_user(voter.voter_id)
-                self.login(user=user.username)
-                voter = voters.pop()
-                mods.post('store', json=data)
+        for q in v.question.all():
+            for opt in q.options.all():
+                clear[opt.number] = 0
+                for i in range(random.randint(0, 5)):
+                    a, b = self.encrypt_msg(opt.number, v)
+                    data = {
+                        'voting': v.id,
+                        'voter': voter.voter_id,
+                        'vote': {'a': a, 'b': b},
+                    }
+                    clear[opt.number] += 1
+                    user = self.get_or_create_user(voter.voter_id)
+                    self.login(user=user.username)
+                    voter = voters.pop()
+                    mods.post('store', json=data)
         return clear
 
     def test_complete_voting(self):
@@ -99,12 +102,12 @@ class VotingTestCase(BaseTestCase):
         tally = v.tally
         tally.sort()
         tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
+        for q in v.question.all():
+            for o in q.options.all():
+                self.assertEqual(tally.get(o.number, 0), clear.get(o.number, 0))
 
-        for q in v.question.options.all():
-            self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
-
-        for q in v.postproc:
-            self.assertEqual(tally.get(q["number"], 0), q["votes"])
+        for o in v.postproc:
+            self.assertEqual(tally.get(o["number"], 0), o["votes"])
 
     def test_create_voting_from_api(self):
         data = {'name': 'Example'}
@@ -135,8 +138,8 @@ class VotingTestCase(BaseTestCase):
         voting = self.create_voting()
 
         data = {'action': 'start'}
-        #response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
-        #self.assertEqual(response.status_code, 401)
+        # response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
+        # self.assertEqual(response.status_code, 401)
 
         # login with user no admin
         self.login(user='noadmin')
