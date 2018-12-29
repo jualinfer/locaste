@@ -31,14 +31,20 @@
         <input type="radio" id ="gender_female" name="gender" value="Female"> Female<br>
         <input type="radio" id ="gender_other" name="gender" value="Other"> Other<br>
         <br />
+				<label for="reCaptcha">{% trans "Captcha" %}</label>
+				<script src='https://www.google.com/recaptcha/api.js'></script>
+				<div class="g-recaptcha" data-sitekey="6Lc6h4UUAAAAAKV3jjkEn0W3I_o_wprhVOUzXI9p"></div>
+				<br />
         <input type="submit" value="{% trans " Sign up" %}" onClick="signUp()" />
+
     </div>
+
   {% endif %}
 {% endblock %}
 
 {% block extrabody %}
 	 <script>
-     
+
 
         var token = null;
         var user = null;
@@ -67,7 +73,7 @@
           });
         }
 
-       
+
 
         function decideUser() {
             var data = { token: token };
@@ -79,7 +85,7 @@
               });
         }
 
-        
+
 
         function signUp() {
             var data = {
@@ -102,7 +108,7 @@
               });
         }
 
-   
+
 
         function init() {
 
@@ -120,4 +126,3 @@
     </script>
 </body>
 {% endblock %}
-

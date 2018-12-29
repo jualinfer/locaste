@@ -10,3 +10,4 @@ django-rest-swagger==2.2.0
 #Auth requirements
 django-rest-auth==0.9.3
 django-allauth==0.38.0
+django-recaptcha==1.2.1
