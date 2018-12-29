@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, render
 from rest_framework import generics, status
 from rest_framework.response import Response
+from django.views import generic
 
 from .models import Question, QuestionOption, Voting
 from .serializers import VotingSerializer
@@ -209,6 +210,18 @@ class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
             msg = 'Action not found, try with start, stop or tally'
             st = status.HTTP_400_BAD_REQUEST
         return Response(msg, status=st)
+
+
+class VotingList(generic.ListView):
+    template_name = 'voting/votingList.html'
+    context_object_name = 'voting_list'
+
+    def get_queryset(self):
+        """
+        Return the list of users of the system.
+        """
+        return Voting.objects.all()
+
 
 def valid_objects(objects):
     valid = True
