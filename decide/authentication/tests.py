@@ -5,6 +5,9 @@ from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
+import urllib
+from random import sample
+
 from base import mods
 
 
@@ -93,9 +96,13 @@ class AuthTestCase(APITestCase):
     def test_signup_duplicated_username(self):
         data = {'username': 'newvoter', 'password1': '1234abcd', 'password2': '1234abcd','gender':'Male','birthdate':'2018-12-08T02:03'}
         response = self.client.post('/authentication/signup/', data, format='json')
-        
+
         data2 = {'username': 'newvoter', 'password1': '1234abcd', 'password2': '1234abcd','gender':'Male','birthdate':'2018-12-08T02:03'}
         response2 = self.client.post('/authentication/signup/', data, format='json')
-        
+
         self.assertEqual(response2.status_code, 400)
         self.assertEqual(User.objects.filter(username='voter1').count(), 1)
+
+    def test_request_google_correct(self):
+        request = urllib.request.urlopen('https://accounts.google.com/signin/oauth/oauthchooseaccount?client_id=479028502719-ums97b8c1dmn9hmdugmuibcrbma4eq9i.apps.googleusercontent.com&as=TpLMUFh-0ltXx3GkVrDr4g&destination=http%3A%2F%2Flocalhost%3A8000&approval_state=!ChRtblVrV010VXBNUW1fdExLWDZyYhIfMDVTRWJFUDFPU3NSMEVBN1JaNXdOM09kLXJ2b2Z4WQ%E2%88%99APNbktkAAAAAXCnn9kXUYpEVfktV84uqPHmUQ-y16QsT&oauthgdpr=1&xsrfsig=AHgIfE9v5HryxFZmiqcR-oPZ2lhKs65LxA&flowName=GeneralOAuthFlow', data=None, cafile=None, capath=None, cadefault=False, context=None)
+        self.assertEqual(request.getcode(), 200)

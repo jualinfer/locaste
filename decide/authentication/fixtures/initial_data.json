@@ -37,5 +37,23 @@
       "site_id": 1
     }
   }
+  {
+      "model": "socialaccount.socialapp",
+      "pk": 300,
+      "fields": {
+        "provider": "google",
+        "name": "Google App",
+        "client_id": "479028502719-ums97b8c1dmn9hmdugmuibcrbma4eq9i.apps.googleusercontent.com",
+        "secret": "nVRxIFx56EMbWJGsatqVIyhv"
+      }
+    },
 
+    {
+      "model": "socialaccount.socialapp_sites",
+      "pk": 300,
+      "fields": {
+        "socialapp_id": 300,
+        "site_id": 1
+      }
+    }
 ]
