@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
-import urllib.request
+import urllib.request, urllib.error
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
@@ -101,5 +101,8 @@ class AuthTestCase(APITestCase):
         self.assertEqual(User.objects.filter(username='voter1').count(), 1)
 
     def test_request_twitter_correct(self):
-        request = urllib.request.urlopen('https://api.twitter.com/oauth/authenticate?oauth_token=MzB-uQAAAAAA9D6TAAABaACTjOg&oauth_callback=http%3A%2F%2Flocalhost%3A8000%2Faccounts%2Ftwitter%2Flogin%2Fcallback%2F')
-        self.assertEqual(request.getcode(),200)
+        try:
+            request = urllib.request.urlopen('https://api.twitter.com/oauth/authenticate')
+        except urllib.error.HTTPError as err:
+            self.assertEqual(err.code,403) #Since no token is provided
+        
