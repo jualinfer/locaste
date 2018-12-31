@@ -106,3 +106,8 @@ class AuthTestCase(APITestCase):
         except urllib.error.HTTPError as err:
             self.assertEqual(err.code,403) #Since no token is provided
         
+    def test_request_facebook_correct(self):
+        try:
+            request = urllib.request.urlopen('https://www.facebook.com/v3.2/dialog/oauth?app_id=2046681465554360&redirect_uri=https://locaste-decide.herokuapp.com')
+        except urllib.error.HTTPError as err:
+            self.assertEqual(err.code,403) #Since no token is provided
