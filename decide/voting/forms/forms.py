@@ -26,14 +26,13 @@ class AuthForm(ModelForm):
 
     class Meta:
         model = Auth
-        fields = ['name', 'url']
-
+        fields = ['name', 'url', 'me']
 
 
 class VotingForm(ModelForm):
     class Meta:
         model = Voting
-        fields = ['name', 'desc', 'start_date', 'end_date', 'gender', 'min_age', 'max_age', 'custom_url', 'public_voting']
+        fields = ['name', 'desc', 'gender', 'min_age', 'max_age', 'custom_url', 'public_voting']
         widgets = {
             'start_date': DateInput(attrs={'type': 'date'}),
             'end_date': DateInput(attrs={'type': 'date'}),

@@ -6,15 +6,21 @@
     <div id="content">
         <div id="fields">
             {% for field in form %}
+                {% if field.name in "me" %}
+                    <input id="defaultMe" type="hidden" name="{{ field.name }}" value="off" />
+                {% endif %}
                 {{ field.label }}
                 {{ field }}
                 <br/>
             {% endfor %}
+            {% if is_auth %}
+                <button type="button" onclick="remove_element(event);">X</button>
+            {% endif %}
         <br/>
         </div>
     </div>
     {% if is_auth %}
-        <button type="button" onclick="add_auth();">add auth</button>
+        <button type="button" onclick="add_auth();">Add auth</button>
     {% endif %}
     <input type="submit" value="Crear"/>
 </form>
@@ -23,13 +29,17 @@
         var question_formulary = $('#fields').clone().first();
         var empty_input = question_formulary.find('input');
         for (var i = 0; i < empty_input.length; i++) {
-            if ($(empty_input[i]).attr("type")=='checkbox'){
+            if ($(empty_input[i]).attr("type") == 'checkbox') {
                 $(empty_input[i]).prop("checked", false);
-            }else {
+            } else if ($(empty_input[i]).attr("type") != 'hidden'){
                 $(empty_input[i]).val("")
             }
         }
 
         $('#content').append(question_formulary);
+    }
+
+    function remove_element(event) {
+         $(event.target).parent().remove();
     }
 </script>
