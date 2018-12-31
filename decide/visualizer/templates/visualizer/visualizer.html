@@ -1,20 +1,362 @@
 {% extends "base.html" %}
 {% load i18n static %}
-
 {% block content %}
-    <h1>{{ voting.id }} - {{ voting.name }}</h1>
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+   
+    <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="HandheldFriendly" content="true"> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  
+{% if not voting.start_date %}
+       
+        <h2 style="text-align:center;">{% trans 'Voting not started' %}</h2>
+        
+{% elif not voting.end_date %}
+   
+            
 
-    {% if not voting.start_date %}
-        <h2>{% trans 'Voting not started' %}</h2>
-    {% elif not voting.end_date %}
+    <body onload="myFunction()">
+        
+             <li style="margin-left: 20px;"> Question:{{voting.question.desc}}</li>
+             <li style="margin-left: 20px;"> Description:{{voting.desc}}</li>
+             <li style="margin-left: 20px;">{% trans 'Start date' %}:{{voting.start_date|slice:"0:10"}},{{voting.start_date|slice:"11:19"}}</li>
+
+<div id="loader"></div>
+
+    <div style="display:none;" id="myDiv" class="animate-bottom">
+
         <h2>{% trans 'Voting is opened' %}</h2>
-    {% else %}
-        <h2>{% trans 'Results: ' %}</h2>
-        <ul>
+
+    </div>
+</body>
+
+<script>
+
+function myFunction() {
+  myVar = setTimeout(showPage, 3000);
+}
+
+function showPage() {
+  document.getElementById("loader").style.display = "none";
+  document.getElementById("myDiv").style.display = "block";
+}
+</script>
+    
+      
+
+    
+{% else %}
+        <h2 style="text-align:center;">{% trans 'Results: ' %}</h2>
+  
+          <ul>
             {% for option in voting.postproc %}
+               
                 <li>{{option.option}}: {{option.postproc}} <span>({{option.votes}})</span></li>
+                
             {% endfor %}
         </ul>
-    {% endif %}
+         <ul>
+             <li>Congratulations! {{user.username}}</li>
+             <li> Question:{{voting.question.desc}}</li>
+             <li> Description:{{voting.desc}}</li>
+             <li>{% trans 'Start date' %}:{{voting.start_date|slice:"0:10"}},{{voting.start_date|slice:"11:19"}}</li>
+             <li>{% trans 'End date' %}:{{voting.end_date|slice:"0:10"}},{{voting.end_date|slice:"11:19"}}</li>
+                
+        </ul>
+    
+  </head>
 
-{% endblock %}
+    <body>
+       
+    <div style="text-align:center;">
+      
+       <h3><strong><u>{{ voting.name }}</u></strong> </h3>
+       
+    </div>
+    
+    <div style="text-align:center;" >
+       
+        <button id="ocultar" onclick="grafica()" type="button" class="btn secundary">Stats</button>
+        
+    </div>
+    
+  <div class="container"  >
+   
+   
+        <canvas id="myGrafica"></canvas>
+    
+    
+  </div>
+
+  
+
+  <script class="scriptBar">
+      
+         
+
+     function getRandomColor() {
+    var letters = '789ABCD'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.round(Math.random() * 6)];
+    }
+    return color;
+}
+     
+          
+      function pushColor(){
+       var colors = [];
+    {% for option in voting.postproc %}
+    colors.push(getRandomColor());
+    {% endfor %}
+    return colors;
+    }
+     function questions(){
+         var question=[];
+         {% for option in voting.postproc %}
+         {% if forloop.first %}   
+          question.push("{{option.option}}")
+         {% else %}
+               ,
+          question.push("{{option.option}}")
+         {% endif %}
+         {% endfor %}
+        
+        return question
+     }
+    function data(){
+        var data=[];
+        {% for option in voting.postproc %}
+        {% if forloop.first %}
+        data.push({{option.votes}})
+         {% else %},
+        data.push({{option.votes}})
+          {% endif %}
+          {% endfor %}
+          return data;
+        
+        
+    }
+          function votos(){
+    var myNumbers ={{voting.tally}};
+    var total = 0;
+    var str;
+    for(i=0; i<myNumbers.length; i++){
+        total += myNumbers[i];
+    }
+    str=total.toString();
+    str+=" votes"
+    return  str;
+}
+          
+          function grafica(){
+                   
+    let myGrafica = document.getElementById('myGrafica').getContext('2d');
+
+    // Global Options
+    Chart.defaults.global.defaultFontFamily = 'Lato';
+    Chart.defaults.global.defaultFontSize = 18;
+    Chart.defaults.global.defaultFontColor = '#777';
+
+    let massPopChart = new Chart(myGrafica, { 
+  
+        
+      type:'bar', // bar, horizontalBar, pie, line, doughnut, radar, polarArea
+      data:{
+        labels:questions(),
+        datasets:[{
+          label: votos(),
+          data:data()
+          ,
+          
+
+          backgroundColor:pushColor(),
+          borderWidth:1,
+          borderColor:'#777',
+          hoverBorderWidth:3,
+          hoverBorderColor:'#000'
+        }]
+      },
+      options:{
+              scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        }
+                    }]
+                },
+          
+          maintainAspectRatio:true,
+          responsive:true,
+      
+        legend:{
+          display:true,
+          position:'right',
+          labels:{
+            fontColor:'#000'
+          }
+        },
+        layout:{
+          padding:{
+            left:50,
+            right:0,
+            bottom:0,
+            top:0
+          }
+        },
+        tooltips:{
+          enabled:true
+        }
+      }
+        
+    });
+              
+              
+          }
+           
+
+  </script>
+
+
+</body>
+<!-- Footer -->
+<footer >
+
+    <!-- Copyright -->
+    <div style="text-align:center;">© 2018
+      <a href="https://github.com/EGC-Decide/locaste"> Decide</a>
+    </div>
+    <!-- Copyright -->
+
+  </footer>
+  <!-- Footer -->
+</html>
+   
+
+    {% endif %} 
+    
+    
+    <style> /* Voting ended*/
+
+
+  body {
+      font: 400 15px/1.8 Lato, sans-serif;
+      color: #777;
+  }
+
+
+  .container {
+
+    width: 100%;
+    min-height: 100%;
+    max-height: 100%;
+    
+    top: 0;
+    left: 0;
+    margin: 0 auto;
+
+      
+  }
+
+
+
+  @media (max-width: 600px) {
+    .carousel-caption {
+      display: none; /* Hide the carousel text when the screen is less than 600 pixels wide */
+    }
+  }
+  .bg-1 {
+      background: #2d2d30;
+      color: #bdbdbd;
+  }
+  
+
+  .btn {
+      padding: 10px 20px;
+      background-color: #333;
+      color: #f1f1f1;
+      border-radius: 13;
+      transition: .2s;
+  }
+  .btn:hover, .btn:focus {
+      border: 1px solid #333;
+      background-color: #fff;
+      color: #000;
+  }
+      footer {
+    background-color: #111111;
+    color: #eeeeee;
+    border-top: 2px solid grey;
+        
+    height: 60px;  /* footer height */
+    padding-top: 20px;
+    display: block;
+    margin-top: 20px; /* space between content and footer */
+    box-sizing: border-box;
+    position: relative;
+    width: 100%;
+}
+
+ 
+  </style>
+    <style> /*Voting opened*/
+    
+#loader {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: 150px;
+  height: 150px;
+  margin: -75px 0 0 -75px;
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Add animation to "page content" */
+.animate-bottom {
+  position: relative;
+  -webkit-animation-name: animatebottom;
+  -webkit-animation-duration: 1s;
+  animation-name: animatebottom;
+  animation-duration: 1s
+}
+
+@-webkit-keyframes animatebottom {
+  from { bottom:-100px; opacity:0 } 
+  to { bottom:0px; opacity:1 }
+}
+
+@keyframes animatebottom { 
+  from{ bottom:-100px; opacity:0 } 
+  to{ bottom:0; opacity:1 }
+}
+
+#myDiv {
+  display: none;
+  text-align: center;
+}
+    
+    
+    </style>
+
+    
+ {% endblock %}  
