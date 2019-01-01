@@ -14,3 +14,7 @@ django-allauth==0.38.0
 #Heroku requirements
 django-heroku
 gunicorn
+
+#Visualization Telegram bot requirements
+python-telegram-bot
+python-dotenv
