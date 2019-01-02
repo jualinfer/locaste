@@ -25,7 +25,8 @@ def votingForm(request):
     global auth_forms
     global question_forms
     global question_option_forms
-    if request.method == 'POST' and ('start_date' in request.POST.keys()):
+
+    if request.method == 'POST' and ('gender' in request.POST.keys()):
         voting_form = VotingForm(request.POST)
         if voting_form.is_valid():
             auth_form = AuthForm()
@@ -36,7 +37,7 @@ def votingForm(request):
 
             name = request.POST.getlist('name')[i]
             url = request.POST.getlist('url')[i]
-            # me = request.POST["me"][i]
+            #  me = request.POST.getlist("me")[i]
             auth_form = AuthForm({"name": name, "url": url})
             auth_forms.append(auth_form)
 
