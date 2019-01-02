@@ -20,10 +20,12 @@
         <input type="text" id="voter_id" name="voter_id" value=""/>
         {%trans "(You can put multiples IDs, separating them by commas)" %}
         <br/><br/>
-        <input type="file" id="fileUpload" />
-        <input type="button" id="upload" value="Add Excel to census" onclick="Upload()"/><br><br>
+
         <input type="submit" value="{% trans "Add to census" %}" onClick="addToCensus()"/>
-        <input type="submit" value="{% trans "Remove from census" %}" onClick="removeFromCensus()"/>
+        <input type="submit" value="{% trans "Remove from census" %}" onClick="removeFromCensus()"/><br><br>
+
+        <input type="file" id="fileUpload" />
+        <input type="button" id="upload" value="Add Excel to census" onclick="Upload()"/>
     </div>
 
 <script>
@@ -135,6 +137,7 @@
             });
         }
         function Numeros(excelRows){
+            debugger;
             var out = [];
             var filtro = '1234567890';//Caracteres validos
             var valSplit = excelRows.split(",");
@@ -161,6 +164,7 @@
         }
 
         function AddExcelToCensus(excelRows){
+            debugger;
             var voters = Numeros(excelRows);
 			//var voters = array.split(",");
 			console.log(voters)
@@ -224,7 +228,7 @@
 
         //Read all rows from First Sheet into an JSON array.
         //var excelRows = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[firstSheet]);
-		var excelRows = XLSX.utils.sheet_to_csv(workbook.Sheets[firstSheet]);
+		var excelRows = XLSX.utils.sheet_to_csv(workbook.Sheets[firstSheet], {FS:",",RS:","});
 		console.log(excelRows);
 		console.log(excelRows.length);
 		if(excelRows.length != 0){
