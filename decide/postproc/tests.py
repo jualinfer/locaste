@@ -75,9 +75,9 @@ class PostProcTestCase(APITestCase):
         values = response.json()
         self.assertEqual(values, expected_result)
 
-    def test_majorrest(self):
+    def test_majorresthare(self):
         data = {
-            'type': 'MAJORREST',
+            'type': 'MAJORRESTHARE',
             'seats': 21,
             'census': 1000000,
             'options': [
@@ -98,6 +98,41 @@ class PostProcTestCase(APITestCase):
                 { 'option': 'Option 3', 'number': 3, 'votes': 184000, 'postproc': 4 },
                 { 'option': 'Option 4', 'number': 4, 'votes': 73000, 'postproc': 2 },
                 { 'option': 'Option 5', 'number': 5, 'votes': 27000, 'postproc': 1 },
+                { 'option': 'Option 6', 'number': 6, 'votes': 12000, 'postproc': 0 },
+                { 'option': 'Option 7', 'number': 7, 'votes': 2000, 'postproc': 0 },
+            ],
+            'participation': 100.00,
+        }
+
+        response = self.client.post('/postproc/', data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        values = response.json()
+        self.assertEqual(values, expected_result)
+
+    def test_majorrestdroop(self):
+        data = {
+            'type': 'MAJORRESTDROOP',
+            'seats': 21,
+            'census': 1000000,
+            'options': [
+                { 'option': 'Option 1', 'number': 1, 'votes': 391000 },
+                { 'option': 'Option 2', 'number': 2, 'votes': 311000 },
+                { 'option': 'Option 3', 'number': 3, 'votes': 184000 },
+                { 'option': 'Option 4', 'number': 4, 'votes': 73000 },
+                { 'option': 'Option 5', 'number': 5, 'votes': 27000 },
+                { 'option': 'Option 6', 'number': 6, 'votes': 12000 },
+                { 'option': 'Option 7', 'number': 7, 'votes': 2000 },
+            ]
+        }
+
+        expected_result = {
+            'results': [
+                { 'option': 'Option 1', 'number': 1, 'votes': 391000, 'postproc': 8 },
+                { 'option': 'Option 2', 'number': 2, 'votes': 311000, 'postproc': 7 },
+                { 'option': 'Option 3', 'number': 3, 'votes': 184000, 'postproc': 4 },
+                { 'option': 'Option 4', 'number': 4, 'votes': 73000, 'postproc': 2 },
+                { 'option': 'Option 5', 'number': 5, 'votes': 27000, 'postproc': 0 },
                 { 'option': 'Option 6', 'number': 6, 'votes': 12000, 'postproc': 0 },
                 { 'option': 'Option 7', 'number': 7, 'votes': 2000, 'postproc': 0 },
             ],
