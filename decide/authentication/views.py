@@ -19,7 +19,6 @@ class GetUserView(APIView):
         else:
             if request.user.is_authenticated:
                 user = request.user
-
         return Response(UserSerializer(user, many=False).data)
 
 
