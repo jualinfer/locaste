@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
-
+import urllib.request, urllib.error
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
@@ -99,3 +99,15 @@ class AuthTestCase(APITestCase):
         
         self.assertEqual(response2.status_code, 400)
         self.assertEqual(User.objects.filter(username='voter1').count(), 1)
+
+    def test_request_twitter_correct(self):
+        try:
+            request = urllib.request.urlopen('https://api.twitter.com/oauth/authenticate')
+        except urllib.error.HTTPError as err:
+            self.assertEqual(err.code,403) #Since no token is provided
+        
+    def test_request_facebook_correct(self):
+        try:
+            request = urllib.request.urlopen('https://www.facebook.com/v3.2/dialog/oauth?app_id=2046681465554360&redirect_uri=https://locaste-decide.herokuapp.com')
+        except urllib.error.HTTPError as err:
+            self.assertEqual(err.code,403) #Since no token is provided
