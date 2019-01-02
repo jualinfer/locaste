@@ -5,14 +5,17 @@ import { ConfigService } from './../config/configService';
 import { BrowserModule } from '@angular/platform-browser';
 import { ErrorHandler, NgModule } from '@angular/core';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
+import { CookieService } from 'ngx-cookie-service';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
+import { PullListPage } from '../pages/pullList/pullList';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { RestService } from './services/restService';
+
 
 @NgModule({
   declarations: [
@@ -20,6 +23,7 @@ import { RestService } from './services/restService';
     HomePage,
     ListPage,
     LoginPage,
+    PullListPage,
   ],
   imports: [
     HttpClientModule,
@@ -32,6 +36,7 @@ import { RestService } from './services/restService';
     HomePage,
     ListPage,
     LoginPage,
+    PullListPage,
   ],
   providers: [
     LoginPage,
@@ -41,6 +46,7 @@ import { RestService } from './services/restService';
     ConfigService,
     StatusBar,
     SplashScreen,
+    CookieService,
     { provide: ErrorHandler, useClass: IonicErrorHandler }
   ]
 })

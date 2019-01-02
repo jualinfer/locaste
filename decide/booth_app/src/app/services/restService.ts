@@ -18,7 +18,7 @@ export class RestService extends AbstractService {
 
     //Methods
     public logout(): Promise<any> {
-        return this.makeGetRequest(this.path + 'logout', null).then((res) => {
+        return this.makeGetRequest(this.path + 'authentication/logout/', null).then((res) => {
             return Promise.resolve(res);
         }).catch((error) => {
             return Promise.reject(error);
