@@ -1,6 +1,14 @@
+import django_filters.rest_framework
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.http import Http404
+from rest_framework import generics, status
+from rest_framework.response import Response
+
+from voting.models import Question, QuestionOption, Voting
+from voting.serializers import ViewSerializer
+from base.perms import UserIsStaff
+from base.models import Auth
 
 from base import mods
 
@@ -28,3 +36,12 @@ class VisualizerView(TemplateView):
             raise Http404
 
         return context
+    
+class VisualizerAPI(generics.ListCreateAPIView):
+    queryset = Voting.objects.all()
+    serializer_class = ViewSerializer
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filter_fields = ('id', )
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
