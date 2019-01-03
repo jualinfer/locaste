@@ -2,6 +2,8 @@ import { CookieService } from 'ngx-cookie-service';
 import { NavController, NavParams, LoadingController, Loading } from 'ionic-angular';
 import { Component, EventEmitter, Output } from '@angular/core';
 import { DataManagement } from '../../app/services/dataManagemen'
+import { HomePage } from '../home/home';
+import { PullListPage } from '../pullList/pullList';
 
 @Component({
     selector: 'page-login',
@@ -13,6 +15,8 @@ export class LoginPage {
     username: string = "user0";
     password: string = "practica";
     password2: string;
+    birthdate: Date;
+    gender: string;
     @Output()
     logged: EventEmitter<boolean> = new EventEmitter<boolean>();
     loading: Loading;
@@ -33,7 +37,7 @@ export class LoginPage {
         });
     }
 
-    private changeStatus(status: string) {
+    public changeStatus(status: string) {
         switch (status) {
             case 'login':
                 this.status = 'login';
@@ -57,8 +61,9 @@ export class LoginPage {
     }
 
     public signUp() {
-        this.dm.signUp(this.username, this.password, this.password2).then((data) => {
+        this.dm.signUp(this.username, this.password, this.password2, this.birthdate, this.gender).then((data) => {
             console.log("Registrado correctamente");
+            this.login();
         }).catch((error) => {
             console.log("Ha habido un error en el registro");
         });
