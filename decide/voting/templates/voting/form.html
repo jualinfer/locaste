@@ -1,0 +1,45 @@
+<script src="https://code.jquery.com/jquery-3.3.1.js"
+			  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+			  crossorigin="anonymous"></script>
+<form method="post" id="formulary" action="/voting/create/">
+    {% csrf_token %}
+    <div id="content">
+        <div id="fields">
+            {% for field in form %}
+                {% if field.name in "me" %}
+                    <input id="defaultMe" type="hidden" name="{{ field.name }}" value="off" />
+                {% endif %}
+                {{ field.label }}
+                {{ field }}
+                <br/>
+            {% endfor %}
+            {% if is_auth %}
+                <button type="button" onclick="remove_element(event);">X</button>
+            {% endif %}
+        <br/>
+        </div>
+    </div>
+    {% if is_auth %}
+        <button type="button" onclick="add_auth();">Add auth</button>
+    {% endif %}
+    <input type="submit" value="Crear"/>
+</form>
+<script>
+    function add_auth() {
+        var question_formulary = $('#fields').clone().first();
+        var empty_input = question_formulary.find('input');
+        for (var i = 0; i < empty_input.length; i++) {
+            if ($(empty_input[i]).attr("type") == 'checkbox') {
+                $(empty_input[i]).prop("checked", false);
+            } else if ($(empty_input[i]).attr("type") != 'hidden'){
+                $(empty_input[i]).val("")
+            }
+        }
+
+        $('#content').append(question_formulary);
+    }
+
+    function remove_element(event) {
+         $(event.target).parent().remove();
+    }
+</script>
