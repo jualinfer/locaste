@@ -9,6 +9,7 @@
       {% user_display user as name %}
       {% blocktrans %}Successfully signed in as {{name}}.{% endblocktrans %}
       <button onClick="decideLogout()">{% trans "logout" %}</button>
+      <button onClick="profile()">{% trans "profile" %}</button>
     </div>
   {% else %}
     <div>
@@ -65,6 +66,10 @@
           user = null;
           document.cookie = 'decide=; path=/';
           window.location.href = "accounts/logout/";
+        }
+
+        function profile(){
+          window.location.href = "authentication/profile/"
         }
 
         function init() {

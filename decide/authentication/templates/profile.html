@@ -1,0 +1,31 @@
+{% extends 'base_template.html' %}
+{% load i18n static %}
+
+{% block content %}
+{% if not user.is_authenticated %}
+	<div>
+		<h1>You cannot see your profile if you are not authenticated</h1>
+	</div>
+{% endif %}
+
+  <div id=profile>
+    <label for="username">{% trans "Username:" %}</label>
+		{{user.userprofile.user}}
+    <br />
+    <label for="gender">{% trans "Gender:" %}</label>
+		{{user.userprofile.gender}}
+		<br />
+    <label for="birthdate">{% trans "Birthdate:" %}</label>
+		{{user.userprofile.birthdate}}
+		<br />
+		<input type="submit" value="{% trans "Edit" %}" onClick="profile()" />
+{% endblock %}
+
+{% block extrabody %}
+    <script>
+
+		function profile(){
+			window.location.href = "/authentication/profile/edit"
+		}
+	</script>
+{% endblock %}
