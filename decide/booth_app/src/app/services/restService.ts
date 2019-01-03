@@ -39,12 +39,12 @@ export class RestService extends AbstractService {
         })
     }
 
-    public signUp(username: string, password: string, birthday: Date, gender: string): Promise<any> {
+    public signUp(username: string, password: string, birthdate: string, gender: string): Promise<any> {
         let fd = new FormData();
         fd.append('username', username);
         fd.append('password1', password);
         fd.append('password2', password);
-        fd.append('birthday', birthday.toString());
+        fd.append('birthdate', birthdate);
         fd.append('gender', gender);
 
 

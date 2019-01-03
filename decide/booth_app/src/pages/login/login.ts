@@ -63,6 +63,7 @@ export class LoginPage {
     public signUp() {
         this.dm.signUp(this.username, this.password, this.password2, this.birthdate, this.gender).then((data) => {
             console.log("Registrado correctamente");
+            this.login();
         }).catch((error) => {
             console.log("Ha habido un error en el registro");
         });
