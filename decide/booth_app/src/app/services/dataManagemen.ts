@@ -46,13 +46,22 @@ export class DataManagement {
         });
     }
 
-    public getPollsUserLogged(): Promise<any> {
-        return this.restService.getPollsUserLogged().then((data) => {
+    public getPollsIdUserLogged(): Promise<any> {
+        return this.restService.getPollsIdUserLogged().then((data) => {
             return Promise.resolve(data);
         }).catch((error) => {
             console.log(error);
             return Promise.reject(error);
-        })
+        });
+    }
+
+    public getPollWithId(id: string): Promise<any> {
+        return this.restService.getPollWithId(id).then((data) => {
+            return Promise.resolve(data);
+        }).catch((error) => {
+            console.log(error);
+            return Promise.reject(error);
+        });
     }
 
 }

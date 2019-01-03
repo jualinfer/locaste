@@ -8,7 +8,9 @@ import { Voting } from '../../app/app.data.models';
     templateUrl: 'list.html'
 })
 export class ListPage {
-    availableVotigns: Voting[];
+
+    url: string = "..\\..\\assets\\imgs\\Pet.png";
+    availableVotigns: Voting[] = [];
     loading: Loading;
 
     constructor(
@@ -25,8 +27,17 @@ export class ListPage {
 
     getAvailableVotings() {
         this.loading.present();
-        this.dm.getPollsUserLogged().then((data) => {
-            this.availableVotigns = data;
+        this.dm.getPollsIdUserLogged().then((data) => {
+            console.log(data);
+            data.voting.forEach(x => {
+                console.log(x);
+                this.dm.getPollWithId(x).then((response) => {
+                    console.log(response[0]);
+                    this.availableVotigns.push(response[0]);
+                }).catch((error) => {
+                    console.log("Error " + error);
+                });
+            });
             console.log(this.availableVotigns);
             this.loading.dismiss();
         }).catch((error) => {

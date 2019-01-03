@@ -24,7 +24,16 @@ export class Author {
     me: boolean;
 }
 
-export class Option{
+export class Option {
     number: number;
     option: string;
+}
+
+export class User {
+    id: string;
+    username: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    is_staff: boolean;
 }
