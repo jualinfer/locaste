@@ -1,5 +1,6 @@
 import { RestService } from './restService';
 import { Injectable } from "@angular/core";
+import { Voting } from '../app.data.models';
 
 @Injectable()
 export class DataManagement {

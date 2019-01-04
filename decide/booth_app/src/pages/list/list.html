@@ -9,7 +9,7 @@
 
 <ion-content>
   <ng-container *ngIf="availableVotigns">
-    <ion-card ion-item padding *ngFor="let item of availableVotigns" (click)="itemTapped($event, item)">
+    <ion-card ion-item padding *ngFor="let item of availableVotigns" (click)="itemTapped($event, item.id)">
       <ion-card-header>
         {{item.name}}
 

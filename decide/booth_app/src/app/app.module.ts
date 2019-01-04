@@ -11,6 +11,7 @@ import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
 import { PullListPage } from '../pages/pullList/pullList';
+import { VotingPage } from '../pages/votingClass/voting';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -24,6 +25,7 @@ import { RestService } from './services/restService';
     ListPage,
     LoginPage,
     PullListPage,
+    VotingPage,
   ],
   imports: [
     HttpClientModule,
@@ -37,6 +39,7 @@ import { RestService } from './services/restService';
     ListPage,
     LoginPage,
     PullListPage,
+    VotingPage,
   ],
   providers: [
     LoginPage,
