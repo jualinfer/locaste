@@ -7,8 +7,7 @@ from .models import Voting
 from django.http import HttpResponse
 from .filters import StartedFilter
 import os
-from wsgiref.util import FileWrapper
-from django.utils.encoding import smart_str
+import requests
 
 
 def start(modeladmin, request, queryset):
@@ -25,14 +24,17 @@ def stop(ModelAdmin, request, queryset):
 
 
 def tally(ModelAdmin, request, queryset):
+
+    directory = "voting/tallies/"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     zipf = zipfile.ZipFile('voting/tallies/tallies.zip', 'w', zipfile.ZIP_DEFLATED)
+    token = request.COOKIES.get("decide")
     for v in queryset.filter(end_date__lt=timezone.now()):
-        token = request.session.get('auth-token', '')
         file_name = v.tally_votes(token)
         zipf.write(file_name)
         os.remove(file_name)
     zipf.close()
-    print("ZIP file writed")
     with open('voting/tallies/tallies.zip', 'rb') as fh:
         response = HttpResponse(fh.read(), content_type='application/zip')
         response['Content-Disposition'] = 'attachment; filename=%s' % 'tallies.zip'
@@ -53,8 +55,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
 class VotingAdmin(admin.ModelAdmin):
     list_display = ('name', 'start_date', 'end_date')
-    readonly_fields = ('start_date', 'end_date', 'pub_key',
-                       'tally', 'postproc')
+    readonly_fields = ('pub_key','start_date', 'end_date','tally', 'postproc')
     date_hierarchy = 'start_date'
     list_filter = (StartedFilter,)
     search_fields = ('name', )

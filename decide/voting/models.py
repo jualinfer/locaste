@@ -6,6 +6,11 @@ from base import mods
 from base.models import Auth, Key
 
 
+GENRES_CHOICES = [
+    ("Male", "Male"),
+    ("Female", "Female"),
+    ("Other", "Other"),
+]
 class Question(models.Model):
     desc = models.TextField()
 
@@ -34,9 +39,15 @@ class Voting(models.Model):
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
+    gender = models.TextField(blank=True, null=True, choices=GENRES_CHOICES)
+    min_age = models.IntegerField(blank=True, null=True)
+    max_age = models.IntegerField(blank=True, null=True)
 
     pub_key = models.OneToOneField(Key, related_name='voting', blank=True, null=True, on_delete=models.SET_NULL)
     auths = models.ManyToManyField(Auth, related_name='votings')
+
+    custom_url = models.CharField(max_length=100, blank=True)
+    public_voting = models.BooleanField(default=False)
 
     tally = JSONField(blank=True, null=True)
     postproc = JSONField(blank=True, null=True)
@@ -61,6 +72,11 @@ class Voting(models.Model):
         votes = mods.get('store', params={'voting_id': self.id}, HTTP_AUTHORIZATION='Token ' + token)
         # anon votes
         return [[i['a'], i['b']] for i in votes]
+
+    def get_voters(self, token=''):
+        # getting the len of the census of the current voting
+        census = mods.get('census', params={'voting_id': self.id}, HTTP_AUTHORIZATION='Token ' + token)
+        return len(census['voters'])
 
     def tally_votes(self, token=''):
         '''
@@ -90,13 +106,13 @@ class Voting(models.Model):
         if response.status_code != 200:
             # TODO: manage error
             pass
-
         self.tally = response.json()
         self.save()
+        census = self.get_voters(token)
 
-        return self.do_postproc()
+        return self.do_postproc(census)
 
-    def do_postproc(self):
+    def do_postproc(self, census):
         tally = self.tally
         options = self.question.options.all()
 
@@ -112,14 +128,13 @@ class Voting(models.Model):
                 'votes': votes
             })
 
-        data = {'type': 'IDENTITY', 'options': opts}
+        data = {'type': 'IDENTITY', 'options': opts, 'census': census}
         directory = "voting/tallies/"
         if not os.path.exists(directory):
             os.makedirs(directory)
         file_name = 'tally_voting'+str(self.id)
         with open(directory+file_name+'.json', 'w') as outfile:
             json.dump(data, outfile)
-            print("JSON tally dumped")
 
         postp = mods.post('postproc', json=data)
 
