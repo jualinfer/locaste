@@ -18,6 +18,7 @@ before_script:
 - psql -c "create database decide owner decide"
 - python manage.py makemigrations
 - python manage.py migrate
+- python manage.py loaddata initial_data
 script:
 - python manage.py test
 addons:
@@ -31,5 +32,5 @@ jobs:
           deploy:
             provider: heroku
             api_key:
-                secure: VekKUTMR3hMO3YFgH9tLRMP61lAiqyqorIy76BrifCsK/Nfx/5vG2HjzcS8m8SdHW1Bcd8DF4AIo/8kMPLk7PoE8f9dBKo3CL7P+I/LpRWUk1cPDx+FtRkLVIQfjDigcJXWC6zRS85858LFwqpGSAq3ERPaCSNK9JXQyfXhpTtqOEuAdMkrzthN6yzafpHOzu1f+lv/1PHB1VQe4OhOl+kg7+EAwLDDkoYGE77H5whp5+HljlI/zHqrIvwTRWpE+/KqZ5Lzk0bqLME3f9VDQAxGb2/XDcWiqsfFlLkAxvaUvuLOpx4BfF5Ldemq/mjlfaulPttvV7yOcqm2N3tcFZpjs3aoh6nwgzkpoEbdwzBQ5dCG3DyRtrs9UKga+2zeQJz6vWBVV8HLJ1NSk6HE5FnRlmJukjS3Fwz8IalsMx03ap7K5HDOOcRaVkV6J2l5Cyxx4KVpq9aMthUB4xuZA9yIOAyphDmYfP3X83Z2nHxGApIdDZmGTRC7e0Fh8+sMLvOL1XkP+ffZno18vgzJVI3ruf8PO2lNxhsBVnjz06Oaa9g9hca+m9AEM9nGzWl18cYsQ9kwmenDRZwTCGrDA4ZHAkTDBi9UTf3bNiom1Z5G8IG2XRSa+8JeMhze5zyEG3+YFplpiFUKZGrt6owMMGgGUX/vPkxTz0wy/AGidj4Y=
+                secure: pRRamT23pAi4keCpxfxKeCUCxVqt0hNbIObvkm5Q3HbTdaqmcxw8kXDgWtIGMPBxUc9ldW3JPoIxh768j78+s0SvuUJ+XzA/o51LhXW194Kf2fzWkpGBhPN4QI4NPFcj8XogLIT4OB2jZ/2RdXnmw7F4c4i7wnxOODaHAmezalRj4zIewuxBUHTb8iyqTjhGUrdAHO6rpz1URJOTJkem2gp5ia8lDA3nJiGGA5IoFUFp93c/uKANOksHXRvW0j2KUMyuzgIOcbApLqzecgCqXlse4GlA9FqU+FXcYuNM3FDU0FQRbvlC7RXonrZbB7uOSOuZZmj1XQSmCjfXK1aTMNNJGJlaAkybeZ3GCKVFm0A979/p4SK/jnNRd8WsctkZJ6nMFyKdE8IfuPlSbCM6shkyG4n3cPm7KX5Xtdij51bEzqF3iCMfYzm++gzHv0z2usaXSGRb/GAnKryITiG/tewmc6YruqAOCUz2SYzF313i/poPwuLjpe1iihGQQaMyJ88Ufnw6+6VqWJcfdrGaNzj9sxo9vdCyXinC3MvFmXQhuv4ixSQE/V37alZjqPLMDyuIXHOwkPP7uqH+UiDfrIVGKqhiFAYAExmsRkoq7SPKV7xHM0ff7vN1YxsF1MuyiErscayJrr5a5AyM4Y/ZdVeIe0fZHjAlyZvGjGL4xHY=
             app: locaste-decide
