@@ -42,14 +42,17 @@ class StoreView(generics.ListAPIView):
 
         uid = request.data.get('voter')
         vote = request.data.get('vote')
-
         if not vid or not uid or not vote:
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
-
         # validating voter
-        token = request.auth.key
+        token = None
+        if request.auth:
+            token = request.auth.key
         voter = mods.post('authentication', entry_point='/getuser/', json={'token': token})
         voter_id = voter.get('id', None)
+        if voter_id == None:
+            voter = request.user
+            voter_id = voter.id
         if not voter_id or voter_id != uid:
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
