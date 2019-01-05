@@ -38,16 +38,15 @@ def start(bot, update):
 
 # Help function
 def help(bot, update):
-    update.message.reply_text('/start       , obtain a greeting message')
-    update.message.reply_text('/title voting_id      , obtain the title of the voting_id provided, ie. /title 1')
-    update.message.reply_text('/date       , obtain the end date of the voting')
-    update.message.reply_text('/options       , obtain the options of the voting')
+    update.message.reply_text('/start       , obtain a greeting message\n'+
+                                '/title voting_id      , obtain the title of the voting_id provided, ie. /title 1\n'+
+                                '/date voting_id       , obtain the end date of the voting_id provided, ie. /date 1\n'+
+                                '/options voting_id       , obtain the options of the voting_id provided, ie. /options 1\n'+
+                                '/result voting_id      , obtain the result of the voting_id provided, ie. /result 1\n'+
+                                '/login       , log in with your Decide credentials\n'+
+                                '/logout      , log out with your Decide credentials')
 
-    update.message.reply_text('/login       , log in with your Decide credentials')
-    update.message.reply_text('/logout      , log out with your Decide credentials')
-
-
-# voting title and description function
+# Voting title, end date and description function
 def title_desc(bot, update):
     received_voting_id = update.message.text
     voting_id = received_voting_id.split(' ')[1]
@@ -59,8 +58,8 @@ def title_desc(bot, update):
         update.message.reply_text('The title for the voting_id' + voting_id + ' is: ' + r[0]['name'])
         update.message.reply_text('Also the provided description is: ' + r[0]['desc'])
     else:
-        update.message.reply_text('Ohh it looks like the provided voting_id was invalid \n' +
-        'Please try a new title search with a different voting_id')
+        update.message.reply_text('Ohh, it looks like the provided voting_id was invalid \n' +
+        'Please try a new search with a different voting_id')
   
 def end_date(bot, update):
     received_voting_id = update.message.text
@@ -83,8 +82,8 @@ def end_date(bot, update):
         else:
             update.message.reply_text('The voting is NOT closed yet')
     else:
-        update.message.reply_text('Ohh it looks like the provided voting_id was invalid \n' +
-        'Please try a new date search with a different voting_id')
+        update.message.reply_text('Ohh, it looks like the provided voting_id was invalid \n' +
+        'Please try a new search with a different voting_id')
 
 def options(bot, update):
     received_voting_id = update.message.text
@@ -97,8 +96,34 @@ def options(bot, update):
         for option in r[0]['question']['options']:
             update.message.reply_text('The options for the voting_id' + voting_id + ' are: ' + str(option['option']))
     else:
-        update.message.reply_text('Ohh it looks like the provided voting_id was invalid \n' +
-        'Please try a new title search with a different voting_id')
+        update.message.reply_text('Ohh, it looks like the provided voting_id was invalid \n' +
+        'Please try a new search with a different voting_id')
+
+# Voting result function
+def result(bot, update):
+    received_voting_id = update.message.text
+    voting_id = received_voting_id.split(' ')[1]
+    update.message.reply_text('You are looking for voting_id: ' + voting_id)
+
+    url = baseURL + "/voting/?id="+voting_id
+    r = requests.get(url).json()
+    if r != []:
+        present = datetime.now()
+        endDate = r[0]['end_date']
+        parsedDate = datetime.strptime(endDate, '%Y-%m-%dT%H:%M:%S.%fZ')
+        if(parsedDate>present):
+            update.message.reply_text('This voting is still open! Please use the /date command to know when it ends')
+        else:
+            for item in r[0]['postproc']:
+                update.message.reply_text('Option: '+item['option']+'\n'+
+                'Votes: '+str(item['votes']))
+            
+            tally = str(r[0]['tally'])
+            tally_number = tally.split('[')[1].split(']')[0]
+            update.message.reply_text('Final tally: '+tally_number)
+    else:
+        update.message.reply_text('Ohh, it looks like the provided voting_id was invalid \n' +
+        'Please try a new search with a different voting_id')
 
 # Login and logout
 def login(bot, update, user_data):
@@ -135,6 +160,7 @@ def main():
     dispatcher.add_handler(CommandHandler('title', title_desc))
     dispatcher.add_handler(CommandHandler('date', end_date))
     dispatcher.add_handler(CommandHandler('options', options))
+    dispatcher.add_handler(CommandHandler('result', result))
     dispatcher.add_handler(CommandHandler('login', login))
     dispatcher.add_handler(CommandHandler('logout', logout))
 
