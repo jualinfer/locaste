@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 {% load i18n static %}
 {% block content %}
- <!DOCTYPE html>
-<html lang="en">
 <head>
    
     <meta charset="UTF-8"> 
@@ -20,8 +18,9 @@
    
             
 
-    <body onload="myFunction()">
-        
+<body onload="myFunction()">
+
+      
              <li style="margin-left: 20px;"> Question:{{voting.question.desc}}</li>
              <li style="margin-left: 20px;"> Description:{{voting.desc}}</li>
              <li style="margin-left: 20px;">{% trans 'Start date' %}:{{voting.start_date|slice:"0:10"}},{{voting.start_date|slice:"11:19"}}</li>
@@ -51,7 +50,7 @@ function showPage() {
 
     
 {% else %}
-        <h2 style="text-align:center;">{% trans 'Results: ' %}</h2>
+        <h2 style="text-align:center;">{% trans 'Results' %}</h2>
   
           <ul>
             {% for option in voting.postproc %}
@@ -60,6 +59,7 @@ function showPage() {
                 
             {% endfor %}
         </ul>
+<div id="info">  
          <ul>
              <li>Congratulations! {{user.username}}</li>
              <li> Question:{{voting.question.desc}}</li>
@@ -68,6 +68,8 @@ function showPage() {
              <li>{% trans 'End date' %}:{{voting.end_date|slice:"0:10"}},{{voting.end_date|slice:"11:19"}}</li>
                 
         </ul>
+        
+</div>
     
   </head>
 
@@ -235,7 +237,6 @@ function showPage() {
 
   </footer>
   <!-- Footer -->
-</html>
    
 
     {% endif %} 
@@ -298,8 +299,9 @@ function showPage() {
     display: block;
     margin-top: 20px; /* space between content and footer */
     box-sizing: border-box;
-    position: relative;
+    position: absolute;
     width: 100%;
+    bottom: 0;
 }
 
  
@@ -354,8 +356,21 @@ function showPage() {
   display: none;
   text-align: center;
 }
-    
-    
+
+div#info ul li{
+	list-style-type: none;
+    margin: auto;
+	display:inline-block;
+    width: auto;
+    border: 2px solid #333;
+    border-radius: 6px;
+    background: black;
+    color: #f1f1f1;
+    padding: 0.2%;
+    margin-bottom: 0.5%;
+    align-items: center;
+}
+  
     </style>
 
     
