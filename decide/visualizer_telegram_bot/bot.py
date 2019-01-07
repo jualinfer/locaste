@@ -101,6 +101,7 @@ def options(bot, update):
 
 # Voting result function
 def result(bot, update):
+    parsedDate = ''
     received_voting_id = update.message.text
     voting_id = received_voting_id.split(' ')[1]
     update.message.reply_text('You are looking for voting_id: ' + voting_id)
@@ -110,17 +111,21 @@ def result(bot, update):
     if r != []:
         present = datetime.now()
         endDate = r[0]['end_date']
-        parsedDate = datetime.strptime(endDate, '%Y-%m-%dT%H:%M:%S.%fZ')
-        if(parsedDate>present):
+        if(r[0]['end_date'] != None and r[0]['end_date'] != ''):
+            parsedDate = datetime.strptime(endDate, '%Y-%m-%dT%H:%M:%S.%fZ')
+        if(parsedDate == '' or parsedDate>present):
             update.message.reply_text('This voting is still open! Please use the /date command to know when it ends')
         else:
-            for item in r[0]['postproc']:
-                update.message.reply_text('Option: '+item['option']+'\n'+
-                'Votes: '+str(item['votes']))
-            
-            tally = str(r[0]['tally'])
-            tally_number = tally.split('[')[1].split(']')[0]
-            update.message.reply_text('Final tally: '+tally_number)
+            if r[0]['postproc'] != None and r[0]['postproc'] != []:
+                for item in r[0]['postproc']:
+                    update.message.reply_text('Option: '+item['option']+'\n'+
+                    'Votes: '+str(item['votes']))
+                
+                tally = str(r[0]['tally'])
+                tally_number = tally.split('[')[1].split(']')[0]
+                update.message.reply_text('Final tally: '+tally_number)
+            else:
+                update.message.reply_text('This voting is being processed. Please retry later')
     else:
         update.message.reply_text('Ohh, it looks like the provided voting_id was invalid \n' +
         'Please try a new search with a different voting_id')
