@@ -1,7 +1,5 @@
-import { CookieService } from 'ngx-cookie-service';
 import { Component } from '@angular/core';
-import { NavController, LoadingController, Loading } from 'ionic-angular';
-import { DataManagement } from '../../app/services/dataManagemen';
+import { NavController, LoadingController, Loading, NavParams } from 'ionic-angular';
 import { Voting } from '../../app/app.data.models';
 
 @Component({
@@ -10,28 +8,17 @@ import { Voting } from '../../app/app.data.models';
 })
 export class VotingPage {
 
-  showLoginPage: boolean = true;
   loading: Loading;
-  voting: Voting = new Voting;
+  voting: Voting;
 
   constructor(
     public navCtrl: NavController,
-    private dm: DataManagement,
-    private cookieService: CookieService,
+    public NavParams: NavParams,
     private loadingCtrl: LoadingController,
-    voting: Voting,
   ) {
     this.loading = this.loadingCtrl.create({
       content: 'Signing out, please wait...',
     });
-    this.voting = voting;
-    this.checkIfLogged();
+    this.voting = this.NavParams.get('voting');
   }
-
-  private checkIfLogged() {
-    if (this.cookieService.get('decide')) {
-      this.showLoginPage = false;
-    }
-  }
-
 }

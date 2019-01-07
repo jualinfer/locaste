@@ -1,3 +1,4 @@
+import { Voting } from './app.data.models';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { DataManagement } from './services/dataManagemen';
 import { LoginPage } from './../pages/login/login';
@@ -50,6 +51,7 @@ import { RestService } from './services/restService';
     StatusBar,
     SplashScreen,
     CookieService,
+    Voting,
     { provide: ErrorHandler, useClass: IonicErrorHandler }
   ]
 })

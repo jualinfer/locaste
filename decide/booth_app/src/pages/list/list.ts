@@ -51,15 +51,9 @@ export class ListPage {
 
     itemTapped(event, item) {
         console.log(item);
-        item = this.dm.getPollWithId(item);
         this.navCtrl.push(VotingPage, {
-            navCtrl: this.navCtrl,
-            dm: this.dm,
-            cookieService: this.cookieService,
-            loadingCtrl: this.loadingCtrl,
             voting: item,
         });
-
     }
 
 }
