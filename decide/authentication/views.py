@@ -4,15 +4,22 @@ from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import TemplateView
+from rest_framework import status
 
 from .serializers import UserSerializer
 
 
 class GetUserView(APIView):
     def post(self, request):
-        key = request.data.get('token', '')
-        tk = get_object_or_404(Token, key=key)
-        return Response(UserSerializer(tk.user, many=False).data)
+        user = None
+        if(request.data.get('token')!=None):
+            key = request.data.get('token', '')
+            tk = get_object_or_404(Token, key=key)
+            user = tk.user
+        else:
+            if request.user.is_authenticated:
+                user = request.user
+        return Response(UserSerializer(user, many=False).data)
 
 
 class LogoutView(TemplateView):

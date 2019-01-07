@@ -102,6 +102,7 @@ ENV/
 \.idea/
 
 *.xml
+
 #VisualStudio
 \.vs/
 
@@ -141,4 +142,3 @@ $RECYCLE.BIN/
 .DS_Store
 Thumbs.db
 UserInterfaceState.xcuserstate
-
