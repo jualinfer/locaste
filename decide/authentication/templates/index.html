@@ -60,12 +60,11 @@
         }
 
         function decideLogout() {
-          postData("{{auth_url}}" + "/rest-auth/logout/");
 
           token = null;
           user = null;
           document.cookie = 'decide=; path=/';
-          window.location.href = "authentication/logout";
+          window.location.href = "accounts/logout/";
         }
 
         function init() {
