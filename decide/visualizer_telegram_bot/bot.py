@@ -7,6 +7,10 @@ from dotenv import load_dotenv
 import os
 import time
 from datetime import datetime, timedelta
+import plotly.graph_objs as go
+import plotly.io as pio
+from PIL import Image
+from io import BytesIO
 
 
 
@@ -38,12 +42,12 @@ def start(bot, update):
 
 # Help function
 def help(bot, update):
-    update.message.reply_text('/start       , obtain a greeting message\n'+
-                                '/title voting_id      , obtain the title of the voting_id provided, ie. /title 1\n'+
-                                '/date voting_id       , obtain the end date of the voting_id provided, ie. /date 1\n'+
-                                '/options voting_id       , obtain the options of the voting_id provided, ie. /options 1\n'+
-                                '/result voting_id      , obtain the result of the voting_id provided, ie. /result 1\n'+
-                                '/login       , log in with your Decide credentials\n'+
+    update.message.reply_text('/start       , obtain a greeting message\n\n'+
+                                '/title voting_id      , obtain the title of the voting_id provided, ie. /title 1\n\n'+
+                                '/date voting_id       , obtain the end date of the voting_id provided, ie. /date 1\n\n'+
+                                '/options voting_id       , obtain the options of the voting_id provided, ie. /options 1\n\n'+
+                                '/result voting_id      , obtain the result of the voting_id provided, ie. /result 1\n\n'+
+                                '/login       , log in with your Decide credentials\n\n'+
                                 '/logout      , log out with your Decide credentials')
 
 # Voting title, end date and description function
@@ -119,11 +123,56 @@ def result(bot, update):
             if r[0]['postproc'] != None and r[0]['postproc'] != []:
                 for item in r[0]['postproc']:
                     update.message.reply_text('Option: '+item['option']+'\n'+
-                    'Votes: '+str(item['votes']))
+                    'Votes: '+str(item['votes']), quote = False)
                 
                 tally = str(r[0]['tally'])
                 tally_number = tally.split('[')[1].split(']')[0]
-                update.message.reply_text('Final tally: '+tally_number)
+                update.message.reply_text('Final tally: '+tally_number, quote = False)
+
+                # Sending results images from server
+                x = []
+                y = []
+
+                # Generate data for bars and pie
+                for item in r[0]['postproc']:
+                    x.append(item['option'])
+                    y.append(item['postproc'])
+           
+                dataBars = [go.Bar(x = x, y = y)]
+                dataPie  = [go.Pie(labels = x, values = y)]
+
+                # Establish layout
+                layout = go.Layout(title = 'Result of voting after being processed')
+
+                # Create bar figure
+                fig = go.Figure(data= dataBars, layout = layout)
+                img_bytes = pio.to_image(fig, format='jpeg')
+                bars = Image.open(BytesIO(img_bytes))
+            
+                buf = BytesIO()
+                buf.name = 'bar.jpeg'
+                bars.save(buf, 'JPEG')
+                buf.seek(0)
+
+                # Create pie figure
+                fig = go.Figure(data= dataPie, layout = layout)
+                img_bytes = pio.to_image(fig, format='jpeg')
+                pie = Image.open(BytesIO(img_bytes))
+            
+                buf1 = BytesIO()
+                buf1.name = 'pie.jpeg'
+                pie.save(buf1, 'JPEG')
+                buf1.seek(0)
+
+                # Send figures
+                update.message.reply_photo(buf, quote = False)
+                update.message.reply_photo(buf1, quote = False)
+
+                # Cleaning
+                buf.close()
+                buf1.close()
+                bars.close()
+                pie.close()
             else:
                 update.message.reply_text('This voting is being processed. Please retry later')
     else:
