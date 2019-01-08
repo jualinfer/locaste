@@ -1,0 +1,42 @@
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <style>
+        body, h1, h2, h3, h4, h5 {
+            font-family: "Raleway", sans-serif
+        }
+    </style>
+    <title class="w3-container w3-red">Voting list</title>
+</head>
+<body>
+<header id="voting_management">
+    <div class="w3-container">
+        <h1><b>VOTING MANAGEMENT</b></h1>
+        <div class="w3-section w3-bottombar w3-padding-16">
+            <a href="/voting/list" class="w3-bar-item w3-button w3-padding w3-black"><i class="fa fa-list fa-fw"></i> List</a>
+            <a href="/voting/create" class="w3-bar-item w3-button w3-padding w3-black"><i
+                    class="fa fa-plus-circle fa-fw"></i> New Voting</a>
+        </div>
+    </div>
+</header>
+<form action="/voting/create/" method="post">
+    {% csrf_token %}
+    <div class="w3-section">
+        <label>Question</label>
+        <input class="w3-input w3-border" type="text" name="questionRange" id="questionRange" required>
+    </div>
+    <div class="w3-section">
+        <input type="button" value="Continuar" onclick="submit();"/>
+    </div>
+</form>
+<script>
+function submit(){
+        var quetionRange = document.getElementById("questionRange").value;
+
+        $.post("/voting/create", {'questionRange': quetionRange,});
+    }
+</script>
+
+</body>
