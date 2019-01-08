@@ -43,12 +43,46 @@ def start(bot, update):
 # Help function
 def help(bot, update):
     update.message.reply_text('/start       , obtain a greeting message\n\n'+
+                                '/info     , obtain all the information regarding the votation, ie. /info 1\n\n'+
                                 '/title voting_id      , obtain the title of the voting_id provided, ie. /title 1\n\n'+
                                 '/date voting_id       , obtain the end date of the voting_id provided, ie. /date 1\n\n'+
                                 '/options voting_id       , obtain the options of the voting_id provided, ie. /options 1\n\n'+
                                 '/result voting_id      , obtain the result of the voting_id provided, ie. /result 1\n\n'+
                                 '/login       , log in with your Decide credentials\n\n'+
                                 '/logout      , log out with your Decide credentials')
+
+#Obtain all the info regarding a voting
+def info(bot, update):
+    received_voting_id = update.message.text
+    voting_id = received_voting_id.split(' ')[1]
+    update.message.reply_text('You are looking for voting_id: ' + voting_id)
+
+    url = baseURL + "/voting/?id="+voting_id
+    r = requests.get(url).json()
+    present = datetime.now()
+
+    if r != []:
+        update.message.reply_text('The title for the voting_id' + voting_id + ' is: ' + r[0]['name'])
+        update.message.reply_text('The description is: ' + r[0]['desc'])
+        if r[0]['start_date'] != None:
+            startdate = r[0]['start_date']
+            startdDate = datetime.strptime(startdate, '%Y-%m-%dT%H:%M:%S.%fZ')
+            update.message.reply_text('The start date for the voting_id' + voting_id + ' is: ' + str(startdDate))
+        if r[0]['end_date'] != None:
+            enddate = r[0]['end_date']
+            enddDate = datetime.strptime(enddate, '%Y-%m-%dT%H:%M:%S.%fZ')
+            update.message.reply_text('The end date for the voting_id' + voting_id + ' is: ' + str(enddDate))
+            if(enddDate<present):
+                update.message.reply_text('The voting is closed')
+        else:
+            update.message.reply_text('The voting is NOT closed yet')
+
+        for option in r[0]['question']['options']:
+            update.message.reply_text('The options for the voting_id' + voting_id + ' are: ' + str(option['option']))
+        
+    else:
+        update.message.reply_text('Ohh, it looks like the provided voting_id was invalid \n' +
+        'Please try a new search with a different voting_id')
 
 # Voting title, end date and description function
 def title_desc(bot, update):
@@ -211,6 +245,7 @@ def main():
 
     dispatcher.add_handler(CommandHandler('start', start))
     dispatcher.add_handler(CommandHandler('help', help))
+    dispatcher.add_handler(CommandHandler('info', info))
     dispatcher.add_handler(CommandHandler('title', title_desc))
     dispatcher.add_handler(CommandHandler('date', end_date))
     dispatcher.add_handler(CommandHandler('options', options))
