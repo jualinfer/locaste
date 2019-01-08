@@ -11,6 +11,13 @@ GENRES_CHOICES = [
     ("Female", "Female"),
     ("Other", "Other"),
 ]
+
+TYPES_CHOICES =[
+    ("Normal", "Normal"),
+    ("Range", "Range"),
+    ("Percentage", "Percentage"),]
+
+
 class Question(models.Model):
     desc = models.TextField()
 
@@ -35,6 +42,7 @@ class QuestionOption(models.Model):
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
+    type = models.TextField(blank=True, null=True,choices=TYPES_CHOICES)
     question = models.ManyToManyField(Question, related_name='voting_questions')
 
     start_date = models.DateTimeField(blank=True, null=True)
