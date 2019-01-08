@@ -12,7 +12,7 @@ import { PullListPage } from '../pullList/pullList';
 
 export class LoginPage {
 
-    username: string = "user0";
+    username: string = "user1234";
     password: string = "practica";
     password2: string;
     birthdate: Date;

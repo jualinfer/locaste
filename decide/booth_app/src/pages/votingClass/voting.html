@@ -8,8 +8,32 @@
 </ion-header>
 
 <ion-content>
-  <h1> {{ voting.name }} </h1>
-  
-  <h3>{{ voting.start_date }}</h3>
-  <h3>{{ voting.end_date }}</h3>
+  <ng-container *ngIf="booleanStart">
+    <h1> {{ voting.name }} </h1>
+
+    <h3>Fecha de Inicio: {{ start_date }}</h3>
+    <h3 *ngIf="booleanEnd">Fecha de finalización: {{ end_date }}</h3>
+    <div class="container">
+      <div class="voting-form">
+        <ion-label>{{ voting.question.desc }}</ion-label>
+        <ion-card ion-item padding *ngFor="let item of options" (click)="vote(voting,item)">
+          <ion-card-content>
+            <p>{{ item.number }} . {{ item.option }} </p>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="!booleanStart">
+    <ion-row style="height: 100%">
+      <ion-col col-xl-3 col-0></ion-col>
+      <ion-col col-xl-6 col-12>
+        <h4 style="text-align: center; margin-left: 20px; margin-right: 20px">
+          This voting is no iniciate
+        </h4>
+        <img class="img-pet" src="{{ url }}" />
+      </ion-col>
+      <ion-col col-xl-3 col-0></ion-col>
+    </ion-row>
+  </ng-container>
 </ion-content>
