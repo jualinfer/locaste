@@ -11,6 +11,12 @@ GENRES_CHOICES = [
     ("Female", "Female"),
     ("Other", "Other"),
 ]
+
+QUESTIONS_TYPES = [
+    ("Range", "Range"),
+    ("Percentage", "Percentage"),
+    ("Normal", "Normal"),
+]
 class Question(models.Model):
     desc = models.TextField()
 
@@ -21,7 +27,9 @@ class Question(models.Model):
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
-    option = models.TextField()
+    option = models.TextField(blank=True, null=True)
+    percentage = models.DecimalField(blank=True, null=True,decimal_places=2,max_digits=3)
+    type = models.TextField(blank=True, null=True,choices=QUESTIONS_TYPES)
 
     def save(self):
         if not self.number:
