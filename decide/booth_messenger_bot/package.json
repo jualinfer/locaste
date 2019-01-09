@@ -1,0 +1,27 @@
+{
+  "name": "booth_messenger_bot",
+  "version": "1.0.0",
+  "description": "This is a Facebook Messenger bot.",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "forward": "lt --port 3000 --subdomain boothmessengerbot"
+  },
+  "keywords": [
+    "EGC",
+    "Facebook",
+    "Messenger",
+    "Decide-Locaste",
+    "Booth"
+  ],
+  "author": "Asen Rangelov Baykushev",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "bootbot": "^1.0.12",
+    "config": "^1.26.1",
+    "dotenv": "^4.0.0",
+    "request": "^2.81.0"
+  }
+}
