@@ -54,7 +54,77 @@ bot.setGetStartedButton((payload, chat) => {
   });
 });
 
+bot.on('postback:BOT_LOG_IN', (payload, chat) => {
+ 
+    const askUsername = (convo) => {
+      const question = "Please, introduce your username.";
 
+      const answer = (payload, convo) => {
+        const username = payload.message.text;
+        convo.set('username', username);
+        convo.say(`Got it!`, options).then(() => askPassword(convo));
+      };
+
+      convo.ask(question, answer, options);
+    };
+
+    const askPassword = (convo) => {
+      const question = "Now introduce your password.";
+
+
+      const answer = (payload, convo) => {
+        const password = payload.message.text;
+        convo.set('password', password);
+        convo.say(`Ok!`, options);
+
+        let requestBody = {
+          "username": convo.get('username'),
+          "password": convo.get('password')
+        };
+
+        request.post(
+          'http://localhost:8000/rest-auth/login/',
+          { json: requestBody },
+          function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+              convo.getUserProfile().then((user) => {
+                const loginMessage1 = `Well done, ${user.first_name} !`;
+                const loginMessage2 = 'You have logged in successfully as ' + convo.get('username') + '!';
+                const loginMessage3 = {
+                  text: 'What would you want to do now?',
+                  buttons: [
+                    { type: 'postback', title: 'Access to a voting', payload: 'BOT_GET_VOTING' },
+                    { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+                  ]
+                };
+                convo.say([loginMessage1, loginMessage2, loginMessage3], options).then(() => convo.end());
+              });
+            } else {
+              convo.say(`Ooops! Something went wrong.`, options);
+              const errorMessage = {
+                text: 'Please, make sure you typed your username and password correctly.',
+                buttons: [
+                  { type: 'postback', title: 'Try again', payload: 'BOT_LOG_IN' },
+                  { type: 'postback', title: 'Cancel', payload: 'BOT_CANCEL' }
+                ]
+              };
+              convo.say(errorMessage, options).then(() => convo.end());
+            }
+          }
+        );
+
+      };
+
+      convo.ask(question, answer, options);
+    };
+
+    const message = `Perfect!`;
+    chat.say(message, options)
+      .then(() => chat.conversation((convo) => {
+        askUsername(convo);
+      }));
+  
+});
 
 
 
