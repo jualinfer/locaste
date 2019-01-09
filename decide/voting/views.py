@@ -264,3 +264,8 @@ def save_voting(request, voting_form, auth_forms, question_forms,
         return render(request, 'voting/questionForm.html',
                       {'question_form': question_form, 'question_option_form': question_option_form,
                        'voting_url': 'http://127.0.0.1:8000/voting/create/'})
+
+
+def create_question_by_type(request,question_forms,question_option_forms):
+   return question_forms
+
