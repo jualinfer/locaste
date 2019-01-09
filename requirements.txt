@@ -18,6 +18,6 @@ gunicorn
 #Booth Telegram bot requirements
 python-telegram-bot
 python-dotenv
-requests
+requests==2.18.4
 numpy
 

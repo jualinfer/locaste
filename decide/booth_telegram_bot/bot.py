@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 reply_keyboard = [['Log in', 'Cancel']]
 reply_keyboard_tryagain = [['Try again', 'Cancel']]
-reply_keyboard_logged = [['Access to a voting', 'Log out']]
+reply_keyboard_logged = [["Show votings in which I'm registered to vote"],[ 'Access to a voting', 'Log out']]
 markup = ReplyKeyboardMarkup(reply_keyboard )
 markup_tryagain = ReplyKeyboardMarkup(reply_keyboard_tryagain)
 markup_logged = ReplyKeyboardMarkup(reply_keyboard_logged)
@@ -61,7 +61,8 @@ def login(bot, update, user_data):
     text = update.message.text
     user_data['password'] = text
 
-    url = settings.BASEURL + "/rest-auth/login/"
+    #url = settings.BASEURL + "/rest-auth/login/"
+    url = "http://localhost:8000/rest-auth/login/"
     r = requests.post(url, data={'username': user_data['username'], 'password': user_data['password']})
     
     if r.status_code == 200:
@@ -71,7 +72,8 @@ def login(bot, update, user_data):
         user_data['token'] = r.json()['key']
 
         #Now we have the token, so we can request the user id to the Decide Locaste API
-        url = settings.BASEURL +"/authentication/getuser/"
+        #url = settings.BASEURL +"/authentication/getuser/"
+        url = "http://localhost:8000/authentication/getuser/"
         r = requests.post(url, data={'token': user_data['token'], })
         user_data['user_id'] = r.json()['id']
 
@@ -87,6 +89,34 @@ def login(bot, update, user_data):
         
         return CHOOSING_NOT_LOGGED
 
+def get_census_logged_user(bot, update, user_data):
+    update.message.reply_text("Ok")
+
+    #url = settings.BASEURL + "/census/?voter_id=
+    url = "http://localhost:8000/census/?voter_id="+str(user_data['user_id'])
+    r = requests.get(url)
+    if len(r.json()['voting']) != 0:
+        update.message.reply_text("You are registered to vote in the following votings:")
+        msg=""
+        for voting_id in r.json()['voting']:
+            #url = settings.BASEURL + "/voting/?id="+id
+            url = "http://localhost:8000/voting/?id="+str(voting_id)
+            r = requests.get(url)
+            voting = r.json()[0]
+            msg+= "*ID = " + str(voting['id']) + "* | " + voting['name']
+            if voting['end_date'] == None:
+                msg+= " | *(ACTIVE)*\n"
+            else:
+                msg+= " | *(FINISHED)*\n"
+        update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+    else:
+        update.message.reply_text("Sorry... It seems like you are not registered in any census yet")
+    
+    update.message.reply_text("What are we doing next " + user_data['username'] + "?",
+    reply_markup=markup_logged)
+
+    return CHOOSING_LOGGED
+
 def introduce_voting_id(bot, update, user_data):
     update.message.reply_text("Please "+user_data['username']+ ", introduce the voting id you want to access in", reply_markup=markup_quit)
 
@@ -97,7 +127,8 @@ def get_voting(bot, update, user_data):
     update.message.reply_text("Let's search for the voting...")
     id = update.message.text
 
-    url = settings.BASEURL + "/voting/?id="+id
+    #url = settings.BASEURL + "/voting/?id="+id
+    url = "http://localhost:8000/voting/?id="+id
     r = requests.get(url)
     if r.json() != []:
         update.message.reply_text("Here It is:")
@@ -193,6 +224,7 @@ def main():
 
             CHOOSING_LOGGED: [RegexHandler('^Log\s+out$',logout, pass_user_data=True),
                         RegexHandler('^Access\s+to\s+a\s+voting$',introduce_voting_id, pass_user_data=True),
+                        RegexHandler("^Show\s+votings\s+in\s+which\s+I'm\s+registered\s+to\s+vote$",get_census_logged_user, pass_user_data=True),
                         ],
 
             OPTION_VOTED: [RegexHandler('^\d+$',option_voted, pass_user_data=True),
