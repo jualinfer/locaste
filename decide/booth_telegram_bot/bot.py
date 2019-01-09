@@ -140,6 +140,8 @@ def option_voted(bot, update, user_data):
     if(update.message.text in list(options_dict.keys())):
         update.message.reply_text("You have voted option: " + update.message.text + ". " + options_dict[update.message.text], reply_markup=markup_quit)
         #Aquí la encriptación del voto etc
+        vote_number_for_decide = int(update.message.text)
+        vote_number_for_decide += 1
     else:
         update.message.reply_text("There is no option " + update.message.text + " in the possible options")
 
