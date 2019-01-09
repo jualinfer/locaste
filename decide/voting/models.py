@@ -12,12 +12,11 @@ GENRES_CHOICES = [
     ("Other", "Other"),
 ]
 
-TYPES_CHOICES =[
-    ("Normal", "Normal"),
+QUESTIONS_TYPES = [
     ("Range", "Range"),
-    ("Percentage", "Percentage"),]
-
-
+    ("Percentage", "Percentage"),
+    ("Normal", "Normal"),
+]
 class Question(models.Model):
     desc = models.TextField()
 
@@ -28,7 +27,9 @@ class Question(models.Model):
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
-    option = models.TextField()
+    option = models.TextField(blank=True, null=True)
+    percentage = models.DecimalField(blank=True, null=True,decimal_places=2,max_digits=3)
+    type = models.TextField(blank=True, null=True,choices=QUESTIONS_TYPES)
 
     def save(self):
         if not self.number:
@@ -42,7 +43,6 @@ class QuestionOption(models.Model):
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
-    type = models.TextField(blank=True, null=True,choices=TYPES_CHOICES)
     question = models.ManyToManyField(Question, related_name='voting_questions')
 
     start_date = models.DateTimeField(blank=True, null=True)
