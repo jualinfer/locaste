@@ -130,34 +130,44 @@ def get_voting(bot, update, user_data):
     url = "http://localhost:8000/voting/?id="+id
     r = requests.get(url)
     if r.json() != []:
-        update.message.reply_text("Here It is:")
-        msg = "------------------------------------------------------------\n*"+str(r.json()[0]['id']) + " - " + r.json()[0]['name'] + "*\n\n*" + r.json()[0]['question']['desc'] + "*\n\n"
-        reply_keyboard_options = []
-        options_dict = {}
-        for option in r.json()[0]['question']['options']:
-            options_dict[str(option['number']-1)] = option['option']
-            msg += str(option['number']-1) + ". " + option['option'] + "\n"
-        user_data['options_dict'] = options_dict
-        update.message.reply_text(msg + "\n" + 
-            "------------------------------------------------------------", parse_mode=ParseMode.MARKDOWN)
-        if r.json()[0]['end_date'] != None:
-            update.message.reply_text("This voting has already ended, exactly at " + r.json()[0]['end_date'].split('.')[0].replace('T',' '))
-            update.message.reply_text("Votes are not allowed for this voting anymore")
-            
+        #Check first if the user is registered to vote in this voting, that's has a census object
+        #url = settings.BASEURL + "/census/?voter_id=
+        url = "http://localhost:8000/census/?voter_id="+str(user_data['user_id'])
+        r2 = requests.get(url)
+        #if the user is registered to vote
+        if int(id) in r2.json()['voting']:
+            update.message.reply_text("Here It is:")
+            msg = "------------------------------------------------------------\n*"+str(r.json()[0]['id']) + " - " + r.json()[0]['name'] + "*\n\n*" + r.json()[0]['question']['desc'] + "*\n\n"
+            reply_keyboard_options = []
+            options_dict = {}
+            for option in r.json()[0]['question']['options']:
+                options_dict[str(option['number']-1)] = option['option']
+                msg += str(option['number']-1) + ". " + option['option'] + "\n"
+            user_data['options_dict'] = options_dict
+            update.message.reply_text(msg + "\n" + 
+                "------------------------------------------------------------", parse_mode=ParseMode.MARKDOWN)
+            if r.json()[0]['end_date'] != None:
+                update.message.reply_text("This voting has already ended, exactly at " + r.json()[0]['end_date'].split('.')[0].replace('T',' '))
+                update.message.reply_text("Votes are not allowed for this voting anymore")
+                
+            else:
+                #If the user can vote for this voting we need to store voting pub_key in order to encrypt the user vote
+                user_data['pub_key'] = r.json()[0]['pub_key']
+                #And also the voting_id
+                user_data['voting_id'] = id
+
+                reply_keyboard_options.append(numpy.asarray(list(options_dict.keys())))
+                reply_keyboard_options.append(['Cancel'])
+                markup_options = ReplyKeyboardMarkup(reply_keyboard_options)
+                update.message.reply_text("What option are you voting, " + user_data['username'] + "?",
+                reply_markup=markup_options)
+
+                return OPTION_VOTED
+        #if the user is not registered to vote       
         else:
-            #If the user can vote for this voting we need to store voting pub_key in order to encrypt the user vote
-            user_data['pub_key'] = r.json()[0]['pub_key']
-            #And also the voting_id
-            user_data['voting_id'] = id
+            update.message.reply_text("Sorry, I can't show you this voting since You are not registered to vote")
 
-            reply_keyboard_options.append(numpy.asarray(list(options_dict.keys())))
-            reply_keyboard_options.append(['Cancel'])
-            markup_options = ReplyKeyboardMarkup(reply_keyboard_options)
-            update.message.reply_text("What option are you voting, " + user_data['username'] + "?",
-            reply_markup=markup_options)
-
-            return OPTION_VOTED
-
+    #If id introduced doesn't correspond to any voting_id in decide system        
     else:
         update.message.reply_text("Sorry, It seems like the voting doesn't exist in Decide Locaste system")
         update.message.reply_text("Check the id introduced or contact with the admin")
@@ -171,7 +181,7 @@ def option_voted(bot, update, user_data):
     options_dict = user_data['options_dict']
     if(update.message.text in list(options_dict.keys())):
         update.message.reply_text("You have voted option: " + update.message.text + ". " + options_dict[update.message.text], reply_markup=markup_quit)
-        #Aquí la encriptación del voto etc
+        #Here encrypt the vote
         vote_number_for_decide = int(update.message.text)
         vote_number_for_decide += 1
         import elgamal
@@ -182,10 +192,14 @@ def option_voted(bot, update, user_data):
         #url = settings.BASEURL + "/store/
         url = "http://localhost:8000/store/"
         r = requests.post(url, auth=(user_data['username'], user_data['password']), json={'voting': user_data['voting_id'], 'voter': user_data['user_id'],'vote': {'a':str(cifrado[0]), 'b':str(cifrado[1])} })
-        update.message.reply_text("Congratulations! The vote was send to decide system succesfully")
-        update.message.reply_text("Remember that you can modify your vote until the voting is finished by his owner")
+        if r.status_code == 200:
+            update.message.reply_text("Congratulations! The vote was send to decide system succesfully")
+            update.message.reply_text("Remember that you can modify your vote until the voting is finished by his owner")
+            
+        else:
+            update.message.reply_text("Oops something went wrong. Try it again later")
         update.message.reply_text("What are we doing next " + user_data['username'] + "?",
-        reply_markup=markup_logged)
+                reply_markup=markup_logged)
 
         return CHOOSING_LOGGED
     else:
