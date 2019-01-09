@@ -93,75 +93,17 @@ class PostProcView(APIView):
 
         return Response(out)
 
-    def majorresthare(self, options, seats, census):
+    def majorrest(self, options, seats, census, quotient):
         results = []
         residualvoteslist = []
         voters = sum(opt['votes'] for opt in options)
-        q = round(voters/seats)
-        seatsleft = seats
+        if quotient == 'hare':
+            q = round(voters/seats)
+        elif quotient == 'droop':
+            q = 1 + round(voters/(seats + 1))
+        elif quotient == 'imperiali':
+            q = round(voters/(seats + 2))
 
-        for option in options:
-            e = option['votes'] // q
-            seatsleft = seatsleft - e
-            results.append({
-                **option,
-                'postproc': e,
-            });
-            residualvoteslist.append({
-                **option,
-                'residualvotes': option['votes'] - (q*e),
-            });
-
-        resultscopy = results
-        for seat in range(seatsleft):
-            opt = max(residualvoteslist, key=lambda opt: opt['residualvotes'])
-            aux = next((o for o in results if o['option'] == opt['option']), None)
-            aux['postproc'] = aux['postproc'] + 1
-            residualvoteslist.remove({**opt});
-
-
-        part = self.participation(census, voters)
-        out = {'results': results, 'participation': part}
-
-        return Response(out)
-
-    def majorrestdroop(self, options, seats, census):
-        results = []
-        residualvoteslist = []
-        voters = sum(opt['votes'] for opt in options)
-        q = 1 + round(voters/(seats + 1))
-        seatsleft = seats
-
-        for option in options:
-            e = option['votes'] // q
-            seatsleft = seatsleft - e
-            results.append({
-                **option,
-                'postproc': e,
-            });
-            residualvoteslist.append({
-                **option,
-                'residualvotes': option['votes'] - (q*e),
-            });
-
-        resultscopy = results
-        for seat in range(seatsleft):
-            opt = max(residualvoteslist, key=lambda opt: opt['residualvotes'])
-            aux = next((o for o in results if o['option'] == opt['option']), None)
-            aux['postproc'] = aux['postproc'] + 1
-            residualvoteslist.remove({**opt});
-
-
-        part = self.participation(census, voters)
-        out = {'results': results, 'participation': part}
-
-        return Response(out)
-
-    def majorrestimperiali(self, options, seats, census):
-        results = []
-        residualvoteslist = []
-        voters = sum(opt['votes'] for opt in options)
-        q = round(voters/(seats + 2))
         seatsleft = seats
 
         for option in options:
@@ -204,10 +146,10 @@ class PostProcView(APIView):
         elif t == 'BORDA':
             return self.borda(opts)
         elif t == 'MAJORRESTHARE':
-            return self.majorresthare(opts, seats, census)
+            return self.majorrest(opts, seats, census, 'hare')
         elif t == 'MAJORRESTDROOP':
-            return self.majorrestdroop(opts, seats, census)
+            return self.majorrest(opts, seats, census, 'droop')
         elif t == 'MAJORRESTIMPERIALI':
-            return self.majorrestimperiali(opts, seats, census)
+            return self.majorrest(opts, seats, census, 'imperiali')
 
         return Response({})
