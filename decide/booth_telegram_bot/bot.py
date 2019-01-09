@@ -68,7 +68,6 @@ def login(bot, update, user_data):
     if r.status_code == 200:
         update.message.reply_text("Great!")
         update.message.reply_text("Logged succesfully")
-        del user_data['password']
         user_data['token'] = r.json()['key']
 
         #Now we have the token, so we can request the user id to the Decide Locaste API
@@ -148,6 +147,8 @@ def get_voting(bot, update, user_data):
         else:
             #If the user can vote for this voting we need to store voting pub_key in order to encrypt the user vote
             user_data['pub_key'] = r.json()[0]['pub_key']
+            #And also the voting_id
+            user_data['voting_id'] = id
 
             reply_keyboard_options.append(numpy.asarray(list(options_dict.keys())))
             reply_keyboard_options.append(['Cancel'])
@@ -173,6 +174,20 @@ def option_voted(bot, update, user_data):
         #Aquí la encriptación del voto etc
         vote_number_for_decide = int(update.message.text)
         vote_number_for_decide += 1
+        import elgamal
+        tupla = (user_data['pub_key']['p'],user_data['pub_key']['g'],user_data['pub_key']['y'])
+        key = elgamal.construct(tupla)
+        import random
+        cifrado = key.encrypt(vote_number_for_decide, random.getrandbits(256))
+        #url = settings.BASEURL + "/store/
+        url = "http://localhost:8000/store/"
+        r = requests.post(url, auth=(user_data['username'], user_data['password']), json={'voting': user_data['voting_id'], 'voter': user_data['user_id'],'vote': {'a':str(cifrado[0]), 'b':str(cifrado[1])} })
+        update.message.reply_text("Congratulations! The vote was send to decide system succesfully")
+        update.message.reply_text("Remember that you can modify your vote until the voting is finished by his owner")
+        update.message.reply_text("What are we doing next " + user_data['username'] + "?",
+        reply_markup=markup_logged)
+
+        return CHOOSING_LOGGED
     else:
         update.message.reply_text("There is no option " + update.message.text + " in the possible options")
 
@@ -188,6 +203,7 @@ def logout(bot, update, user_data):
     update.message.reply_text('Bye ' + user_data['username'] + ", have a nice day!", reply_markup=markup_quit)
     update.message.reply_text("Don't forget I'm still here, just wake me up by introducing /start if you need me")
     del user_data['username']
+    del user_data['password']
     del user_data['token']
     del user_data['user_id']
 
