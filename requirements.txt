@@ -11,6 +11,10 @@ django-rest-swagger==2.2.0
 django-rest-auth==0.9.3
 django-allauth==0.38.0
 
+#Heroku requirements
+django-heroku
+gunicorn
+
 #Booth Telegram bot requirements
 python-telegram-bot
 python-dotenv

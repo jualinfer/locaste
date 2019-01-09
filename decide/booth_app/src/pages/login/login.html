@@ -1,0 +1,78 @@
+<ion-grid>
+    <ion-row>
+        <ion-col col-xl-4 col-0></ion-col>
+        <ion-col col-xl-4 col-12>
+            <div class="container" *ngIf="status == 'login'">
+                <ion-navbar>
+                    <ion-title>Login</ion-title>
+                </ion-navbar>
+                <div class="login-form">
+                    <ion-list>
+                        <ion-item>
+                            <ion-label floating>Username</ion-label>
+                            <ion-input [(ngModel)]="username" type="text"></ion-input>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label floating>Password</ion-label>
+                            <ion-input [(ngModel)]="password" type="password"></ion-input>
+                        </ion-item>
+                    </ion-list>
+                    <button class="botton" ion-button block (click)="login()"> Send </button>
+                    <button class="botton" ion-button block (click)="changeStatus('signUp')">Sign Up</button>
+                </div>
+                <div *ngIf="error !=null" class="error">
+                    error
+                </div>
+            </div>
+
+            <div class="container" *ngIf="status == 'signUp'">
+                <ion-navbar>
+                    <ion-title>Sign up</ion-title>
+                </ion-navbar>
+                <div class="login-form">
+                    <ion-list>
+                        <ion-item>
+                            <ion-label floating>Username</ion-label>
+                            <ion-input [(ngModel)]="username" type="text"></ion-input>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label floating>Password</ion-label>
+                            <ion-input [(ngModel)]="password" type="password"></ion-input>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label floating>Repeat your password</ion-label>
+                            <ion-input [(ngModel)]="password2" type="password"></ion-input>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label floating>Birthdate</ion-label>
+                            <ion-datetime displayFormat="DD/MM/YYYY" [(ngModel)]="birthdate"></ion-datetime>
+                        </ion-item>
+
+                        <ion-list radio-group [(ngModel)]="gender">
+                            <ion-label>Gender</ion-label>
+                            <ion-item>
+                                <ion-label>Male</ion-label>
+                                <ion-radio value="male" checked></ion-radio>
+                            </ion-item>
+                            <ion-item>
+                                <ion-label>Female</ion-label>
+                                <ion-radio value="female"></ion-radio>
+                            </ion-item>
+                            <ion-item>
+                                <ion-label>Other</ion-label>
+                                <ion-radio value="other"></ion-radio>
+                            </ion-item>
+                        </ion-list>
+                    </ion-list>
+                    <button class="botton" ion-button block (click)="signUp()">Send</button>
+                    <button class="botton" ion-button block (click)="changeStatus('login')">Log in</button>
+                </div>
+                <div *ngIf="error !=null" class="error">
+                    error
+                </div>
+            </div>
+
+        </ion-col>
+        <ion-col col-xl-4 col-0></ion-col>
+    </ion-row>
+</ion-grid>

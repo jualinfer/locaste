@@ -53,14 +53,24 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'allauth.socialaccount.providers.facebook',
+
+    #Required for authentication with google
+    'allauth.socialaccount.providers.google',
+
+    #Required for authentication with twitter
+    'allauth.socialaccount.providers.twitter',
 ]
 
 SITE_ID = 1
+
+LOGIN_URL_REDIRECT = '/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     )
 }
 
@@ -80,7 +90,9 @@ MODULES = [
     'voting',
 ]
 
-BASEURL = 'http://localhost:8000'
+BASEURL = 'https://locaste-decide.herokuapp.com'
+
+APIS = {}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -96,6 +108,14 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'decide.urls'
 CORS_ORIGIN_ALLOW_ALL = True
+
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend'
+)
 
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of `allauth`
@@ -183,4 +203,18 @@ except ImportError:
     print("local_settings.py not found")
 
 
+import django_heroku
+django_heroku.settings(locals())
+
 INSTALLED_APPS = INSTALLED_APPS + MODULES
+
+
+LOGIN_REDIRECT_URL = '/'
+
+
+#Overrides rest-auth register serializer
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'authentication.serializers.UserSignupSerializer'
+ }
+
+ACCOUNT_LOGOUT_ON_GET = True
