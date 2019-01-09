@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import generics
 from rest_framework.response import Response
+from .serializers import CensusSerializer
 from rest_framework.status import (
     HTTP_201_CREATED as ST_201,
     HTTP_204_NO_CONTENT as ST_204,
@@ -22,6 +23,8 @@ from base import mods
 
 
 class CensusCreate(generics.ListCreateAPIView):
+    queryset = Census.objects.all()
+    serializer_class = CensusSerializer
     # permission_classes = (AllowAny,)
 
     def create(self, request, *args, **kwargs):
