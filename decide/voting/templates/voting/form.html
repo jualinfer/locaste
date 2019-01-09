@@ -1,7 +1,7 @@
 <script src="https://code.jquery.com/jquery-3.3.1.js"
 			  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
 			  crossorigin="anonymous"></script>
-<form method="post" id="formulary" action="/voting/create/">
+<form method="post" id="formulary" action="/voting/create/" onsubmit="return checkCustomUrl($('#id_custom_url').val());">
     {% csrf_token %}
     <div id="content">
         <div id="fields">
@@ -22,7 +22,7 @@
     {% if is_auth %}
         <button type="button" onclick="add_auth();">Add auth</button>
     {% endif %}
-    <input type="submit" value="Crear"/>
+    <input type="submit" value="Create"/>
 </form>
 <script>
     function add_auth() {
@@ -42,4 +42,21 @@
     function remove_element(event) {
          $(event.target).parent().remove();
     }
+
+    function checkCustomUrl(customUrlValue) {
+        let result = true;
+
+        // This checks that no '/' are contained in custom url
+        if (String(customUrlValue).includes('/')) {
+            window.alert('Field \'custom URL\' contains forbidden character: \'/\'');
+            result = false;
+            // This checks that no whitespaces are contained in custom url
+        } else if (/\s/.test(String(customUrlValue))) {
+            window.alert('Field \'custom URL\' cannot contain whitespaces');
+            result = false;
+        }
+
+        return result;
+    }
+
 </script>
