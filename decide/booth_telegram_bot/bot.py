@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 import requests
+import re
 
 
 TOKEN = os.getenv("TOKEN")
@@ -24,25 +25,109 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-reply_keyboard = [['Log in', 'Cancel']]
+reply_keyboard = [['Sign up', 'Log in', 'Cancel']]
 reply_keyboard_tryagain = [['Try again', 'Cancel']]
+reply_keyboard_gender = [['Male', 'Female', 'Other']]
 reply_keyboard_logged = [["Show votings in which I'm registered to vote"],[ 'Access to a voting', 'Log out']]
 markup = ReplyKeyboardMarkup(reply_keyboard )
 markup_tryagain = ReplyKeyboardMarkup(reply_keyboard_tryagain)
+markup_gender = ReplyKeyboardMarkup(reply_keyboard_gender)
 markup_logged = ReplyKeyboardMarkup(reply_keyboard_logged)
 markup_quit = ReplyKeyboardRemove()
 
-CHOOSING_NOT_LOGGED,CHOOSING_LOGGED,OPTION_VOTED, TYPING_USERNAME, TYPING_PASSWORD, TYPING_VOTING_ID  = range(6)
+CHOOSING_NOT_LOGGED,CHOOSING_LOGGED,OPTION_VOTED, TYPING_USERNAME, TYPING_PASSWORD, TYPING_VOTING_ID, TYPING_USERNAME_SIGNUP, TYPING_PASSWORD_SINGUP, TYPING_CONFIRMATION_PASSWORD_SINGUP, TYPING_BIRTHDATE_SIGNUP, TYPING_GENDER_SINGUP  = range(11)
 
 def start(bot, update):
     """Send welcome messages when the command /start is issued."""
     update.message.reply_text('Welcome!')
     update.message.reply_text("I'm DecideLocasteBoothBot, the Telegram virtual booth assistant for Decide Locaste")
-    update.message.reply_text("First of all, you need to log in with your Decide Locaste credentials in order to access your votings",
+    update.message.reply_text("First of all, you need to sign up or to log in with your Decide Locaste credentials in order to access your votings",
     reply_markup=markup)
 
     return CHOOSING_NOT_LOGGED
+
+#Sign up process
+def introduce_username_signup(bot, update):
+    update.message.reply_text("Let's get to work", reply_markup=markup_quit)
+    update.message.reply_text('Introduce an username, please')
+
+    return TYPING_USERNAME_SIGNUP
+
+def introduce_password_signup(bot, update, user_data):
+    text = update.message.text
+    user_data['username'] = text
+    update.message.reply_text("Introduce your password")
+
+    return TYPING_PASSWORD_SINGUP
+
+def introduce_confirmation_password_signup(bot, update, user_data):
+    text = update.message.text
+    user_data['password'] = text
+    update.message.reply_text("Confirm your password again")
+
+    return TYPING_CONFIRMATION_PASSWORD_SINGUP
+
+def introduce_birthdate(bot, update, user_data):
+    text = update.message.text
+    user_data['confirmation'] = text
+    if(user_data['confirmation'] != user_data['password']):
+        update.message.reply_text("Confirmation doesn't match password")
+        update.message.reply_text("Check it")
+        update.message.reply_text("Introduce your password again")
+
+        return TYPING_PASSWORD_SINGUP
+    else:
+        update.message.reply_text("Introduce your birthdate in the following format: yyyy-mm-dd")
+
+        return TYPING_BIRTHDATE_SIGNUP
+
+def introduce_gender_signup(bot, update, user_data):
+    text = update.message.text
+    user_data['birthdate'] = text
+    if(re.match("^\d{4}-\d{2}-\d{2}$",text) == None):
+        update.message.reply_text("The birthdate introduced doesn't follow the restricted format")
+        update.message.reply_text("Check it")
+        update.message.reply_text("Introduce your birthdate again")
+
+        return TYPING_BIRTHDATE_SIGNUP
+    else:
+        update.message.reply_text("Introduce your gender with the menu options",
+            reply_markup=markup_gender)
+
+        return TYPING_GENDER_SINGUP
+
+def signup(bot, update, user_data):
+    text = update.message.text
+    user_data['gender'] = text
+
+    if(re.match("^Male|Female|Other$",text) == None):
+        update.message.reply_text("The gender introduced doesn't follow the restricted format")
+        update.message.reply_text("Check it")
+        update.message.reply_text("Introduce your gender again",
+            reply_markup=markup_gender)
+
+        return TYPING_GENDER_SINGUP
+    else:
+        #url = settings.BASEURL + "/authentication/signup/"
+        url = "http://localhost:8000/authentication/signup/"
+        r = requests.post(url, data={'username': user_data['username'], 'password1': user_data['password'], 'password2': user_data['confirmation'], 'birthdate': user_data['birthdate']+"T00:00",'gender': user_data['gender']})
+        if r.status_code == 201:
+            update.message.reply_text("Sign up performed succesfully!")
+            update.message.reply_text("You can try to log in with the created credentials now",
+                reply_markup=markup)
+        elif r.status_code == 400:
+            update.message.reply_text("Sorry...")
+            update.message.reply_text("Username is already in use")
+            update.message.reply_text("Try another one",
+                reply_markup=markup)
+        else:
+            update.message.reply_text("There is a problem with decide system try again later",
+                reply_markup=markup)
+
+        return CHOOSING_NOT_LOGGED
     
+    
+#Log in process    
 def introduce_username(bot, update):
     update.message.reply_text("Good choice!", reply_markup=markup_quit)
     update.message.reply_text("Introduce your username, please")
@@ -248,7 +333,8 @@ def main():
         entry_points=[CommandHandler('start', start),],
 
         states={
-            CHOOSING_NOT_LOGGED: [RegexHandler('^(Log\s+in|Try\s+again)$',introduce_username),
+            CHOOSING_NOT_LOGGED: [RegexHandler('^(Sign\s+up)$',introduce_username_signup),
+                        RegexHandler('^(Log\s+in|Try\s+again)$',introduce_username),
                         RegexHandler('^Cancel$',cancel),
                         ],
 
@@ -265,6 +351,21 @@ def main():
                            ],
 
             TYPING_PASSWORD: [MessageHandler(Filters.text, login, pass_user_data=True),
+                           ],
+
+            TYPING_USERNAME_SIGNUP: [MessageHandler(Filters.text,introduce_password_signup,pass_user_data=True),
+                           ],
+
+            TYPING_PASSWORD_SINGUP: [MessageHandler(Filters.text, introduce_confirmation_password_signup, pass_user_data=True),
+                           ],
+
+            TYPING_CONFIRMATION_PASSWORD_SINGUP: [MessageHandler(Filters.text,introduce_birthdate,pass_user_data=True),
+                           ],
+
+            TYPING_BIRTHDATE_SIGNUP: [MessageHandler(Filters.text, introduce_gender_signup, pass_user_data=True),
+                           ],
+            
+            TYPING_GENDER_SINGUP: [MessageHandler(Filters.text,signup,pass_user_data=True),
                            ],
 
             TYPING_VOTING_ID: [MessageHandler(Filters.text, get_voting, pass_user_data=True),
