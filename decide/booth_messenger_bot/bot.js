@@ -137,6 +137,37 @@ bot.on('postback:BOT_LOG_IN', (payload, chat) => {
   }
 });
 
+bot.on('postback:BOT_LOG_OUT', (payload, chat) => {
+  const options = { typing: true };
+  if (config.login === true) {
+    config.login = false;
+    config.token = null;
+    request.get('http://localhost:8000/rest-auth/logout/', function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        chat.getUserProfile().then((user) => {
+          const logoutMessage1 = `Logged out successfully!`;
+          const logoutMessage2 = `Well, ${user.first_name} , I hope I have been helpful.`;
+          const logoutMessage3 = `If you need me again, just let me know!`;
+          chat.say([logoutMessage1, logoutMessage2, logoutMessage3], options);
+        });
+      } else {
+        const errorMessage1 = `An error was produced while logging out...`;
+        const errorMessage2 = {
+          text: 'Do you want to try again?',
+          buttons: [
+            { type: 'postback', title: 'Try again', payload: 'BOT_LOG_OUT' },
+            { type: 'postback', title: 'Help', payload: 'BOT_HELP' }
+          ]
+        };
+        chat.say([errorMessage1, errorMessage2], options);
+      }
+    });
+  } else {
+    chat.say("You are not logged in!", options);
+  }
+});
+
+
 bot.on('postback:BOT_CANCEL', (payload, chat) => {
   const options = { typing: true };
   const message1 = "If you need me again you can call me by typing 'Get Started'.";
