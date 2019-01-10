@@ -273,29 +273,25 @@ def create_question_options_formularies(request,question_forms,question_option_f
     normalQuestionIndex = 0
 
     #obtenemos las preguntas
-    for question in request.POST['descs'].values():
+    for question in dict(request.POST)['descs[]']:
         questios.append(question)
 
     #obtenemos los tipos de las preguntas
-    for type in request.POST['types']:
+    for type in dict(request.POST)['types[]']:
         typesList.append(type)
         if type == "Normal" :
             normalQuestionIndex += 1
 
-    #si tenemos preguntas de tipo normal de restamos uno al total
-    #ya que el primer índice es el 0
-    if normalQuestionIndex >0:
-        normalQuestionIndex -= 1
-
     #obtenemos la lista de preguntas para cada respuesta normal
-    for i in range(0,normalQuestionIndex):
-        answerKey = "answers["+ str(i) + "][]"
-        for answer in request.POST.getlist(answerKey):
-            answers.append(answer)
+    for i in range(0,len(questios)):
+        if typesList[i] == "Normal":
+            answerKey = "answers["+ str(i) + "][]"
+            for answer in dict(request.POST)[answerKey]:
+                answers.append(answer)
 
 
     #montamos los formularios
-    for j in range(0,len(question)-1):
+    for j in range(0,len(question)):
         index = 0;
         question_forms.append(QuestionForm({'desc': question[j],'type':type[j]}))
 
@@ -306,7 +302,7 @@ def create_question_options_formularies(request,question_forms,question_option_f
                 question_option_forms[j].append(QuestionOptionForm({'option': answer}))
         elif type[j]=="Range":
             #posible cambio en otra issue para que el rango sea configurable
-            for a in range(1,5):
+            for a in range(1,6):
                 question_option_forms[j].append(QuestionOptionForm({'number': a}))
                 a+=1
         elif type[j]=="Percentage":
