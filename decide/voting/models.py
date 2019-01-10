@@ -19,9 +19,10 @@ QUESTIONS_TYPES = [
 ]
 class Question(models.Model):
     desc = models.TextField()
+    type = models.TextField(blank=True, null=True, choices=QUESTIONS_TYPES)
 
     def __str__(self):
-        return self.desc
+        return self.descw
 
 
 class QuestionOption(models.Model):
@@ -29,7 +30,6 @@ class QuestionOption(models.Model):
     number = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField(blank=True, null=True)
     percentage = models.DecimalField(blank=True, null=True,decimal_places=2,max_digits=3)
-    type = models.TextField(blank=True, null=True,choices=QUESTIONS_TYPES)
 
     def save(self):
         if not self.number:

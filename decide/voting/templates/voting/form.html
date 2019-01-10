@@ -1,28 +1,53 @@
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <style>
+        body, h1, h2, h3, h4, h5 {
+            font-family: "Raleway", sans-serif
+        }
+    </style>
+    <title class="w3-container w3-red">Voting list</title>
+</head>
+<body>
+<header id="voting_management">
+    <div class="w3-container">
+        <h1><b>VOTING MANAGEMENT</b></h1>
+        <div class="w3-section w3-bottombar w3-padding-16">
+            <a href="/voting/list" class="w3-bar-item w3-button w3-padding w3-black"><i class="fa fa-list fa-fw"></i> List</a>
+            <a href="/voting/create" class="w3-bar-item w3-button w3-padding w3-black"><i
+                    class="fa fa-plus-circle fa-fw"></i> New Voting</a>
+        </div>
+    </div>
+</header>
 <script src="https://code.jquery.com/jquery-3.3.1.js"
-			  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
-			  crossorigin="anonymous"></script>
+        integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+        crossorigin="anonymous"></script>
 <form method="post" id="formulary" action="/voting/create/" onsubmit="return checkCustomUrl($('#id_custom_url').val());">
-    {% csrf_token %}
-    <div id="content">
+    <div id="content" class="w3-container w3-padding-large w3-white">
+        {% csrf_token %}
         <div id="fields">
             {% for field in form %}
                 {% if field.name in "me" %}
-                    <input id="defaultMe" type="hidden" name="{{ field.name }}" value="off" />
+                    <input id="defaultMe" type="hidden" name="{{ field.name }}" value="off"/>
                 {% endif %}
                 {{ field.label }}
                 {{ field }}
+
                 <br/>
             {% endfor %}
             {% if is_auth %}
                 <button type="button" onclick="remove_element(event);">X</button>
             {% endif %}
-        <br/>
+            <br/>
         </div>
     </div>
     {% if is_auth %}
-        <button type="button" onclick="add_auth();">Add auth</button>
+        <button class="w3-button w3-black w3-margin-bottom" type="button" onclick="add_auth();">Add auth</button>
     {% endif %}
-    <input type="submit" value="Create"/>
+    <input class="w3-button w3-black w3-margin-bottom" type="submit" value="Create"/>
+    </div>
 </form>
 <script>
     function add_auth() {
@@ -31,7 +56,7 @@
         for (var i = 0; i < empty_input.length; i++) {
             if ($(empty_input[i]).attr("type") == 'checkbox') {
                 $(empty_input[i]).prop("checked", false);
-            } else if ($(empty_input[i]).attr("type") != 'hidden'){
+            } else if ($(empty_input[i]).attr("type") != 'hidden') {
                 $(empty_input[i]).val("")
             }
         }
@@ -40,7 +65,7 @@
     }
 
     function remove_element(event) {
-         $(event.target).parent().remove();
+        $(event.target).parent().remove();
     }
 
     function checkCustomUrl(customUrlValue) {
@@ -60,3 +85,4 @@
     }
 
 </script>
+</body>
