@@ -25,7 +25,7 @@ def votingForm(request):
     global auth_forms
     global question_forms
     global question_option_forms
-
+    print(request.POST)
     if request.method == 'POST' and ('gender' in request.POST.keys()):
         voting_form = VotingForm(request.POST)
         if voting_form.is_valid():
@@ -44,14 +44,9 @@ def votingForm(request):
         if valid_objects(auth_forms):
             question_form = QuestionForm()
             question_option_form = QuestionOptionForm()
-            if (voting_form['type'].value() == 'Range'):
-                return render(request, 'voting/questionRange.html',
-                              {'question_form': question_form, 'question_option_form': question_option_form,
-                               'voting_url': 'http://127.0.0.1:8000/voting/create/'}, )
-            else:
-                return render(request, 'voting/questionForm.html',
-                              {'question_form': question_form, 'question_option_form': question_option_form,
-                               'voting_url': 'http://127.0.0.1:8000/voting/create/'}, )
+            return render(request, 'voting/questionForm.html',
+                          {'question_form': question_form, 'question_option_form': question_option_form,
+                           'voting_url': 'http://127.0.0.1:8000/voting/create/'})
         else:
             return render(request, 'voting/form.html', {'form': auth_form, 'is_auth': True})
 
