@@ -44,15 +44,11 @@ def votingForm(request):
         if valid_objects(auth_forms):
             question_form = QuestionForm()
             question_option_form = QuestionOptionForm()
-            if (voting_form['type'].value() == 'Range'):
-                return render(request, 'voting/questionRange.html',
-                              {'question_form': question_form, 'question_option_form': question_option_form,
-                               'voting_url': 'http://127.0.0.1:8000/voting/create/'}, )
-            else:
-                return render(request, 'voting/questionForm.html',
+            return render(request, 'voting/questionForm.html',
                               {'question_form': question_form, 'question_option_form': question_option_form,
                                'voting_url': 'http://127.0.0.1:8000/voting/create/'}, )
         else:
+            auth_forms = []
             return render(request, 'voting/form.html', {'form': auth_form, 'is_auth': True})
 
     elif request.method == 'POST' and voting_form is not None and voting_form.is_valid() and auth_form is not None and auth_form.is_valid() and (
@@ -189,32 +185,9 @@ def valid_objects(objects):
 
 def save_voting(request, voting_form, auth_forms, question_forms,
                 question_option_forms):
-    index = 0
-
-    for i, j in request.POST.items():
-        if "questionRange" in i:
-            for desc in request.POST.getlist(i):
-                question_forms.append(QuestionForm({'desc': desc}))
-                question_option_forms.append([])
-                question_option_forms[0].append(QuestionOptionForm({'option': '1'}))
-                question_option_forms.append([])
-                question_option_forms[1].append(QuestionOptionForm({'option': '2'}))
-                question_option_forms.append([])
-                question_option_forms[2].append(QuestionOptionForm({'option': '3'}))
-                question_option_forms.append([])
-                question_option_forms[3].append(QuestionOptionForm({'option': '4'}))
-                question_option_forms.append([])
-                question_option_forms[4].append(QuestionOptionForm({'option': '5'}))
-
-        elif "desc" in i:
-            for desc in request.POST.getlist(i):
-                question_forms.append(QuestionForm({'desc': desc}))
-        elif "answers" in i:
-            for option in request.POST.getlist(i):
-                question_option_forms.append([])
-                question_option_forms[index].append(QuestionOptionForm({'option': option}))
-        saved_questions = []
-        saved_auths = []
+    create_question_options_formularies(request, question_forms, question_option_forms)
+    saved_questions = []
+    saved_auths = []
 
     if valid_objects(question_forms):
         valid = True
@@ -262,11 +235,67 @@ def save_voting(request, voting_form, auth_forms, question_forms,
     else:
         question_form = QuestionForm()
         question_option_form = QuestionOptionForm()
+        question_forms=[]
+        question_option_forms = []
         return render(request, 'voting/questionForm.html',
                       {'question_form': question_form, 'question_option_form': question_option_form,
                        'voting_url': 'http://127.0.0.1:8000/voting/create/'})
 
 
-def create_question_by_type(request,question_forms,question_option_forms):
-   return question_forms
+def create_question_options_formularies(request,question_forms,question_option_forms):
+    typesList =[]
+    answers = []
+    questios = []
+    normalQuestionIndex = 0
+
+    #obtenemos las preguntas
+    for question in request.POST['descs'].values():
+        questios.append(question)
+
+    #obtenemos los tipos de las preguntas
+    for type in request.POST['types']:
+        typesList.append(type)
+        if type == "Normal" :
+            normalQuestionIndex += 1
+
+    #si tenemos preguntas de tipo normal de restamos uno al total
+    #ya que el primer índice es el 0
+    if normalQuestionIndex >0:
+        normalQuestionIndex -= 1
+
+    #obtenemos la lista de preguntas para cada respuesta normal
+    for i in range(0,normalQuestionIndex):
+        answerKey = "answers["+ str(i) + "][]"
+        for answer in request.POST.getlist(answerKey):
+            answers.append(answer)
+
+
+    #montamos los formularios
+    for j in range(0,len(question)-1):
+        index = 0;
+        question_forms.append(QuestionForm({'desc': question[j],'type':type[j]}))
+
+        #añadimos respuestas en funcion al tipo de pregunta
+        if type[j]=="Normal":
+            question_option_forms.append([])
+            for answer in answers[index]:
+                question_option_forms[j].append(QuestionOptionForm({'option': answer}))
+        elif type[j]=="Range":
+            #posible cambio en otra issue para que el rango sea configurable
+            for a in range(1,5):
+                question_option_forms[j].append(QuestionOptionForm({'number': a}))
+                a+=1
+        elif type[j]=="Percentage":
+            percentage = 0.00
+            # posible cambio en otra issue para que el porcentaje sea configurable
+            for b in range(0,20):
+                percentage = 0.00
+                question_option_forms[j].append(QuestionOptionForm({'percentage': percentage}))
+                percentage += 0.05
+                b+=1
+
+
+
+
+
 
