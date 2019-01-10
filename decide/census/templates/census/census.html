@@ -3,15 +3,27 @@
 
 {% block content %}
     <style>
-        .thumb {
-            height: 75px;
-            border: 1px solid #000;
-            margin: 10px 5px 0 0;
+        .container {
+            height: auto;
+            width: 100%;
         }
         table, th, td {
             border: 1px solid black;
         }
+        /* Create two equal columns that floats next to each other */
+        .container-left {
+          width: 49%;
+          height:auto;
+          float:left;
+        }
 
+        /* Clear floats after the columns */
+        .container-right{
+          width: 49%;
+          height:100px;
+          float:right;
+        }
+        
       
     </style>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/xlsx.full.min.js"></script>
@@ -19,8 +31,8 @@
 
     <h1>{{ voting.name }}</h1>
 
-    <div id="census_form">
-
+    <div id="census_form" class="container">
+        <div class="container-left">
         <label for="voter_id">{% trans "User IDs" %}</label>
         <input type="text" id="voter_id" name="voter_id" value=""/>
         {%trans "(You can put multiples IDs, separating them by commas)" %}
@@ -32,7 +44,6 @@
         <input type="file" id="fileUpload" />
         <input type="button" id="upload" value=" {% trans "Add Excel to census" %}" onclick="Upload()"/> <br><br>
 
-        <input type="button" id="export" value="{% trans "Show voting's census" %}" onclick="Export()"/>
         <p>
             {%trans "Excel file must have the following format (no header, no commas, on sheet 1):" %}
         </p>
@@ -60,6 +71,12 @@
                 </th>
             </tr>
         </table>
+
+        </div>
+        <div>
+            <input type="button" id="export" value="{% trans "Show voting's census" %}" onclick="Export()"/> <br><br>
+
+        </div>
 
     </div>
 
@@ -171,10 +188,14 @@
 
 
     function genera_tabla(data) {
-        debugger;
+
         // Obtener la referencia del elemento body
         var body = document.getElementsByTagName("body")[0];
+        //Crear y asignar atributo class a la etiqueta div
+        var div = document.createElement("div");
+        //div.class = "container-right";
 
+        var br = document.createElement("br");
         // Crea un elemento <table> y un elemento <tbody>
         var tabla   = document.createElement("table");
         tabla.id = "tablaId";
@@ -199,13 +220,27 @@
                 // agrega la hilera al final de la tabla (al final del elemento tblbody)
                 tblBody.appendChild(hilera);
             }
+
+            // posiciona el <tbody> debajo del elemento <table>
+            tabla.appendChild(tblBody);
+            //añadir div al body
+            body.appendChild(div);
+            // appends <table> into <body>
+            div.appendChild(tabla);
+
+            // modifica el atributo "border" de la tabla y lo fija a "2";
+            tabla.setAttribute("border", "2");
+
             //Crear boton export census
             var boton = document.createElement("input");
             boton.type = "button";
             boton.id = "botonId";
             boton.value = "Export census to xls file";
             boton.setAttribute("onclick", "exportTableToExcel(tablaId)");
-            document.body.appendChild(boton);
+
+            div.appendChild(br);
+            div.appendChild(boton);
+            document.body.appendChild(div);
 
         }else{
             var hilera = document.createElement("tr");
@@ -214,13 +249,16 @@
             celda.appendChild(textoCelda);
             hilera.appendChild(celda);
             tblBody.appendChild(hilera);
+            // posiciona el <tbody> debajo del elemento <table>
+            tabla.appendChild(tblBody);
+            // appends <table> into <body>
+            div.appendChild(tabla);
+            body.appendChild(div);
+            // modifica el atributo "border" de la tabla y lo fija a "2";
+            tabla.setAttribute("border", "2");
         }
-        // posiciona el <tbody> debajo del elemento <table>
-        tabla.appendChild(tblBody);
-        // appends <table> into <body>
-        body.appendChild(tabla);
-        // modifica el atributo "border" de la tabla y lo fija a "2";
-        tabla.setAttribute("border", "2");
+
+
         }
 
         function exportTableToExcel(tablaID, filename = ''){
