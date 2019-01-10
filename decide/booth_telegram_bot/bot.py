@@ -63,9 +63,25 @@ def introduce_password_signup(bot, update, user_data):
 def introduce_confirmation_password_signup(bot, update, user_data):
     text = update.message.text
     user_data['password'] = text
-    update.message.reply_text("Confirm your password again")
+    if(len(text) < 8):
+        update.message.reply_text("The password must contain atleast 8 digits")
+        update.message.reply_text("Introduce your password again")
 
-    return TYPING_CONFIRMATION_PASSWORD_SINGUP
+        return TYPING_PASSWORD_SINGUP
+    elif(re.search("\d+",text)):
+        update.message.reply_text("The password can't be entirely numeric")
+        update.message.reply_text("Introduce your password again")
+
+        return TYPING_PASSWORD_SINGUP
+    elif(re.match("^asdfghjk|asdfghjkl|asdfghjklñ$",text)):
+        update.message.reply_text("The password is too common")
+        update.message.reply_text("Introduce your password again")
+
+        return TYPING_PASSWORD_SINGUP
+    else:
+        update.message.reply_text("Confirm your password again")
+
+        return TYPING_CONFIRMATION_PASSWORD_SINGUP
 
 def introduce_birthdate(bot, update, user_data):
     text = update.message.text
