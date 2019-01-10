@@ -17,9 +17,11 @@ QUESTIONS_TYPES = [
     ("Percentage", "Percentage"),
     ("Normal", "Normal"),
 ]
+
+
 class Question(models.Model):
     desc = models.TextField()
-    type = models.TextField(blank=True, null=True, choices=QUESTIONS_TYPES)
+    type = models.TextField(blank=True, null=True, default=("Normal", "Normal"), choices=QUESTIONS_TYPES)
 
     def __str__(self):
         return self.descw

@@ -19,7 +19,7 @@
 <form id="question_form">
     {% csrf_token %}
     <div id="content">
-        <div id="question">
+        {% comment %}<div id="question">
             <div id="remove">
             </div>
             {{ question_form }}
@@ -30,13 +30,14 @@
                 {{ question_option_form }}
             </div>
 
-        </div>
+        </div>{% endcomment %}
     </div>
     <button type="button" onclick="add_question();">add question</button>
     <select id="question_type" name="question_type">
-        {% for type in types %}
-            <option>{{ type }}</option>
-        {% endfor %}
+
+        <option>Normal</option>
+        <option>Range</option>
+        <option>Percentage</option>
     </select>
 
     <input type="button" value="Enviar preguntas" onclick="submit_questions();"/>
@@ -45,17 +46,42 @@
 
 <script>
     function add_question() {
-        var question_formulary = $('#question').clone().first();
-        var empty_input = question_formulary;
-        empty_input.find('textarea').val('');
-        empty_input.find('#answer').find('textarea').val('');
-        empty_input.find('#remove').append("<button type=\"button\" onclick=\"remove_element(event);\">X</button>");
-        empty_input.name('')
-        var len = empty_input.find('#answer').length;
-        for(var i=1; i<len; i++){
-            empty_input.find('#answer')[0].remove()
+        var question_formulary = $('#content');
+        //empty_input.find('textarea').val('');
+        //empty_input.find('#answer').find('textarea').val('');
+        //empty_input.find('#remove').append("<button type=\"button\" onclick=\"remove_element(event);\">X</button>");
+
+        var type_question = $('#question_form').find("#question_type").children("option:selected").val();
+        var html_obj = "<div id=\"question\">\n" +
+                "            <div id=\"remove\">\n" +
+                "            </div>\n" +
+                "            <label for=\"id_desc\">Desc:</label><textarea name=\"desc\" cols=\"80\" rows=\"20\" required=\"\" id=\"id_desc\"></textarea>\n";
+        if(type_question =="Normal") {
+            html_obj+= "<label for=\"id_type\">Type:</label><select name=\"type\" readonly=\"\" disabled=\"\" id=\"id_type\">\n" +
+                "  <option value=\"\">---------</option>\n" +
+                "\n" +
+                "  <option value=\"Normal\" selected=\"\">Normal</option>\n" +
+                "\n" +
+                "</select>\n" +
+                "            <br>\n" +
+                "            <button type=\"button\" onclick=\"add_answer(event);\">Add answer</button>\n" +
+                "            <br>\n" +
+                "            <div id=\"answer\">\n" +
+                "                <label for=\"id_option\">Option:</label><textarea name=\"option\" cols=\"40\" rows=\"10\" id=\"id_option\"></textarea>\n" +
+                "            </div>\n" +
+                "\n" +
+                "        </div>";
+        }else{
+            html_obj+= "<label for=\"id_type\">Type:</label><select name=\"type\" readonly=\"\" disabled=\"\" id=\"id_type\">\n" +
+                "  <option value=\"\">---------</option>\n" +
+                "\n" +
+                "  <option selected=\"\" value=\""+type_question+"\" >"+type_question+"</option>\n" +
+                "\n" +
+                "</select>\n" +
+                "            <br>\n";
         }
-        $('#content').append(empty_input);
+        question_formulary.append(html_obj);
+        //$('#content').append(empty_input);
 
     }
      function add_answer(event) {
@@ -76,6 +102,7 @@
     function submit_questions(){
         var descs = [];
         var answers = [];
+        var types = [];
         var question_formulary = $('#content').children('#question');
 
         for (var i=0; i<question_formulary.length; i++){
@@ -84,7 +111,10 @@
              for(var j=0; j< $(question_formulary[i]).find('#answer').length; j++){
                 answers[i][j] = $($(question_formulary[i]).find('#answer')[j]).find('textarea').val();
              }
+             types[i]=$(question_formulary[i]).find("#id_type").children("option:selected").val();
         }
+        alert(types);
+        alert(answers);
         $.post("{{ voting_url }}", {'descs': descs, "answers": answers, 'csrfmiddlewaretoken':$('#question_form').find('input').first().val()}).done(function(data){
             window.location.replace('/admin');
         });

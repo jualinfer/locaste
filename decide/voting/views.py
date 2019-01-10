@@ -11,6 +11,7 @@ from .serializers import VotingSerializer
 from base.perms import UserIsStaff
 from base.models import Auth
 from .forms.forms import VotingForm, QuestionForm, QuestionOptionForm, AuthForm
+from django.db import transaction
 
 voting_form = None
 question_forms = []
@@ -19,18 +20,40 @@ auth_forms = []
 question_option_forms = []
 
 
+def check_voting_form_restrictions(form):
+    correct = True
+    error_message = ''
+
+    custom_url = form.cleaned_data["custom_url"]
+    max_age = form.cleaned_data["max_age"]
+    min_age = form.cleaned_data["min_age"]
+
+    if '/' in custom_url or ' ' in custom_url:
+        correct = False
+        error_message = "Custom URL field cannot contain \'/\' or whitespaces"
+    elif max_age < min_age:
+        correct = False
+        error_message = "Max age cannot be lower than min age"
+
+    return form.is_valid() and correct, error_message
+
+
 def votingForm(request):
     global voting_form
     global auth_form
     global auth_forms
     global question_forms
     global question_option_forms
-
+    print(request.POST)
     if request.method == 'POST' and ('gender' in request.POST.keys()):
         voting_form = VotingForm(request.POST)
-        if voting_form.is_valid():
+        correct, error_message = check_voting_form_restrictions(voting_form)
+        if correct:
             auth_form = AuthForm()
             return render(request, 'voting/form.html', {'form': auth_form, 'is_auth': True})
+        else:
+            return render(request, 'voting/form.html', {'error': True, 'error_message': error_message,
+                                                        'form': voting_form})
 
     elif request.method == 'POST' and voting_form is not None and voting_form.is_valid() and (
             'url' in request.POST.keys()):
@@ -45,8 +68,8 @@ def votingForm(request):
             question_form = QuestionForm()
             question_option_form = QuestionOptionForm()
             return render(request, 'voting/questionForm.html',
-                              {'question_form': question_form, 'question_option_form': question_option_form,
-                               'voting_url': 'http://127.0.0.1:8000/voting/create/'}, )
+                          {'question_form': question_form, 'question_option_form': question_option_form,
+                           'voting_url': 'http://127.0.0.1:8000/voting/create/'})
         else:
             auth_forms = []
             return render(request, 'voting/form.html', {'form': auth_form, 'is_auth': True})
@@ -183,6 +206,7 @@ def valid_objects(objects):
     return valid
 
 
+@transaction.non_atomic_requests
 def save_voting(request, voting_form, auth_forms, question_forms,
                 question_option_forms):
     create_question_options_formularies(request, question_forms, question_option_forms)
