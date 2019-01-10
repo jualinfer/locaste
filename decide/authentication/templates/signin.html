@@ -7,20 +7,28 @@
 
 
 {% if not user.is_authenticated %}
-	<div>
+	<div class="text-center">
 		<h1>Sign in</h1>
 		<h2>Please enter your username and your password</h2>
 	</div>
 
-    <div id="login">
-        <p>If you have not created an account yet, then please <button onClick="window.location.href='../sign-up'">Sign up</button></p>
-        <label for="username">{% trans "Username" %}</label>
-        <input type="text" id="username" name="username" value=""/>
-        <br/>
-        <label for="password">{% trans "Password" %}</label>
-        <input type="password" id="password" name="password" value=""/>
-        <br/>
-        <input type="submit" value="{% trans "Login" %}" onClick="decideLogin()"/>
+    <div id="login" class="text-center">
+        <p>
+            If you have not created an account yet, then please
+            <button class="btn btn-outline-primary btn-sm" onClick="window.location.href='../sign-up'">Sign up</button>
+        </p><br>
+
+        <div style="width:800px; margin:0 auto;" class="form-group-lg align-items-center form-group col-lg-3">
+          <label for="username" class="sr-only">{% trans "Username" %}</label>
+          <input type="text" id="username" class="form-control" placeholder="Username" name="username" value="" required autofocus/>
+          
+          <label for="password" class="sr-only">{% trans "Password" %}</label>
+          <input type="password" id="password" class="form-control" placeholder="Password" name="password" value=""/>
+          
+          <br/>
+          <input type="submit" class="btn btn-lg btn-primary btn-block" value="{% trans "Login" %}" onClick="decideLogin()"/><br>
+        </div>
+
     </div>
 	<!--<div>
 		<h3>{% trans "Log in with Facebook"%}</h3><a href="/"><img src="{% static 'facebook.png'%}" width="5%"></a> <br>
@@ -28,19 +36,24 @@
 		<h3>{% trans "Log in with Google"%}</h3><a href="https://accounts.google.com/signin/oauth?client_id=479028502719-ums97b8c1dmn9hmdugmuibcrbma4eq9i.apps.googleusercontent.com&as=qobA5BlwcQ10YnJYV0XhYQ&destination=http://localhost:8000&approval_state=!ChRmSmJoXzFBTGpRVmUxTWF0ZXhFdxIfazdRVEdzWGVaYkFaUUhVU2RlLXNqMHdyTmhQZGVSWQ%E2%88%99APNbktkAAAAAXBEkwGfnjHdZJHm7Spd9NS2jujltYATo&oauthgdpr=1&xsrfsig=AHgIfE8mb8oaNe8w90CvpDhVcP6GBYkr6w"><img src="{% static 'google.jpg'%}" width="7%"></a> <br>
 	</div-->
 
+<div class="text-center">
+  <h4>Sign in with social accounts</h4>
+</div>
 	{% get_providers as socialaccount_providers %}
 	{% if socialaccount_providers %}
-	<div class="socialaccount_ballot">
+	<div style="width:800px; margin:0 auto;" class="socialaccount_ballot form-group-lg align-items-center form-group col-lg-3">
 
-	  <ul class="socialaccount_providers">
+	  <ul class="list-group socialaccount_providers">
 	    {% include "socialaccount/snippets/provider_list.html" with process="login" %}
 	  </ul>
 
 	</div>
-
 	{% endif %}
 
-
+<div class="text-center">
+  <br>
+  <h6>&#42;Facebook sign in only works with HTTPS (<a href="https://locaste-decide.herokuapp.com/authentication/sign-in/">https://locaste-decide.herokuapp.com/authentication/sign-in/</a>) </h6>
+</div>
 
 
   {% endif %}

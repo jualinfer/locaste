@@ -2,13 +2,14 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
         <meta charset="utf-8" />
         <title>{% block title %}Decide Locaste!{% endblock %}</title>
         {% block extrahead %}{% endblock %}
     </head>
     <body>
         <header>
-        <a href="/"><img src="{% static 'decide.jpg'%}" alt="Decide Locaste" width="15%" height="200px"></a>
+        <a href="/"><img src="{% static 'decide.jpg'%}" alt="Decide Locaste" width="15%" height="200px" class="img-fluid rounded mx-auto d-block"></a>
         </header>
         {% block content %}
         {% endblock %}
@@ -16,6 +17,7 @@
         {% block extrabody %}{% endblock %}
     </body>
     <footer>
-        <h3>Decide Locaste 2019 &copy; </h3>
+        <br><br>
+        <h5 class="blockquote text-left">Decide Locaste 2019 &copy; </h5>
     </footer>
 </html>

@@ -2,18 +2,20 @@
 {% load i18n static %}
 
 {% block content %}
-  <h1>Welcome to Decide Locaste! Your web platform for voting</h1>
+  <h1 class="text-center">Welcome to Decide Locaste! <br>
+    <small class="text-muted">Your web platform for voting</small>
+  </h1><br>
 	{% if user.is_authenticated %}
-    <div>
+    <div class="text-center">
       {% load account %}
       {% user_display user as name %}
       {% blocktrans %}Successfully signed in as {{name}}.{% endblocktrans %}
-      <button onClick="decideLogout()">{% trans "logout" %}</button>
-    </div>
+      <button class="btn btn-outline-danger btn-sm" onClick="decideLogout()">{% trans "Logout" %}</button>
+    </div><br>
   {% else %}
-    <div>
-      <button type="button" value="Sign in" onclick="window.location.href='authentication/sign-in'">Sign in</button>
-      <button type="button" value="Sign up" onclick="window.location.href='authentication/sign-up'">Sign up</button>
+    <div class="text-center">
+      <button type="button" class="btn btn-outline-primary" value="Sign in" onclick="window.location.href='authentication/sign-in'">Sign in</button>
+      <button type="button" class="btn btn-outline-primary" value="Sign up" onclick="window.location.href='authentication/sign-up'">Sign up</button>
     </div>
   {% endif %}
 {% endblock %}
