@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 reply_keyboard = [['Sign up', 'Log in', 'Cancel']]
 reply_keyboard_tryagain = [['Try again', 'Cancel']]
 reply_keyboard_gender = [['Male', 'Female', 'Other']]
-reply_keyboard_logged = [["Show votings in which I'm registered to vote"],[ 'Access to a voting', 'Log out']]
+reply_keyboard_logged = [["Show votings in which I'm registered to vote"], ['Show all votings', 'Register in a census'], [ 'Access to a voting', 'Log out']]
 markup = ReplyKeyboardMarkup(reply_keyboard )
 markup_tryagain = ReplyKeyboardMarkup(reply_keyboard_tryagain)
 markup_gender = ReplyKeyboardMarkup(reply_keyboard_gender)
@@ -222,6 +222,8 @@ def get_census_logged_user(bot, update, user_data):
             msg+= "*ID = " + str(voting['id']) + "* | " + voting['name']
             if voting['end_date'] == None:
                 msg+= " | *(ACTIVE)*\n"
+            elif voting['start_date'] == None:
+                msg+= " | *(NOT STARTED)*\n"
             else:
                 msg+= " | *(FINISHED)*\n"
         update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
@@ -282,7 +284,7 @@ def get_voting(bot, update, user_data):
                 return OPTION_VOTED
         #if the user is not registered to vote       
         else:
-            update.message.reply_text("Sorry, I can't show you this voting since You are not registered to vote")
+            update.message.reply_text("Sorry, I can't let you access this voting since you are not registered to vote")
 
     #If id introduced doesn't correspond to any voting_id in decide system        
     else:
@@ -328,7 +330,32 @@ def cancel_vote(bot, update, user_data):
     reply_markup=markup_logged)
     
     return CHOOSING_LOGGED
+
+def show_all_votings(bot, update, user_data):
+    update.message.reply_text("Showing all votings stored in Decide Locaste system...")
+
+    #url = settings.BASEURL + "/voting/
+    url = "http://localhost:8000/voting/"
+    r = requests.get(url)
+    if len(r.json()) != 0:
+        msg=""
+        for voting in r.json():
+            msg+= "*ID = " + str(voting['id']) + "* | " + voting['name']
+            if voting['end_date'] == None:
+                msg+= " | *(ACTIVE)*\n"
+            elif voting['start_date'] == None:
+                msg+= " | *(NOT STARTED)*\n"
+            else:
+                msg+= " | *(FINISHED)*\n"
+        update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+    else:
+        update.message.reply_text("Whoa")
+        update.message.reply_text("There are no votings stored in Decide Locaste yet")
     
+    update.message.reply_text("What are we doing next " + user_data['username'] + "?",
+    reply_markup=markup_logged)
+
+    return CHOOSING_LOGGED
 
 def logout(bot, update, user_data):
     update.message.reply_text('Bye ' + user_data['username'] + ", have a nice day!", reply_markup=markup_quit)
@@ -373,6 +400,7 @@ def main():
             CHOOSING_LOGGED: [RegexHandler('^Log\s+out$',logout, pass_user_data=True),
                         RegexHandler('^Access\s+to\s+a\s+voting$',introduce_voting_id, pass_user_data=True),
                         RegexHandler("^Show\s+votings\s+in\s+which\s+I'm\s+registered\s+to\s+vote$",get_census_logged_user, pass_user_data=True),
+                        RegexHandler("^Show\s+all\s+votings$",show_all_votings, pass_user_data=True),
                         ],
 
             OPTION_VOTED: [RegexHandler('^\d+$',option_voted, pass_user_data=True),
