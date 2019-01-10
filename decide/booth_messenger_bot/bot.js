@@ -37,6 +37,11 @@ const bot = new BootBot({
 
 bot.setGreetingText("Hello, I'm Decide-Locaste-Booth Bot. I'm here to help you vote with Decide. Click on the 'Get Started' button to begin.")
 
+bot.setPersistentMenu([
+{ type: 'postback', title: 'Log in', payload: 'BOT_LOG_IN' },
+{ type: 'web_url', url: "https://github.com/wadobo/decide/wiki/Como-funciona-Decide", title: "Info" },
+{ type: 'postback', title: 'Cancel', payload: 'BOT_CANCEL' }
+]);
 
 bot.setGetStartedButton((payload, chat) => {
   chat.getUserProfile().then((user) => {
@@ -126,7 +131,12 @@ bot.on('postback:BOT_LOG_IN', (payload, chat) => {
   
 });
 
-
+bot.on('postback:BOT_CANCEL', (payload, chat) => {
+  const options = { typing: true };
+  const message1 = "If you need me again you can call me by typing 'Get Started'.";
+  const message2 = "Bye!";
+  chat.say([message1, message2], options);
+});
 
 
 bot.start()
