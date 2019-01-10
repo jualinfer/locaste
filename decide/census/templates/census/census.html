@@ -11,6 +11,7 @@
         table, th, td {
             border: 1px solid black;
         }
+
       
     </style>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/xlsx.full.min.js"></script>
@@ -19,6 +20,7 @@
     <h1>{{ voting.name }}</h1>
 
     <div id="census_form">
+
         <label for="voter_id">{% trans "User IDs" %}</label>
         <input type="text" id="voter_id" name="voter_id" value=""/>
         {%trans "(You can put multiples IDs, separating them by commas)" %}
@@ -30,6 +32,7 @@
         <input type="file" id="fileUpload" />
         <input type="button" id="upload" value=" {% trans "Add Excel to census" %}" onclick="Upload()"/> <br><br>
 
+        <input type="button" id="export" value="{% trans "Show voting's census" %}" onclick="Export()"/>
         <p>
             {%trans "Excel file must have the following format (no header, no commas, on sheet 1):" %}
         </p>
@@ -57,6 +60,7 @@
                 </th>
             </tr>
         </table>
+
     </div>
 
 <script>
@@ -150,6 +154,108 @@
                 console.error(error);
             });
         }
+        function Export(){
+            var data = {
+                voting_id: {{voting.id}},
+            };
+            getData("{{census_url}}" + "/census/?voting_id="+{{voting.id}})
+            //postData("{{census_url}}" + "/census/", data)
+            .then(data => {
+                genera_tabla(data);
+            })
+            .catch(error => {
+                alert("{% trans "Error: " %}" + error);
+                console.error(error);
+            });
+        }
+
+
+    function genera_tabla(data) {
+        debugger;
+        // Obtener la referencia del elemento body
+        var body = document.getElementsByTagName("body")[0];
+
+        // Crea un elemento <table> y un elemento <tbody>
+        var tabla   = document.createElement("table");
+        tabla.id = "tablaId";
+        var tblBody = document.createElement("tbody");
+        if(data["voters"].length != 0){
+            // Crea las celdas.
+            for (var i = 0; i < data["voters"].length; i++) {
+                // Crea las hileras de la tabla
+                var hilera = document.createElement("tr");
+
+                //Fijado a uno ya que solo mostraremos una columna con los IDs
+                for (var j = 0; j < 1; j++) {
+                    // Crea un elemento <td> y un nodo de texto, haz que el nodo de
+                    // texto sea el contenido de <td>, ubica el elemento <td> al final
+                    // de la hilera de la tabla
+                    var celda = document.createElement("td");
+                    var textoCelda = document.createTextNode(data["voters"][i]);
+                    celda.appendChild(textoCelda);
+                    hilera.appendChild(celda);
+                }
+
+                // agrega la hilera al final de la tabla (al final del elemento tblbody)
+                tblBody.appendChild(hilera);
+            }
+            //Crear boton export census
+            var boton = document.createElement("input");
+            boton.type = "button";
+            boton.id = "botonId";
+            boton.value = "Export census to xls file";
+            boton.setAttribute("onclick", "exportTableToExcel(tablaId)");
+            document.body.appendChild(boton);
+
+        }else{
+            var hilera = document.createElement("tr");
+            var celda = document.createElement("td");
+            var textoCelda = document.createTextNode("0");
+            celda.appendChild(textoCelda);
+            hilera.appendChild(celda);
+            tblBody.appendChild(hilera);
+        }
+        // posiciona el <tbody> debajo del elemento <table>
+        tabla.appendChild(tblBody);
+        // appends <table> into <body>
+        body.appendChild(tabla);
+        // modifica el atributo "border" de la tabla y lo fija a "2";
+        tabla.setAttribute("border", "2");
+        }
+
+        function exportTableToExcel(tablaID, filename = ''){
+
+            var downloadLink;
+            var dataType = 'application/vnd.ms-excel';
+            var tableSelect = tablaID;
+            var tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+
+            // Specify file name
+            filename = filename?filename+'.xls':'excel_data.xls';
+
+            // Create download link element
+            downloadLink = document.createElement("a");
+
+            document.body.appendChild(downloadLink);
+
+            if(navigator.msSaveOrOpenBlob){
+                var blob = new Blob(['\ufeff', tableHTML], {
+                    type: dataType
+                });
+                navigator.msSaveOrOpenBlob( blob, filename);
+            }else{
+                // Create a link to the file
+                downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+
+                // Setting the file name
+                downloadLink.download = filename;
+
+                //triggering the function
+                downloadLink.click();
+            }
+        }
+
+
 
         function removeFromCensus() {
             var voters = document.querySelector("#voter_id").value.split(",");
@@ -194,7 +300,7 @@
         }
 
         function AddExcelToCensus(excelRows){
-
+            debugger;
             var voters = isNumber(excelRows);
             var data = {
                 voting_id: {{voting.id}},
