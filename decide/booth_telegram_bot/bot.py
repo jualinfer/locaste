@@ -3,6 +3,7 @@ load_dotenv()
 import os
 import requests
 import re
+from datetime import datetime
 
 
 TOKEN = os.getenv("TOKEN")
@@ -107,11 +108,26 @@ def introduce_gender_signup(bot, update, user_data):
 
         return TYPING_BIRTHDATE_SIGNUP
     else:
-        update.message.reply_text("Introduce your gender with the menu options",
-            reply_markup=markup_gender)
+        try:
+            birthdate = datetime.strptime(text, '%Y-%m-%d')
+            if(birthdate > datetime.now()):
+                update.message.reply_text("You can't be born in the future!!")
+                update.message.reply_text("Check it")
+                update.message.reply_text("Introduce your birthdate again")
 
-        return TYPING_GENDER_SINGUP
+                return TYPING_BIRTHDATE_SIGNUP
+            else:
+                update.message.reply_text("Introduce your gender with the menu options",
+                    reply_markup=markup_gender)
 
+                return TYPING_GENDER_SINGUP
+        except:
+            update.message.reply_text("The birthdate introduced doesn't follow the restricted format or doesn't make sense")
+            update.message.reply_text("Check it")
+            update.message.reply_text("Introduce your birthdate again")
+
+            return TYPING_BIRTHDATE_SIGNUP
+        
 def signup(bot, update, user_data):
     text = update.message.text
     user_data['gender'] = text
