@@ -15,7 +15,7 @@ class QuestionOptionForm(ModelForm):
 class QuestionForm(ModelForm):
     class Meta:
         model = Question
-        fields = ['desc']
+        fields = ['desc','type']
         widgets = {
             'desc': Textarea(attrs={'cols': 80, 'rows': 20}),
         }

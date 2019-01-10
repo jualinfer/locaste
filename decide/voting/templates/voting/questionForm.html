@@ -1,4 +1,5 @@
 <head>
+
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -14,6 +15,7 @@
 <script src="https://code.jquery.com/jquery-3.3.1.js"
 			  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
 			  crossorigin="anonymous"></script>
+<p hidden id="counter">1</p>
 <form id="question_form">
     {% csrf_token %}
     <div id="content">
@@ -48,6 +50,7 @@
         empty_input.find('textarea').val('');
         empty_input.find('#answer').find('textarea').val('');
         empty_input.find('#remove').append("<button type=\"button\" onclick=\"remove_element(event);\">X</button>");
+        empty_input.name('')
         var len = empty_input.find('#answer').length;
         for(var i=1; i<len; i++){
             empty_input.find('#answer')[0].remove()

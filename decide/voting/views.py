@@ -215,6 +215,7 @@ def save_voting(request, voting_form, auth_forms, question_forms,
                 question_option_forms[index].append(QuestionOptionForm({'option': option}))
         saved_questions = []
         saved_auths = []
+
     if valid_objects(question_forms):
         valid = True
         for q in question_option_forms:
