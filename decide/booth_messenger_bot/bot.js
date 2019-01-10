@@ -27,6 +27,7 @@ app.listen(app.get('port'), function () {
   console.log('Started on port', app.get('port'))
 })
 
+var config = {};
 
 const bot = new BootBot({
   accessToken: process.env.ACCESS_TOKEN,
@@ -40,7 +41,7 @@ bot.setGreetingText("Hello, I'm Decide-Locaste-Booth Bot. I'm here to help you v
 bot.setPersistentMenu([
 { type: 'postback', title: 'Log in', payload: 'BOT_LOG_IN' },
 { type: 'web_url', url: "https://github.com/wadobo/decide/wiki/Como-funciona-Decide", title: "Info" },
-{ type: 'postback', title: 'Cancel', payload: 'BOT_CANCEL' }
+{ type: 'postback', title: 'HELP', payload: 'BOT_HELP' }
 ]);
 
 bot.setGetStartedButton((payload, chat) => {
@@ -51,7 +52,7 @@ bot.setGetStartedButton((payload, chat) => {
       text: 'In order to vote, first you need to log in with your Decide username and password.',
       buttons: [
         { type: 'postback', title: 'Log in', payload: 'BOT_LOG_IN' },
-        { type: 'postback', title: 'Cancel', payload: 'BOT_CANCEL' }
+        { type: 'postback', title: 'Cancel', payload: 'BOT_HELP' }
       ]
     };
     const options = { typing: true };
@@ -60,7 +61,10 @@ bot.setGetStartedButton((payload, chat) => {
 });
 
 bot.on('postback:BOT_LOG_IN', (payload, chat) => {
- 
+  const options = { typing: true };
+  if (config.login === true) {
+    chat.say("You're already logged in.", options);
+  } else {
     const askUsername = (convo) => {
       const question = "Please, introduce your username.";
 
@@ -104,13 +108,15 @@ bot.on('postback:BOT_LOG_IN', (payload, chat) => {
                 };
                 convo.say([loginMessage1, loginMessage2, loginMessage3], options).then(() => convo.end());
               });
+              config.login = true;
+              config.token = body.key;
             } else {
               convo.say(`Ooops! Something went wrong.`, options);
               const errorMessage = {
                 text: 'Please, make sure you typed your username and password correctly.',
                 buttons: [
                   { type: 'postback', title: 'Try again', payload: 'BOT_LOG_IN' },
-                  { type: 'postback', title: 'Cancel', payload: 'BOT_CANCEL' }
+                  { type: 'postback', title: 'Help', payload: 'BOT_HELP' }
                 ]
               };
               convo.say(errorMessage, options).then(() => convo.end());
@@ -128,7 +134,7 @@ bot.on('postback:BOT_LOG_IN', (payload, chat) => {
       .then(() => chat.conversation((convo) => {
         askUsername(convo);
       }));
-  
+  }
 });
 
 bot.on('postback:BOT_CANCEL', (payload, chat) => {
