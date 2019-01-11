@@ -265,16 +265,20 @@ def save_voting(request, voting_form, auth_forms, question_forms,
                     if saved_questions[index].type == "Normal":
                         question_option = QuestionOption(option=option["option"].value(),
                                                      question=saved_questions[index], number=indexNumber,percentage=None,range=None)
+                        question_option.save()
                     elif saved_questions[index].type == "Range":
                         question_option = QuestionOption(range=option["range"].value(),
                                                      question=saved_questions[index], number=indexNumber,percentage=None,option=None)
+                        question_option.save()
                     elif saved_questions[index].type == "Percentage":
                         question_option = QuestionOption(percentage=option["percentage"].value(),
                                                          question=saved_questions[index], number=indexNumber, option=None,
                                                          range=None)
+                        question_option.save()
+
                     indexNumber +=1
                 index +=1
-                question_option.save()
+
             for auth in auth_forms:
                 model_auth = Auth(name=auth["name"].value(), url=auth["url"].value())
                 model_auth.save()
