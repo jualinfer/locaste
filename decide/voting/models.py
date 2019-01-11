@@ -24,12 +24,13 @@ class Question(models.Model):
     type = models.TextField(blank=True, null=True, default=("Normal", "Normal"), choices=QUESTIONS_TYPES)
 
     def __str__(self):
-        return self.descw
+        return self.desc
 
 
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
+    range = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField(blank=True, null=True)
     percentage = models.DecimalField(blank=True, null=True,decimal_places=2,max_digits=3)
 
@@ -39,7 +40,16 @@ class QuestionOption(models.Model):
         return super().save()
 
     def __str__(self):
-        return '{} ({})'.format(self.option, self.number)
+        if self.number != None:
+            return '{} ({})'.format(self.number, self.number)
+        elif self.range != None:
+            return '{} ({})'.format(self.range, self.number)
+        else :
+            return '{} ({})'.format(self.option, self.number)
+
+
+
+
 
 
 class Voting(models.Model):
