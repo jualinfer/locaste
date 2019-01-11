@@ -9,6 +9,7 @@ from base import mods
 class PostProcTestCase(APITestCase):
     maxDiff = None
 
+
     def setUp(self):
         self.client = APIClient()
         mods.mock_query(self.client)
@@ -181,9 +182,9 @@ class PostProcTestCase(APITestCase):
         values = response.json()
         self.assertEqual(values, expected_result)
 
-    def test_saintlague(self):
+    def test_saintelague(self):
         data = {
-            'type': 'SAINTLAGUE',
+            'type': 'SAINTELAGUE',
             'seats': 7,
             'census': 840000,
             'options': [
@@ -209,9 +210,9 @@ class PostProcTestCase(APITestCase):
         values = response.json()
         self.assertEqual(values, expected_result)
 
-    def test_saintlaguemod(self):
+    def test_saintelaguemod(self):
         data = {
-            'type': 'SAINTLAGUEMOD',
+            'type': 'SAINTELAGUEMOD',
             'seats': 8,
             'census': 350000,
             'options': [
