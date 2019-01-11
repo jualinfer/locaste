@@ -43,6 +43,7 @@ def start(bot, update):
 # Help function
 def help(bot, update):
     update.message.reply_text('/start       , obtain a greeting message\n\n'+
+                                '/id       , obtain the ids of the voting created  \n\n'+
                                 '/info     , obtain all the information regarding the votation, ie. /info 1\n\n'+
                                 '/title voting_id      , obtain the title of the voting_id provided, ie. /title 1\n\n'+
                                 '/date voting_id       , obtain the end date of the voting_id provided, ie. /date 1\n\n'+
@@ -50,6 +51,23 @@ def help(bot, update):
                                 '/result voting_id      , obtain the result of the voting_id provided, ie. /result 1\n\n'+
                                 '/login       , log in with your Decide credentials\n\n'+
                                 '/logout      , log out with your Decide credentials')
+
+#returns every votings id created
+def id(bot, update):
+
+    url = baseURL + "/voting/?id="
+    r = requests.get(url).json()
+
+    if r != []:
+        cantidad = len(r)
+        lista = []
+        for i in range(cantidad):
+            voting_id = r[i]['id']
+            lista.append(voting_id)
+            update.message.reply_text('The name associated to the id ' + str(voting_id) + ' is: ' + r[i]['name'] )
+        update.message.reply_text('The created ids are: ' + str(lista))
+    else:
+        update.message.reply_text('Ohh, it looks like there are no votings-id created \n')
 
 #Obtain all the info regarding a voting
 def info(bot, update):
@@ -245,6 +263,7 @@ def main():
 
     dispatcher.add_handler(CommandHandler('start', start))
     dispatcher.add_handler(CommandHandler('help', help))
+    dispatcher.add_handler(CommandHandler('id', id))
     dispatcher.add_handler(CommandHandler('info', info))
     dispatcher.add_handler(CommandHandler('title', title_desc))
     dispatcher.add_handler(CommandHandler('date', end_date))
