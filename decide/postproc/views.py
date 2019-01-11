@@ -77,6 +77,28 @@ class PostProcView(APIView):
 
         return Response(out)
 
+    def saintlaguemod(self,options,seats,census):
+        results = []
+        voters = sum(opt['votes'] for opt in options)
+        
+        for seat in range(seats):
+            opt = self.maximum(options)
+            self.update_results(opt, results, 1)
+
+            aux = next((o for o in results if o['option'] == opt['option']), None)
+            if aux['postproc']==1:
+                opt['votes'] =(aux['votes']//(2*aux['postproc'] +1))
+            else:
+                opt['votes'] =(aux['votes']//(2*aux['postproc'] +1))*1.4
+
+        part = self.participation(census, voters)
+        out = {'results': results, 'participation': part}
+
+        return Response(out)
+
+
+
+
     def dhondt(self, options, seats, census):
         results = []
         voters = sum(opt['votes'] for opt in options)
@@ -151,5 +173,7 @@ class PostProcView(APIView):
             return self.majorrest(opts, seats, census, 'droop')
         elif t == 'MAJORRESTIMPERIALI':
             return self.majorrest(opts, seats, census, 'imperiali')
+        elif t=='SAINTLAGUEMOD':
+            return self.saintlaguemod(opts,seats,census)
 
         return Response({})
