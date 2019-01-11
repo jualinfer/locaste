@@ -220,7 +220,7 @@ def get_census_logged_user(bot, update, user_data):
             r = requests.get(url)
             voting = r.json()[0]
             msg+= "*ID = " + str(voting['id']) + "* | " + voting['name']
-            if voting['end_date'] == None:
+            if voting['end_date'] == None and voting['start_date'] != None:
                 msg+= " | *(ACTIVE)*\n"
             elif voting['start_date'] == None:
                 msg+= " | *(NOT STARTED)*\n"
@@ -285,7 +285,7 @@ def get_voting(bot, update, user_data):
         #if the user is not registered to vote       
         else:
             msg= "*ID = " + str(r.json()[0]['id']) + "* | " + r.json()[0]['name']
-            if r.json()[0]['end_date'] == None:
+            if r.json()[0]['end_date'] == None and r.json()[0]['start_date'] != None:
                 msg+= " | *(ACTIVE)*\n"
             elif r.json()[0]['start_date'] == None:
                 msg+= " | *(NOT STARTED)*\n"
@@ -349,7 +349,7 @@ def show_all_votings(bot, update, user_data):
         msg=""
         for voting in r.json():
             msg+= "*ID = " + str(voting['id']) + "* | " + voting['name']
-            if voting['end_date'] == None:
+            if voting['end_date'] == None and voting['start_date'] != None:
                 msg+= " | *(ACTIVE)*\n"
             elif voting['start_date'] == None:
                 msg+= " | *(NOT STARTED)*\n"
@@ -381,7 +381,7 @@ def register_census(bot, update, user_data):
     #Check if voting exists or not
     if r.json() != []:
         msg= "*ID = " + str(r.json()[0]['id']) + "* | " + r.json()[0]['name']
-        if r.json()[0]['end_date'] == None:
+        if r.json()[0]['end_date'] == None and r.json()[0]['start_date'] != None:
             msg+= " | *(ACTIVE)*\n"
         elif r.json()[0]['start_date'] == None:
             msg+= " | *(NOT STARTED)*\n"
