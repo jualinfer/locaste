@@ -302,10 +302,10 @@ def get_voting(bot, update, user_data):
         #if the user is registered to vote
         if int(id) in r2.json()['voting']:
             update.message.reply_text("Here It is:")
-            msg = "------------------------------------------------------------\n*"+str(r.json()[0]['id']) + " - " + r.json()[0]['name'] + "*\n\n*" + r.json()[0]['question']['desc'] + "*\n\n"
+            msg = "------------------------------------------------------------\n*"+str(r.json()[0]['id']) + " - " + r.json()[0]['name'] + "*\n\n*" + r.json()[0]['question'][0]['desc'] + "*\n\n"
             reply_keyboard_options = []
             options_dict = {}
-            for option in r.json()[0]['question']['options']:
+            for option in r.json()[0]['question'][0]['options']:
                 options_dict[str(option['number']-1)] = option['option']
                 msg += str(option['number']-1) + ". " + option['option'] + "\n"
             user_data['options_dict'] = options_dict
