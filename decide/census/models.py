@@ -30,7 +30,7 @@ class Census(models.Model):
             age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
         if voting.min_age and age and age < voting.min_age:
-            raise ValidationError("You don't reach de minimum age for this voting")
+            raise ValidationError("You don't reach the minimum age for this voting")
 
         if voting.max_age and age and age > voting.max_age:
             raise ValidationError("You exceed the maximum age for this voting")

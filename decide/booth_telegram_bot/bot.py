@@ -30,11 +30,13 @@ reply_keyboard = [['Sign up', 'Log in', 'Cancel']]
 reply_keyboard_tryagain = [['Try again', 'Cancel']]
 reply_keyboard_gender = [['Male', 'Female', 'Other'], ['Cancel Sign up']]
 reply_keyboard_cancel_signup = [['Cancel Sign up']]
+reply_keyboard_cancel = [['Cancel']]
 reply_keyboard_logged = [["Show votings in which I'm registered to vote"], ['Show all votings', 'Register in a census'], [ 'Access to a voting', 'Log out']]
 markup = ReplyKeyboardMarkup(reply_keyboard )
 markup_tryagain = ReplyKeyboardMarkup(reply_keyboard_tryagain)
 markup_gender = ReplyKeyboardMarkup(reply_keyboard_gender)
 markup_cancel_signup = ReplyKeyboardMarkup(reply_keyboard_cancel_signup)
+markup_cancel = ReplyKeyboardMarkup(reply_keyboard_cancel)
 markup_logged = ReplyKeyboardMarkup(reply_keyboard_logged)
 markup_quit = ReplyKeyboardRemove()
 
@@ -274,14 +276,20 @@ def get_census_logged_user(bot, update, user_data):
     return CHOOSING_LOGGED
 
 def introduce_voting_id(bot, update, user_data):
-    update.message.reply_text("Please "+user_data['username']+ ", introduce the voting id you want to access in", reply_markup=markup_quit)
+    update.message.reply_text("Please "+user_data['username']+ ", introduce the voting id you want to access in",
+        reply_markup=markup_cancel)
 
     return TYPING_VOTING_ID
 
 def get_voting(bot, update, user_data):
+    id = update.message.text
+    if(id == 'Cancel'):
+        update.message.reply_text("Aborting...")
+        update.message.reply_text("What are we doing next " + user_data['username'] + "?",
+            reply_markup=markup_logged)
+        return CHOOSING_LOGGED
     update.message.reply_text("Got it")
     update.message.reply_text("Let's search for the voting...")
-    id = update.message.text
 
     #url = settings.BASEURL + "/voting/?id="+id
     url = "http://localhost:8000/voting/?id="+id
@@ -405,14 +413,20 @@ def show_all_votings(bot, update, user_data):
     return CHOOSING_LOGGED
 
 def introduce_voting_id_register_census(bot, update, user_data):
-    update.message.reply_text('You must provide me the voting id in which you want to register')
+    update.message.reply_text('You must provide me the voting id in which you want to register', reply_markup=markup_quit)
     update.message.reply_text('Remember that finished votings are not accepting additional votes')
-    update.message.reply_text('Introduce the voting id please')
+    update.message.reply_text('Introduce the voting id please',
+        reply_markup=markup_cancel)
 
     return TYPING_VOTING_ID_CENSUS
 
 def register_census(bot, update, user_data):
     id = update.message.text
+    if(id == 'Cancel'):
+        update.message.reply_text("Aborting...")
+        update.message.reply_text("What are we doing next " + user_data['username'] + "?",
+            reply_markup=markup_logged)
+        return CHOOSING_LOGGED
 
     #url = settings.BASEURL + "/voting/?id="+id
     url = "http://localhost:8000/voting/?id="+id
@@ -446,6 +460,12 @@ def register_census(bot, update, user_data):
                 if(r3.status_code == 201):
                     update.message.reply_text('Registered in census successfully!')
                     update.message.reply_text('You can access to the voting now')
+                elif(r3.status_code == 400):
+                    update.message.reply_text('Sorry you are not allowed to register in this voting census because:')
+                    msg = r3.json().split('"')
+                    if(len(msg) == 1):
+                        msg = r3.json().split("'")
+                    update.message.reply_text(msg[1])
                 else:
                     update.message.reply_text('There was a problem try it again later please')
         else:
