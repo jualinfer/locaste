@@ -28,11 +28,13 @@ logger = logging.getLogger(__name__)
 
 reply_keyboard = [['Sign up', 'Log in', 'Cancel']]
 reply_keyboard_tryagain = [['Try again', 'Cancel']]
-reply_keyboard_gender = [['Male', 'Female', 'Other']]
+reply_keyboard_gender = [['Male', 'Female', 'Other'], ['Cancel Sign up']]
+reply_keyboard_cancel_signup = [['Cancel Sign up']]
 reply_keyboard_logged = [["Show votings in which I'm registered to vote"], ['Show all votings', 'Register in a census'], [ 'Access to a voting', 'Log out']]
 markup = ReplyKeyboardMarkup(reply_keyboard )
 markup_tryagain = ReplyKeyboardMarkup(reply_keyboard_tryagain)
 markup_gender = ReplyKeyboardMarkup(reply_keyboard_gender)
+markup_cancel_signup = ReplyKeyboardMarkup(reply_keyboard_cancel_signup)
 markup_logged = ReplyKeyboardMarkup(reply_keyboard_logged)
 markup_quit = ReplyKeyboardRemove()
 
@@ -50,61 +52,90 @@ def start(bot, update):
 #Sign up process
 def introduce_username_signup(bot, update):
     update.message.reply_text("Let's get to work", reply_markup=markup_quit)
-    update.message.reply_text('Introduce an username, please')
+    update.message.reply_text('Introduce an username, please',
+        reply_markup=markup_cancel_signup)
 
     return TYPING_USERNAME_SIGNUP
 
 def introduce_password_signup(bot, update, user_data):
     text = update.message.text
+    if(text == 'Cancel Sign up'):
+        update.message.reply_text("Aborting sign up...")
+        update.message.reply_text("What are we doing now?",
+            reply_markup=markup)
+        return CHOOSING_NOT_LOGGED
     user_data['username'] = text
-    update.message.reply_text("Introduce your password")
+    update.message.reply_text("Introduce your password",
+        reply_markup=markup_cancel_signup)
 
     return TYPING_PASSWORD_SINGUP
 
 def introduce_confirmation_password_signup(bot, update, user_data):
     text = update.message.text
+    if(text == 'Cancel Sign up'):
+        update.message.reply_text("Aborting sign up...")
+        update.message.reply_text("What are we doing now?",
+            reply_markup=markup)
+        return CHOOSING_NOT_LOGGED
     user_data['password'] = text
     if(len(text) < 8):
         update.message.reply_text("The password must contain atleast 8 digits")
-        update.message.reply_text("Introduce your password again")
+        update.message.reply_text("Introduce your password again",
+            reply_markup=markup_cancel_signup)
 
         return TYPING_PASSWORD_SINGUP
     elif(re.search("\d+",text)):
         update.message.reply_text("The password can't be entirely numeric")
-        update.message.reply_text("Introduce your password again")
+        update.message.reply_text("Introduce your password again",
+            reply_markup=markup_cancel_signup)
 
         return TYPING_PASSWORD_SINGUP
     elif(re.match("^asdfghjk|asdfghjkl|asdfghjklñ$",text)):
         update.message.reply_text("The password is too common")
-        update.message.reply_text("Introduce your password again")
+        update.message.reply_text("Introduce your password again",
+            reply_markup=markup_cancel_signup)
 
         return TYPING_PASSWORD_SINGUP
     else:
-        update.message.reply_text("Confirm your password again")
+        update.message.reply_text("Confirm your password again",
+            reply_markup=markup_cancel_signup)
 
         return TYPING_CONFIRMATION_PASSWORD_SINGUP
 
 def introduce_birthdate(bot, update, user_data):
     text = update.message.text
+    if(text == 'Cancel Sign up'):
+        update.message.reply_text("Aborting sign up...")
+        update.message.reply_text("What are we doing now?",
+            reply_markup=markup)
+        return CHOOSING_NOT_LOGGED
     user_data['confirmation'] = text
     if(user_data['confirmation'] != user_data['password']):
         update.message.reply_text("Confirmation doesn't match password")
         update.message.reply_text("Check it")
-        update.message.reply_text("Introduce your password again")
+        update.message.reply_text("Introduce your password again",
+            reply_markup=markup_cancel_signup)
 
         return TYPING_PASSWORD_SINGUP
     else:
-        update.message.reply_text("Introduce your birthdate in the following format: yyyy-mm-dd")
+        update.message.reply_text("Introduce your birthdate in the following format: yyyy-mm-dd",
+            reply_markup=markup_cancel_signup)
 
         return TYPING_BIRTHDATE_SIGNUP
 
 def introduce_gender_signup(bot, update, user_data):
     text = update.message.text
+    if(text == 'Cancel Sign up'):
+        update.message.reply_text("Aborting sign up...")
+        update.message.reply_text("What are we doing now?",
+            reply_markup=markup)
+        return CHOOSING_NOT_LOGGED
     user_data['birthdate'] = text
     if(re.match("^\d{4}-\d{2}-\d{2}$",text) == None):
         update.message.reply_text("The birthdate introduced doesn't follow the restricted format")
         update.message.reply_text("Check it")
-        update.message.reply_text("Introduce your birthdate again")
+        update.message.reply_text("Introduce your birthdate again",
+            reply_markup=markup_cancel_signup)
 
         return TYPING_BIRTHDATE_SIGNUP
     else:
@@ -113,7 +144,8 @@ def introduce_gender_signup(bot, update, user_data):
             if(birthdate > datetime.now()):
                 update.message.reply_text("You can't be born in the future!!")
                 update.message.reply_text("Check it")
-                update.message.reply_text("Introduce your birthdate again")
+                update.message.reply_text("Introduce your birthdate again",
+                    reply_markup=markup_cancel_signup)
 
                 return TYPING_BIRTHDATE_SIGNUP
             else:
@@ -124,12 +156,18 @@ def introduce_gender_signup(bot, update, user_data):
         except:
             update.message.reply_text("The birthdate introduced doesn't follow the restricted format or doesn't make sense")
             update.message.reply_text("Check it")
-            update.message.reply_text("Introduce your birthdate again")
+            update.message.reply_text("Introduce your birthdate again",
+                reply_markup=markup_cancel_signup)
 
             return TYPING_BIRTHDATE_SIGNUP
         
 def signup(bot, update, user_data):
     text = update.message.text
+    if(text == 'Cancel Sign up'):
+        update.message.reply_text("Aborting sign up...")
+        update.message.reply_text("What are we doing now?",
+            reply_markup=markup)
+        return CHOOSING_NOT_LOGGED
     user_data['gender'] = text
 
     if(re.match("^Male|Female|Other$",text) == None):
