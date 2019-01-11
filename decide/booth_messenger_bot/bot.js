@@ -39,9 +39,9 @@ const bot = new BootBot({
 bot.setGreetingText("Hello, I'm Decide-Locaste-Booth Bot. I'm here to help you vote with Decide. Click on the 'Get Started' button to begin.")
 
 bot.setPersistentMenu([
-{ type: 'postback', title: 'Log in', payload: 'BOT_LOG_IN' },
-{ type: 'web_url', url: "https://github.com/wadobo/decide/wiki/Como-funciona-Decide", title: "Info" },
-{ type: 'postback', title: 'HELP', payload: 'BOT_HELP' }
+  { type: 'postback', title: 'Log in', payload: 'BOT_LOG_IN' },
+  { type: 'web_url', url: "https://github.com/wadobo/decide/wiki/Como-funciona-Decide", title: "Info" },
+  { type: 'postback', title: 'HELP', payload: 'BOT_HELP' }
 ]);
 
 bot.setGetStartedButton((payload, chat) => {
@@ -140,10 +140,10 @@ bot.on('postback:BOT_LOG_IN', (payload, chat) => {
 bot.on('postback:BOT_LOG_OUT', (payload, chat) => {
   const options = { typing: true };
   if (config.login === true) {
-    config.login = false;
-    config.token = null;
     request.get('http://localhost:8000/rest-auth/logout/', function (error, response, body) {
       if (!error && response.statusCode == 200) {
+        config.login = false;
+        config.token = null;
         chat.getUserProfile().then((user) => {
           const logoutMessage1 = `Logged out successfully!`;
           const logoutMessage2 = `Well, ${user.first_name} , I hope I have been helpful.`;
