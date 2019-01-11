@@ -198,3 +198,5 @@ INSTALLED_APPS = INSTALLED_APPS + MODULES
 REST_AUTH_REGISTER_SERIALIZERS = {                                                                            
     'REGISTER_SERIALIZER': 'authentication.serializers.UserSignupSerializer'
  }
+
+GOOGLE_RECAPTCHA_SECRET_KEY = '6LdmCYkUAAAAAOGBm-GHWdhKiI1B35LY_7tdoBPo'
