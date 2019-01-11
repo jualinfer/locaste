@@ -11,6 +11,12 @@ GENRES_CHOICES = [
     ("Female", "Female"),
     ("Other", "Other"),
 ]
+
+QUESTIONS_TYPES = [
+    ("Range", "Range"),
+    ("Percentage", "Percentage"),
+    ("Normal", "Normal"),
+]
 class Question(models.Model):
     desc = models.TextField()
 
@@ -21,7 +27,9 @@ class Question(models.Model):
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
-    option = models.TextField()
+    option = models.TextField(blank=True, null=True)
+    percentage = models.DecimalField(blank=True, null=True,decimal_places=2,max_digits=3)
+    type = models.TextField(blank=True, null=True,choices=QUESTIONS_TYPES)
 
     def save(self):
         if not self.number:
@@ -35,7 +43,7 @@ class QuestionOption(models.Model):
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
-    question = models.ForeignKey(Question, related_name='voting', on_delete=models.CASCADE)
+    question = models.ManyToManyField(Question, related_name='voting_questions')
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
@@ -114,7 +122,9 @@ class Voting(models.Model):
 
     def do_postproc(self, census):
         tally = self.tally
-        options = self.question.options.all()
+        options = []
+        for q in self.question.all():
+            options.extend(q.options.all())
 
         opts = []
         for opt in options:
