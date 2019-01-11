@@ -12,6 +12,15 @@ from base.perms import UserIsStaff
 from base.models import Auth
 from .forms.forms import VotingForm, QuestionForm, QuestionOptionForm, AuthForm
 from django.db import transaction
+import json
+import urllib
+
+CAPTCHA_URL = 'https://www.google.com/recaptcha/api/siteverify'
+
+# Error messages
+CAPTCHA_ERROR_MESSAGE = 'Invalid CAPTCHA. Please try again.'
+CUSTOM_URL_ERROR_MESSAGE = "Custom URL field cannot contain \'/\' or whitespaces."
+MAX_AGE_MIN_AGE_ERROR_MESSAGE = "Max age cannot be lower than min age."
 
 voting_form = None
 question_forms = []
@@ -20,7 +29,7 @@ auth_forms = []
 question_option_forms = []
 
 
-def check_voting_form_restrictions(form):
+def check_voting_form_restrictions(form, request):
     correct = True
     error_message = ''
 
@@ -28,12 +37,15 @@ def check_voting_form_restrictions(form):
     max_age = form["max_age"].value()
     min_age = form["min_age"].value()
 
-    if '/' in custom_url or ' ' in custom_url:
+    if not captcha_is_correct(request):
         correct = False
-        error_message = "Custom URL field cannot contain \'/\' or whitespaces"
-    elif max_age < min_age:
+        error_message = CAPTCHA_ERROR_MESSAGE
+    elif '/' in custom_url or ' ' in custom_url:
         correct = False
-        error_message = "Max age cannot be lower than min age"
+        error_message = CUSTOM_URL_ERROR_MESSAGE
+    elif max_age != '' and min_age != '' and int(max_age) < int(min_age):
+        correct = False
+        error_message = MAX_AGE_MIN_AGE_ERROR_MESSAGE
 
     return form.is_valid() and correct, error_message
 
@@ -47,14 +59,13 @@ def votingForm(request):
     print(request.POST)
     if request.method == 'POST' and ('gender' in request.POST.keys()):
         voting_form = VotingForm(request.POST)
-        correct, error_message = check_voting_form_restrictions(voting_form)
+        correct, error_message = check_voting_form_restrictions(voting_form, request)
         if correct:
             auth_form = AuthForm()
             return render(request, 'voting/form.html', {'form': auth_form, 'is_auth': True})
         else:
             return render(request, 'voting/form.html', {'error': True, 'error_message': error_message,
-                                                        'form': voting_form})
-
+                                                        'form': voting_form, 'show_captcha': True and settings.ENABLE_CAPTCHA})
     elif request.method == 'POST' and voting_form is not None and voting_form.is_valid() and (
             'url' in request.POST.keys()):
         for i in range(len(request.POST.getlist('name'))):
@@ -86,7 +97,7 @@ def votingForm(request):
         if voting_form is None or not voting_form.is_valid():
             voting_form = VotingForm()
             print('Voting')
-            return render(request, 'voting/form.html', {'form': voting_form})
+            return render(request, 'voting/form.html', {'form': voting_form, 'show_captcha': True and settings.ENABLE_CAPTCHA})
         elif auth_form is None or not valid_objects(auth_forms):
             auth_form = AuthForm()
             print('Auth')
@@ -97,6 +108,26 @@ def votingForm(request):
             return render(request, 'voting/questionForm.html',
                           {'question_form': question_form, 'question_option_form': question_option_form,
                            'voting_url': 'http://127.0.0.1:8000/voting/create/'}, )
+
+
+def captcha_is_correct(request):
+    ''' Begin reCAPTCHA validation '''
+
+    if settings.ENABLE_CAPTCHA:
+        recaptcha_response = request.POST.get('g-recaptcha-response')
+        values = {
+            'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+            'response': recaptcha_response
+        }
+        data = urllib.parse.urlencode(values).encode()
+        req = urllib.request.Request(CAPTCHA_URL, data=data)
+        response = urllib.request.urlopen(req)
+        result = json.loads(response.read().decode())
+        ''' End reCAPTCHA validation '''
+        return result['success']
+    else:
+        return True
+
 
 
 class VotingView(generics.ListCreateAPIView):
