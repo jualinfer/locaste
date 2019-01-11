@@ -43,7 +43,7 @@ def check_voting_form_restrictions(form, request):
     elif '/' in custom_url or ' ' in custom_url:
         correct = False
         error_message = CUSTOM_URL_ERROR_MESSAGE
-    elif int(max_age) < int(min_age):
+    elif max_age != '' and min_age != '' and int(max_age) < int(min_age):
         correct = False
         error_message = MAX_AGE_MIN_AGE_ERROR_MESSAGE
 
@@ -65,7 +65,7 @@ def votingForm(request):
             return render(request, 'voting/form.html', {'form': auth_form, 'is_auth': True})
         else:
             return render(request, 'voting/form.html', {'error': True, 'error_message': error_message,
-                                                        'form': voting_form, 'show_captcha': True})
+                                                        'form': voting_form, 'show_captcha': True and settings.ENABLE_CAPTCHA})
     elif request.method == 'POST' and voting_form is not None and voting_form.is_valid() and (
             'url' in request.POST.keys()):
         for i in range(len(request.POST.getlist('name'))):
@@ -95,7 +95,7 @@ def votingForm(request):
         if voting_form is None or not voting_form.is_valid():
             voting_form = VotingForm()
             print('Voting')
-            return render(request, 'voting/form.html', {'form': voting_form, 'show_captcha': True})
+            return render(request, 'voting/form.html', {'form': voting_form, 'show_captcha': True and settings.ENABLE_CAPTCHA})
         elif auth_form is None or not valid_objects(auth_forms):
             auth_form = AuthForm()
             print('Auth')
@@ -110,17 +110,22 @@ def votingForm(request):
 
 def captcha_is_correct(request):
     ''' Begin reCAPTCHA validation '''
-    recaptcha_response = request.POST.get('g-recaptcha-response')
-    values = {
-        'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
-        'response': recaptcha_response
-    }
-    data = urllib.parse.urlencode(values).encode()
-    req = urllib.request.Request(CAPTCHA_URL, data=data)
-    response = urllib.request.urlopen(req)
-    result = json.loads(response.read().decode())
-    ''' End reCAPTCHA validation '''
-    return result['success']
+
+    if settings.ENABLE_CAPTCHA:
+        recaptcha_response = request.POST.get('g-recaptcha-response')
+        values = {
+            'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+            'response': recaptcha_response
+        }
+        data = urllib.parse.urlencode(values).encode()
+        req = urllib.request.Request(CAPTCHA_URL, data=data)
+        response = urllib.request.urlopen(req)
+        result = json.loads(response.read().decode())
+        ''' End reCAPTCHA validation '''
+        return result['success']
+    else:
+        return True
+
 
 
 class VotingView(generics.ListCreateAPIView):
