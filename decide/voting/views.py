@@ -91,6 +91,8 @@ def votingForm(request):
         save_voting(request, voting_form, auth_forms,question_forms,
                     question_option_forms)
 
+        return render(request, 'voting/list')
+
     else:
         if voting_form is None or not voting_form.is_valid():
             voting_form = VotingForm()
@@ -252,14 +254,27 @@ def save_voting(request, voting_form, auth_forms, question_forms,
                 break
         if valid:
             for question in question_forms:
-                model_question = Question(desc=question["desc"].value())
+                model_question = Question(desc=question["desc"].value(),type=question["type"].value())
                 model_question.save()
                 saved_questions.append(model_question)
-            for i, question_options in enumerate(question_option_forms):
-                for j, question_option in enumerate(question_options):
-                    question_option = QuestionOption(option=question_option["option"].value(),
-                                                     question=saved_questions[i], number=j)
-                    question_option.save()
+
+            index = 0
+            for options in question_option_forms:
+                indexNumber = 0
+                for option in options:
+                    if saved_questions[index].type == "Normal":
+                        question_option = QuestionOption(option=option["option"].value(),
+                                                     question=saved_questions[index], number=indexNumber,percentage=None,range=None)
+                    elif saved_questions[index].type == "Range":
+                        question_option = QuestionOption(range=option["range"].value(),
+                                                     question=saved_questions[index], number=indexNumber,percentage=None,option=None)
+                    elif saved_questions[index].type == "Percentage":
+                        question_option = QuestionOption(percentage=option["percentage"].value(),
+                                                         question=saved_questions[index], number=indexNumber, option=None,
+                                                         range=None)
+                    indexNumber +=1
+                index +=1
+                question_option.save()
             for auth in auth_forms:
                 model_auth = Auth(name=auth["name"].value(), url=auth["url"].value())
                 model_auth.save()
@@ -326,7 +341,7 @@ def create_question_options_formularies(request,question_forms,question_option_f
 
 
     #montamos los formularios
-    for j in range(0,len(question)):
+    for j in range(0,len(questions)):
         index = 0;
         question_forms.append(QuestionForm({'desc': questions[j],'type':typesList[j]}))
 
@@ -334,21 +349,20 @@ def create_question_options_formularies(request,question_forms,question_option_f
         if typesList[j]=="Normal":
             question_option_forms.append([])
             for answer in answers[index]:
-                question_option_forms[j].append(QuestionOptionForm({'option': answer}))
+                question_option_forms[j].append(QuestionOptionForm({'option': answer,'number':None,'percentage':None}))
         elif typesList[j]=="Range":
             #posible cambio en otra issue para que el rango sea configurable
             question_option_forms.append([])
-            for a in range(1,6):
-                question_option_forms[j].append(QuestionOptionForm({'number': a}))
+            for a in range(1,5):
+                question_option_forms[j].append(QuestionOptionForm({'option':None,'number':a,'percentage':None}))
                 a+=1
         elif typesList[j]=="Percentage":
-            percentage = 0.00
+            percentage = 0
             question_option_forms.append([])
             # posible cambio en otra issue para que el porcentaje sea configurable
-            for b in range(0,20):
-                percentage = 0.00
-                question_option_forms[j].append(QuestionOptionForm({'percentage': percentage}))
-                percentage += 0.05
+            for b in range(0,21):
+                question_option_forms[j].append(QuestionOptionForm({'option':None,'number':'','percentage':percentage/100}))
+                percentage += 5
                 b+=1
 
 
