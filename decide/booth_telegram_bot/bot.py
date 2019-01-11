@@ -36,7 +36,7 @@ markup_gender = ReplyKeyboardMarkup(reply_keyboard_gender)
 markup_logged = ReplyKeyboardMarkup(reply_keyboard_logged)
 markup_quit = ReplyKeyboardRemove()
 
-CHOOSING_NOT_LOGGED,CHOOSING_LOGGED,OPTION_VOTED, TYPING_USERNAME, TYPING_PASSWORD, TYPING_VOTING_ID, TYPING_USERNAME_SIGNUP, TYPING_PASSWORD_SINGUP, TYPING_CONFIRMATION_PASSWORD_SINGUP, TYPING_BIRTHDATE_SIGNUP, TYPING_GENDER_SINGUP  = range(11)
+CHOOSING_NOT_LOGGED,CHOOSING_LOGGED,OPTION_VOTED, TYPING_USERNAME, TYPING_PASSWORD, TYPING_VOTING_ID, TYPING_USERNAME_SIGNUP, TYPING_PASSWORD_SINGUP, TYPING_CONFIRMATION_PASSWORD_SINGUP, TYPING_BIRTHDATE_SIGNUP, TYPING_GENDER_SINGUP, TYPING_VOTING_ID_CENSUS  = range(12)
 
 def start(bot, update):
     """Send welcome messages when the command /start is issued."""
@@ -284,6 +284,14 @@ def get_voting(bot, update, user_data):
                 return OPTION_VOTED
         #if the user is not registered to vote       
         else:
+            msg= "*ID = " + str(r.json()[0]['id']) + "* | " + r.json()[0]['name']
+            if r.json()[0]['end_date'] == None:
+                msg+= " | *(ACTIVE)*\n"
+            elif r.json()[0]['start_date'] == None:
+                msg+= " | *(NOT STARTED)*\n"
+            else:
+                msg+= " | *(FINISHED)*\n"
+            update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
             update.message.reply_text("Sorry, I can't let you access this voting since you are not registered to vote")
 
     #If id introduced doesn't correspond to any voting_id in decide system        
@@ -357,6 +365,66 @@ def show_all_votings(bot, update, user_data):
 
     return CHOOSING_LOGGED
 
+def introduce_voting_id_register_census(bot, update, user_data):
+    update.message.reply_text('You must provide me the voting id in which you want to register')
+    update.message.reply_text('Remember that finished votings are not accepting additional votes')
+    update.message.reply_text('Introduce the voting id please')
+
+    return TYPING_VOTING_ID_CENSUS
+
+def register_census(bot, update, user_data):
+    id = update.message.text
+
+    #url = settings.BASEURL + "/voting/?id="+id
+    url = "http://localhost:8000/voting/?id="+id
+    r = requests.get(url)
+    #Check if voting exists or not
+    if r.json() != []:
+        msg= "*ID = " + str(r.json()[0]['id']) + "* | " + r.json()[0]['name']
+        if r.json()[0]['end_date'] == None:
+            msg+= " | *(ACTIVE)*\n"
+        elif r.json()[0]['start_date'] == None:
+            msg+= " | *(NOT STARTED)*\n"
+        else:
+            msg+= " | *(FINISHED)*\n"
+        update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+        #Check first if voting is finished or not
+        if(r.json()[0]['end_date'] == None):
+            #Then check if the user is registered to vote in this voting, that's has a census object
+            #url = settings.BASEURL + "/census/?voter_id=
+            url = "http://localhost:8000/census/?voter_id="+str(user_data['user_id'])
+            r2 = requests.get(url)
+            #if the user is registered to vote
+            if int(id) in r2.json()['voting']:
+                update.message.reply_text('You are already registered in this voting census!')
+
+            #if the user is not registered to vote       
+            else:
+                #Register in census
+                #url = settings.BASEURL + "/census/
+                url = "http://localhost:8000/census/"
+                r3 = requests.post(url, json={'voting_id' : id, 'voters' : [user_data['user_id']]})
+                if(r3.status_code == 201):
+                    update.message.reply_text('Registered in census successfully!')
+                    update.message.reply_text('You can access to the voting now')
+                else:
+                    update.message.reply_text('There was a problem try it again later please')
+        else:
+            update.message.reply_text('Too late...')
+            update.message.reply_text('This voting is already finished')
+
+    #If id introduced doesn't correspond to any voting_id in decide system        
+    else:
+        update.message.reply_text("Sorry, It seems like the voting doesn't exist in Decide Locaste system")
+        update.message.reply_text("Check the id introduced or contact with the admin")
+    
+    update.message.reply_text("What are we doing next " + user_data['username'] + "?",
+    reply_markup=markup_logged)
+
+    return CHOOSING_LOGGED
+
+
+
 def logout(bot, update, user_data):
     update.message.reply_text('Bye ' + user_data['username'] + ", have a nice day!", reply_markup=markup_quit)
     update.message.reply_text("Don't forget I'm still here, just wake me up by introducing /start if you need me")
@@ -401,6 +469,7 @@ def main():
                         RegexHandler('^Access\s+to\s+a\s+voting$',introduce_voting_id, pass_user_data=True),
                         RegexHandler("^Show\s+votings\s+in\s+which\s+I'm\s+registered\s+to\s+vote$",get_census_logged_user, pass_user_data=True),
                         RegexHandler("^Show\s+all\s+votings$",show_all_votings, pass_user_data=True),
+                        RegexHandler("^Register\s+in\s+a\s+census$",introduce_voting_id_register_census, pass_user_data=True),
                         ],
 
             OPTION_VOTED: [RegexHandler('^\d+$',option_voted, pass_user_data=True),
@@ -429,6 +498,9 @@ def main():
                            ],
 
             TYPING_VOTING_ID: [MessageHandler(Filters.text, get_voting, pass_user_data=True),
+                           ],
+            
+            TYPING_VOTING_ID_CENSUS: [MessageHandler(Filters.text, register_census, pass_user_data=True),
                            ],
         },
         fallbacks=[MessageHandler(Filters.text, unknown_command, pass_user_data=True)]
