@@ -268,7 +268,8 @@ def get_voting(bot, update, user_data):
             if r.json()[0]['end_date'] != None:
                 update.message.reply_text("This voting has already ended, exactly at " + r.json()[0]['end_date'].split('.')[0].replace('T',' '))
                 update.message.reply_text("Votes are not allowed for this voting anymore")
-                
+            elif r.json()[0]['start_date'] == None:  
+                update.message.reply_text("This voting is not started yet, accessing to a voting is only permitted when it is started")
             else:
                 #If the user can vote for this voting we need to store voting pub_key in order to encrypt the user vote
                 user_data['pub_key'] = r.json()[0]['pub_key']
