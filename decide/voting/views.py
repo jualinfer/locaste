@@ -24,9 +24,9 @@ def check_voting_form_restrictions(form):
     correct = True
     error_message = ''
 
-    custom_url = form.cleaned_data["custom_url"]
-    max_age = form.cleaned_data["max_age"]
-    min_age = form.cleaned_data["min_age"]
+    custom_url = form["custom_url"].value()
+    max_age = form["max_age"].value()
+    min_age = form["min_age"].value()
 
     if '/' in custom_url or ' ' in custom_url:
         correct = False

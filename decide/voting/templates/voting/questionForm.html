@@ -86,12 +86,12 @@
     }
      function add_answer(event) {
         //alert(event.target);
-        var question_formulary = $('#question_form').clone();
-        var empty_input = question_formulary.find('div').first().find('div').first().find('#answer').first();
-        empty_input.find('textarea').val('');
-        empty_input.append("<button type=\"button\" onclick=\"remove_element(event);\">X</button>");
+        var html_obj =  "            <div id=\"answer\">\n" +
+                "                <label for=\"id_option\">Option:</label><textarea name=\"option\" cols=\"40\" rows=\"10\" id=\"id_option\"></textarea>\n" +
+                "<button type=\"button\" onclick=\"remove_element(event);\">X</button>"+
+                "            </div>\n";
         //$('#question_form').find('div').first().append(empty_input);
-         $(event.target).parent().append(empty_input);
+         $(event.target).parent().append(html_obj);
 
     }
 
