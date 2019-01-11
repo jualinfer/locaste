@@ -6,7 +6,7 @@ from django import forms
 class QuestionOptionForm(ModelForm):
     class Meta:
         model = QuestionOption
-        fields = ['option']
+        fields = ['option','number','percentage']
         widgets = {
             'desc': Textarea(attrs={'cols': 80, 'rows': 20}),
         }

@@ -269,12 +269,12 @@ def save_voting(request, voting_form, auth_forms, question_forms,
 def create_question_options_formularies(request,question_forms,question_option_forms):
     typesList =[]
     answers = []
-    questios = []
+    questions = []
     normalQuestionIndex = 0
 
     #obtenemos las preguntas
     for question in dict(request.POST)['descs[]']:
-        questios.append(question)
+        questions.append(question)
 
     #obtenemos los tipos de las preguntas
     for type in dict(request.POST)['types[]']:
@@ -283,30 +283,36 @@ def create_question_options_formularies(request,question_forms,question_option_f
             normalQuestionIndex += 1
 
     #obtenemos la lista de preguntas para cada respuesta normal
-    for i in range(0,len(questios)):
+    for i in range(0,len(questions)):
+        index=0
         if typesList[i] == "Normal":
             answerKey = "answers["+ str(i) + "][]"
+            answers.append([])
             for answer in dict(request.POST)[answerKey]:
-                answers.append(answer)
+                answers[index].append(answer)
+
+            index+=1
 
 
     #montamos los formularios
     for j in range(0,len(question)):
         index = 0;
-        question_forms.append(QuestionForm({'desc': question[j],'type':type[j]}))
+        question_forms.append(QuestionForm({'desc': questions[j],'type':typesList[j]}))
 
         #añadimos respuestas en funcion al tipo de pregunta
-        if type[j]=="Normal":
+        if typesList[j]=="Normal":
             question_option_forms.append([])
             for answer in answers[index]:
                 question_option_forms[j].append(QuestionOptionForm({'option': answer}))
-        elif type[j]=="Range":
+        elif typesList[j]=="Range":
             #posible cambio en otra issue para que el rango sea configurable
+            question_option_forms.append([])
             for a in range(1,6):
                 question_option_forms[j].append(QuestionOptionForm({'number': a}))
                 a+=1
-        elif type[j]=="Percentage":
+        elif typesList[j]=="Percentage":
             percentage = 0.00
+            question_option_forms.append([])
             # posible cambio en otra issue para que el porcentaje sea configurable
             for b in range(0,20):
                 percentage = 0.00
