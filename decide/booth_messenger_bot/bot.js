@@ -143,7 +143,7 @@ bot.on('postback:BOT_LOG_OUT', (payload, chat) => {
     request.get('http://localhost:8000/rest-auth/logout/', function (error, response, body) {
       if (!error && response.statusCode == 200) {
         config.login = false;
-        config.token = null;
+        config.token = null
         chat.getUserProfile().then((user) => {
           const logoutMessage1 = `Logged out successfully!`;
           const logoutMessage2 = `Well, ${user.first_name} , I hope I have been helpful.`;
@@ -166,6 +166,69 @@ bot.on('postback:BOT_LOG_OUT', (payload, chat) => {
     chat.say("You are not logged in!", options);
   }
 });
+
+bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
+  const options = { typing: true };
+  if (config.login === true) {
+    if (config.userId === null || config.userId === undefined) {
+      console.log("I'm in!");
+
+
+        request.post(
+          'http://localhost:8000/authentication/getuser/',
+          { json: { 'token': config.token } },
+          function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+              config.userId = body.id;
+              console.log(config.userId);
+            }
+          });
+        }
+
+
+      request.get('http://localhost:8000/census/?voter_id=' + config.userId, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          console.log(body);
+          const allowedVotings = JSON.parse(body).voting;
+          console.log(allowedVotings.length);
+          config.allowedVotings = allowedVotings;
+        }
+      });
+
+      
+
+      if (config.allowedVotings === undefined) {
+        console.log("there was a problem")
+      } else if (config.allowedVotings.length === 0) {
+        console.log("No votings")
+      } else {
+        const chooseVoting = (convo) => {
+          const question = {
+            text: `Here's a list of the votings in which you can participate. Please, choose one that has not finished.`,
+            quickReplies: config.allowedVotings
+          };
+
+          const answer = (payload, convo) => {
+            const votingId = payload.message.text;
+            convo.set('votingId', votingId);
+            console.log(convo.get("votingId"));
+            convo.say(`Good choice!`, options).then(() => convo.end());
+          };
+
+          convo.ask(question, answer, options);
+        };
+
+        const message = `Ok`;
+        chat.say(message, options)
+          .then(() => chat.conversation((convo) => {
+            chooseVoting(convo);
+          }));
+
+      }
+    } else {
+
+    }
+  });
 
 
 bot.on('postback:BOT_CANCEL', (payload, chat) => {
