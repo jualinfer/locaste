@@ -32,7 +32,7 @@
 
         </div>{% endcomment %}
     </div>
-    <button type="button" onclick="add_question();">add question</button>
+    <button type="button" onclick="add_question();" id="add_questions">add question</button>
     <select id="question_type" name="question_type">
 
         <option>Normal</option>
@@ -40,7 +40,7 @@
         <option>Percentage</option>
     </select>
 
-    <input type="button" value="Enviar preguntas" onclick="submit_questions();"/>
+    <input type="button" value="Enviar preguntas" id="submit" onclick="submit_questions();"/>
 </form>
 
 
@@ -115,7 +115,7 @@
         }
         $.post("{{ voting_url }}", {'descs': descs, "answers": answers,'types':types, 'csrfmiddlewaretoken':$('#question_form').find('input').first().val()}).done(function(data){
             window.location.replace('/admin');
-        });
+        })
     }
 </script>
 </body>
