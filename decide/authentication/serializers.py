@@ -64,11 +64,12 @@ class UserSignupSerializer(RegisterSerializer):
         adapter = get_adapter()
         user = adapter.new_user(request)
         self.cleaned_data = self.get_cleaned_data()
+        #Assign gender and birthdate to the new user
         adapter.save_user(request, user, self)
 
-        #Assign gender and birthdate to the new user
-        userProfile = UserProfile(user=user,gender=self.validated_data.get('gender',''),birthdate=self.validated_data.get('birthdate',''))
-        userProfile.save()
+        user.userprofile.gender=self.validated_data.get('gender','')
+        user.userprofile.birthdate=self.validated_data.get('birthdate','')
+        user.save()
         self.custom_signup(request, user)
         setup_user_email(request, user, [])
         return user

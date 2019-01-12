@@ -16,21 +16,18 @@ from .serializers import UserSerializer
 def edit_profile(request):
     template_name="edit_profile.html"
     if request.method == 'POST':
-        userForm = UserForm(request.POST, instance=request.user)
         userProfileForm = UserProfileForm(request.POST, instance=request.user.userprofile)
-        print(userForm.errors)
+      
         print(userProfileForm.errors)
-        
-        if userForm.is_valid() and userProfileForm.is_valid():
-            userForm.save()
+
+        if userProfileForm.is_valid():
             userProfileForm.save()
             return redirect('/authentication/profile')
 
     else:
-        userForm = UserForm(instance=request.user)
-        userProfileForm = UserProfileForm(instance=request.user)
+        userProfileForm = UserProfileForm(instance=request.user.userprofile)
 
-    args = {'userForm': userForm, 'userProfileForm' : userProfileForm}
+    args = {'userProfileForm' : userProfileForm}
     return render(request, 'edit_profile.html', args)
 
 
