@@ -15,6 +15,60 @@ from mixnet.mixcrypt import MixCrypt
 from mixnet.models import Auth
 from voting.models import Voting, Question, QuestionOption
 
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import Select
+
+import time
+
+
+
+class VotingTestCaseSelenium(BaseTestCase):
+    def setUp(self):
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--disable-gpu")
+        # self.selenium = webdriver.Chrome('C:/Users/Daniel Diment/Downloads/chromedriver_win32/chromedriver.exe',chrome_options=chrome_options)
+        self.selenium = webdriver.Chrome('/usr/local/bin/chromedriver',chrome_options=chrome_options)
+        super().setUp()
+
+    def tearDown(self):
+        self.selenium.quit()
+        super().tearDown()
+
+    def create_voting(self):
+        selenium = self.selenium
+
+    def test_create_voting(self):
+        selenium = self.selenium
+        selenium.get('http://127.0.0.1:8000/voting/create/')
+        time.sleep(10)
+        name = selenium.find_element_by_id('id_name')
+        desc = selenium.find_element_by_id('id_desc')
+        gender = Select(selenium.find_element_by_id('id_gender'))
+        min_age = selenium.find_element_by_id('id_min_age')
+        max_age = selenium.find_element_by_id('id_max_age')
+        custom_url = selenium.find_element_by_id('id_custom_url')
+        public_voting = selenium.find_element_by_id('id_public_voting')
+        submit=selenium.find_element_by_xpath("//input[@type='submit' and @value='Create']")
+        name.send_keys('Test Voting')
+        desc.send_keys('This is a test voting')
+        gender.select_by_index(0)
+        min_age.send_keys('3')
+        max_age.send_keys('80')
+        custom_url.send_keys('test')
+        public_voting.click()
+        submit.click()
+        assert "Name" in selenium.page_source
+        selenium.find_element_by_id('id_name').send_keys('test')
+        selenium.find_element_by_id('id_url').send_keys('http://127.0.0.1:8000')
+        selenium.find_element_by_xpath("//input[@type='submit' and @value='Create']").click()
+        assert "add question" in selenium.page_source
+        selenium.find_element_by_id('add_questions').click()
+        selenium.find_element_by_id('id_desc').send_keys('test question')
+        selenium.find_element_by_id('id_option').send_keys('test answer')
+
+
 
 class VotingTestCase(BaseTestCase):
 
