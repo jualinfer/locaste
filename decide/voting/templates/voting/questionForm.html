@@ -113,7 +113,7 @@
              }
              types[i]=$(question_formulary[i]).find("#id_type").children("option:selected").val();
         }
-        $.post("{{ voting_url }}", {'descs': descs, "answers": answers, 'csrfmiddlewaretoken':$('#question_form').find('input').first().val()}).done(function(data){
+        $.post("{{ voting_url }}", {'descs': descs, "answers": answers,'types':types, 'csrfmiddlewaretoken':$('#question_form').find('input').first().val()}).done(function(data){
             window.location.replace('/admin');
         });
     }

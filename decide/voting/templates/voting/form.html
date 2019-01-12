@@ -24,6 +24,7 @@
         integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
         crossorigin="anonymous"></script>
 </header>
+{% block content %}
 <form method="post" id="formulary" action="/voting/create/" onsubmit="return checkRestrictions($('#id_custom_url').val(), $('#id_max_age').val(), $('#id_min_age').val());">
     <div id="content" class="w3-container w3-padding-large w3-white">
         {% csrf_token %}
@@ -47,9 +48,14 @@
     {% if is_auth %}
         <button class="w3-button w3-black w3-margin-bottom" type="button" onclick="add_auth();">Add auth</button>
     {% endif %}
+    <script src='https://www.google.com/recaptcha/api.js?hl=en'></script>
+    {% if show_captcha %}
+    <div class="g-recaptcha" data-sitekey="6LdmCYkUAAAAANoznQpCpvIjaWvjEzy95SNNIeCA"></div><br/>
+    {% endif %}
     <input class="w3-button w3-black w3-margin-bottom" type="submit" value="Create"/>
     </div>
 </form>
+{% endblock %}
 <script>
     function add_auth() {
         var question_formulary = $('#fields').clone().first();
