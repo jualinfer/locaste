@@ -10,13 +10,11 @@
         table, th, td {
             border: 1px solid black;
         }
-        /* Create two equal columns that floats next to each other */
         .container-left {
           width: 49%;
           height:auto;
           float:left;
         }
-
 </style>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/xlsx.full.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/jszip.js"></script>
@@ -27,7 +25,7 @@
     <div class="container-left">
         <label for="voter_id">{% trans "User IDs" %}</label>
         <input type="text" id="voter_id" name="voter_id" value=""/>
-        {%trans "(You can put multiples IDs, separating them by commas)" %}
+        <p>{%trans "(You can put multiples IDs, separating them by commas)" %}</p>
         <br/><br/>
 
         <input type="submit" value="{% trans " Add to census" %}" onClick="addToCensus()"/>
@@ -39,6 +37,7 @@
         <p>
             {%trans "Excel file must have the following format (no header, no commas, on sheet 1):" %}
         </p>
+
         <table>
             <tr>
                 <th>
@@ -65,26 +64,20 @@
         </table>
 
     </div>
+
     <div>
         <input type="button" id="export" value="{% trans " Show voting's census" %}" onclick="Export()"/> <br><br>
-
     </div>
 
 </div>
 
 <script>
-        //var token = null;
-        //var user = null;
 
         function getData(url) {
             // Default options are marked with *
             var fdata = {
                 method: 'GET',
             };
-
-            //if (token) {
-            //    fdata.headers['Authorization'] = 'Token ' + token;
-            //}
 
             return fetch(url, fdata)
             .then(response => {
@@ -106,10 +99,6 @@
                 method: 'POST',
             };
 
-            //if (token) {
-            //    fdata.headers['Authorization'] = 'Token ' + token;
-            //}
-
             return fetch(url, fdata)
             .then(response => {
                 if (response.status === 201) {
@@ -130,10 +119,6 @@
                 method: 'DELETE',
             };
 
-            //if (token) {
-            //    fdata.headers['Authorization'] = 'Token ' + token;
-            //}
-
             return fetch(url, fdata)
             .then(response => {
                 if (response.status === 204) {
@@ -145,31 +130,26 @@
         }
 
         function addToCensus() {
-
             var voters = document.querySelector("#voter_id").value.split(",");
             var data = {
                 voting_id: {{voting.id}},
                 voters: voters
             };
-            //getData("{{census_url}}" + "/census/?voting_id="+{{voting.id}})
             postData("{{census_url}}" + "/census/", data)
             .then(data => {
-                //document.cookie = 'decide='+data.token+';';
-                //token = data.token;
                 alert(data);
             })
             .catch(error => {
-                debugger;
                 alert("{% trans "Error: " %}" + error);
                 console.error(error);
             });
         }
+
         function Export(){
             var data = {
                 voting_id: {{voting.id}},
             };
             getData("{{census_url}}" + "/census/?voting_id="+{{voting.id}})
-            //postData("{{census_url}}" + "/census/", data)
             .then(data => {
                 genera_tabla(data);
             })
@@ -179,97 +159,102 @@
             });
         }
 
-
-    function genera_tabla(data) {
-        debugger;
-        var variable = document.getElementById("divTabla");
-        if (variable != null && typeof variable != 'undefined') {
-            variable.parentElement.removeChild(variable)
-        }
-
-        // Obtener la referencia del elemento body
-        var body = document.getElementsByTagName("body")[0];
-        //Crear y asignar atributo class a la etiqueta div
-        var div = document.createElement("div");
-        div.id = "divTabla";
-
-        var br = document.createElement("br");
-        // Crea un elemento <table> y un elemento <tbody>
-        var tabla   = document.createElement("table");
-        tabla.id = "tablaId";
-        var tblBody = document.createElement("tbody");
-        if(data["voters"].length != 0){
-            // Crea las celdas.
-            for (var i = 0; i < data["voters"].length; i++) {
-                // Crea las hileras de la tabla
-                var hilera = document.createElement("tr");
-
-                //Fijado a uno ya que solo mostraremos una columna con los IDs
-                for (var j = 0; j < 1; j++) {
-                    // Crea un elemento <td> y un nodo de texto, haz que el nodo de
-                    // texto sea el contenido de <td>, ubica el elemento <td> al final
-                    // de la hilera de la tabla
-                    var celda = document.createElement("td");
-                    var textoCelda = document.createTextNode(data["voters"][i]);
-                    celda.appendChild(textoCelda);
-                    hilera.appendChild(celda);
-                }
-
-                // agrega la hilera al final de la tabla (al final del elemento tblbody)
-                tblBody.appendChild(hilera);
+        function genera_tabla(data) {
+            //No tabla duplicada
+            var variable = document.getElementById("divTabla");
+            if (variable != null && typeof variable != 'undefined') {
+                variable.parentElement.removeChild(variable)
             }
 
-            // posiciona el <tbody> debajo del elemento <table>
-            tabla.appendChild(tblBody);
-            //añadir div al body
-            body.appendChild(div);
-            // appends <table> into <body>
-            div.appendChild(tabla);
+            // Obtener la referencia del elemento body
+            var body = document.getElementsByTagName("body")[0];
 
-            // modifica el atributo "border" de la tabla y lo fija a "2";
-            tabla.setAttribute("border", "2");
+            //Crear y asignar atributo id a la etiqueta div
+            var div = document.createElement("div");
+            div.id = "divTabla";
 
-            //Crear boton export census
-            var boton = document.createElement("input");
-            boton.type = "button";
-            boton.id = "botonId";
-            boton.value = "Export census to xls file";
-            boton.setAttribute("onclick", "exportTableToExcel(tablaId)");
+            //Crear elemento <br>
+            var br = document.createElement("br");
 
-            div.appendChild(br);
-            div.appendChild(boton);
-            document.body.appendChild(div);
+            // Crea un elemento <table>, asignarle id y crear un elemento <tbody>
+            var tabla   = document.createElement("table");
+            tabla.id = "tablaId";
+            var tblBody = document.createElement("tbody");
 
-        }else{
-            var hilera = document.createElement("tr");
-            var celda = document.createElement("td");
-            var textoCelda = document.createTextNode("0");
-            celda.appendChild(textoCelda);
-            hilera.appendChild(celda);
-            tblBody.appendChild(hilera);
-            // posiciona el <tbody> debajo del elemento <table>
-            tabla.appendChild(tblBody);
-            // appends <table> into <body>
-            div.appendChild(tabla);
-            body.appendChild(div);
-            // modifica el atributo "border" de la tabla y lo fija a "2";
-            tabla.setAttribute("border", "2");
-        }
+            if(data["voters"].length != 0){
+                // Crea las celdas.
+                for (var i = 0; i < data["voters"].length; i++) {
+                    // Crea las hileras de la tabla
+                    var hilera = document.createElement("tr");
 
+                    //Fijado a uno ya que solo mostraremos una columna con los IDs
+                    for (var j = 0; j < 1; j++) {
+                        // Crea un elemento <td> y un nodo de texto, haz que el nodo de
+                        // texto sea el contenido de <td>, ubica el elemento <td> al final
+                        // de la hilera de la tabla
+                        var celda = document.createElement("td");
+                        var textoCelda = document.createTextNode(data["voters"][i]);
+                        celda.appendChild(textoCelda);
+                        hilera.appendChild(celda);
+                    }
+
+                    // agrega la hilera al final de la tabla (al final del elemento tblbody)
+                    tblBody.appendChild(hilera);
+                }
+
+                // posiciona el <tbody> debajo del elemento <table>
+                tabla.appendChild(tblBody);
+
+                //añadir div al body
+                body.appendChild(div);
+
+                // appends <table> into <body>
+                div.appendChild(tabla);
+
+                // modifica el atributo "border" de la tabla y lo fija a "2";
+                tabla.setAttribute("border", "2");
+
+                //Crear input type = button "export census" con Id y funcion onclick
+                var boton = document.createElement("input");
+                boton.type = "button";
+                boton.id = "botonId";
+                boton.value = "Export census to xls file";
+                boton.setAttribute("onclick", "exportTableToExcel(tablaId)");
+
+                //anyadir al div el elemento br y boton. Añyadir div a elemento referencia body
+                div.appendChild(br);
+                div.appendChild(boton);
+                document.body.appendChild(div);
+
+            }else{
+                //Crea tabla para censo de votacion vacio
+                var hilera = document.createElement("tr");
+                var celda = document.createElement("td");
+                var textoCelda = document.createTextNode("0");
+
+                celda.appendChild(textoCelda);
+                hilera.appendChild(celda);
+                tblBody.appendChild(hilera);
+                tabla.appendChild(tblBody);
+
+                div.appendChild(tabla);
+                body.appendChild(div);
+
+                tabla.setAttribute("border", "2");
+            }
 
         }
 
         function exportTableToExcel(tablaID, filename = ''){
-
             var downloadLink;
             var dataType = 'application/vnd.ms-excel';
             var tableSelect = tablaID;
             var tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
 
-            // Specify file name
+            // Especificar nombre de archivo
             filename = filename?filename+'.xls':'excel_data.xls';
 
-            // Create download link element
+            // Crear elemento link de descarga
             downloadLink = document.createElement("a");
 
             document.body.appendChild(downloadLink);
@@ -280,18 +265,16 @@
                 });
                 navigator.msSaveOrOpenBlob( blob, filename);
             }else{
-                // Create a link to the file
+                // Crear un link al archivo
                 downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
 
-                // Setting the file name
+                // configurar nombre del archivo
                 downloadLink.download = filename;
 
-                //triggering the function
+                //Activando funcion
                 downloadLink.click();
             }
         }
-
-
 
         function removeFromCensus() {
             var voters = document.querySelector("#voter_id").value.split(",");
@@ -300,8 +283,6 @@
             };
             deleteData("{{census_url}}" + "/census/" + {{voting.id}} + "/", data)
             .then(data => {
-                //document.cookie = 'decide='+data.token+';';
-                //token = data.token;
                 alert(data);
             })
             .catch(error => {
@@ -309,6 +290,7 @@
                 console.error(error);
             });
         }
+
         function isNumber(excelRows){
             var out = [];
             var filtro = '1234567890';//Caracteres validos
@@ -336,7 +318,6 @@
         }
 
         function AddExcelToCensus(excelRows){
-            debugger;
             var voters = isNumber(excelRows);
             var data = {
                 voting_id: {{voting.id}},
@@ -356,7 +337,7 @@
         //Obtenemos dato subido (id = fileUpload)
         var fileUpload = document.getElementById("fileUpload");
 
-        //Validar si el archivo es un archivo de Excel válido.
+        //Validar si el archivo es un archivo de Excel valido.
         var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx|.ods)$/;
         if (regex.test(fileUpload.value.toLowerCase())) {
             if (typeof (FileReader) != "undefined") {
@@ -387,6 +368,7 @@
             alert("Please upload a valid Excel file.");
         }
     };
+
     function ProcessExcel(data) {
         //Lee los datos del archivo Excel.
         var workbook = XLSX.read(data, {
@@ -402,17 +384,6 @@
 		    AddExcelToCensus(excelRows);
 		}
     };
-
-
-
-
-
-
-
-
-
-
-
 
 </script>
 
