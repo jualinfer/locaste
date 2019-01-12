@@ -81,7 +81,7 @@ def introduce_confirmation_password_signup(bot, update, user_data):
         return CHOOSING_NOT_LOGGED
     user_data['password'] = text
     if(len(text) < 8):
-        update.message.reply_text("The password must contain atleast 8 digits")
+        update.message.reply_text("The password must contain at least 8 digits")
         update.message.reply_text("Introduce your password again",
             reply_markup=markup_cancel_signup)
 
