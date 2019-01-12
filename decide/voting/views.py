@@ -357,9 +357,12 @@ def create_question_options_formularies(request,question_forms,question_option_f
         elif typesList[j]=="Range":
             #posible cambio en otra issue para que el rango sea configurable
             question_option_forms.append([])
-            for a in range(1,5):
-                question_option_forms[j].append(QuestionOptionForm({'option':None,'number':a,'percentage':None}))
-                a+=1
+            question_option_forms[j].append(QuestionOptionForm({'option':None,'number':1,'percentage':None}))
+            question_option_forms[j].append(QuestionOptionForm({'option': None, 'number': 2, 'percentage': None}))
+            question_option_forms[j].append(QuestionOptionForm({'option': None, 'number': 3, 'percentage': None}))
+            question_option_forms[j].append(QuestionOptionForm({'option': None, 'number': 4, 'percentage': None}))
+            question_option_forms[j].append(QuestionOptionForm({'option': None, 'number': 5, 'percentage': None}))
+
         elif typesList[j]=="Percentage":
             percentage = 0
             question_option_forms.append([])
@@ -369,7 +372,7 @@ def create_question_options_formularies(request,question_forms,question_option_f
                 percentage += 5
                 b+=1
 
-
+        j+=1
 
 
 
