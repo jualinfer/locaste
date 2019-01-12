@@ -4,6 +4,8 @@ const request = require('request');
 const app = express();
 const BootBot = require('bootbot');
 const axios = require('axios');
+
+
 require('dotenv').config()
 
 
@@ -36,6 +38,7 @@ const bot = new BootBot({
   appSecret: process.env.APP_SECRET
 })
 
+bot.deletePersistentMenu();
 bot.setGreetingText("Hello, I'm Decide-Locaste-Booth Bot. I'm here to help you vote with Decide. Click on the 'Get Started' button to begin.")
 
 
@@ -47,12 +50,67 @@ bot.setGetStartedButton((payload, chat) => {
       text: 'In order to vote, first you need to log in with your Decide username and password.',
       buttons: [
         { type: 'postback', title: 'Log in', payload: 'BOT_LOG_IN' },
-        { type: 'postback', title: 'Help', payload: 'BOT_HELP' }
+        { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+        { type: 'web_url', url: "https://github.com/wadobo/decide/wiki/Como-funciona-Decide", title: "¿Cómo funciona Decide?" }
       ]
     };
     const options = { typing: true };
     chat.say([welcome1, welcome2, welcome3], options);
   });
+});
+
+
+bot.on('postback:BOT_RESTART', (payload, chat) => {
+  const options = { typing: true };
+
+  async function restart() {
+
+    async function logout() {
+      if (config.login === true) {
+        chat.say("Logging out...", options);
+        await axios.get('http://localhost:8000/rest-auth/logout/')
+          .then((res) => {
+            config.login = false;
+            config.token = null;
+            config.userId = null;
+            config.allowedVotings = null;
+            config.actualVoting = null;
+            chat.say("Logged out successfully!", options);
+          })
+          .catch((err) => {
+            console.log(err.message);
+            const errorMessage1 = `An error was produced while logging out...`;
+            const errorMessage2 = {
+              text: 'Do you want to try again?',
+              buttons: [
+                { type: 'postback', title: 'Try again', payload: 'BOT_RESTART' },
+                { type: 'postback', title: 'Help', payload: 'BOT_HELP' }
+              ]
+            };
+            chat.say([errorMessage1, errorMessage2], options);
+          });
+      }
+    };
+
+    await logout();
+    chat.say("Starting a new conversation ...", options);
+    chat.getUserProfile().then((user) => {
+      const welcome1 = `Hello again ${user.first_name} !`;
+      const welcome2 = `I'm Decide-Locaste-Booth Bot, the Facebook Messenger virtual assistant for Decide.`;
+      const welcome3 = {
+        text: 'In order to vote, first you need to log in with your Decide username and password.',
+        buttons: [
+          { type: 'postback', title: 'Log in', payload: 'BOT_LOG_IN' },
+          { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+          { type: 'web_url', url: "https://github.com/wadobo/decide/wiki/Como-funciona-Decide", title: "¿Cómo funciona Decide?" }
+        ]
+      };
+      const options = { typing: true };
+      chat.say([welcome1, welcome2, welcome3], options);
+    });
+
+  }
+  restart();
 });
 
 
@@ -99,7 +157,8 @@ bot.on('postback:BOT_LOG_IN', (payload, chat) => {
                   text: 'What would you want to do now?',
                   buttons: [
                     { type: 'postback', title: 'Access to a voting', payload: 'BOT_GET_VOTING' },
-                    { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+                    { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }, 
+                    { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
                   ]
                 };
                 convo.say([loginMessage1, loginMessage2, loginMessage3], options).then(() => convo.end());
@@ -132,6 +191,47 @@ bot.on('postback:BOT_LOG_IN', (payload, chat) => {
       }));
   }
 });
+
+
+
+bot.on('postback:BOT_LOG_OUT', (payload, chat) => {
+  const options = { typing: true };
+  if (config.login === true) {
+    request.get('http://localhost:8000/rest-auth/logout/', function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        config.login = false;
+        config.token = null;
+        config.userId = null;
+        config.allowedVotings = null;
+        config.actualVoting = null;
+        chat.getUserProfile().then((user) => {
+          const logoutMessage1 = `Logged out successfully!`;
+          const logoutMessage2 = `Well, ${user.first_name} , I hope I have been helpful.`;
+          const logoutMessage3 = {
+            text: 'If you need me again, just let me know!',
+            buttons: [
+              { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
+            ]
+          };
+          chat.say([logoutMessage1, logoutMessage2, logoutMessage3], options);
+        });
+      } else {
+        const errorMessage1 = `An error was produced while logging out...`;
+        const errorMessage2 = {
+          text: 'Do you want to try again?',
+          buttons: [
+            { type: 'postback', title: 'Try again', payload: 'BOT_LOG_OUT' },
+            { type: 'postback', title: 'Help', payload: 'BOT_HELP' }
+          ]
+        };
+        chat.say([errorMessage1, errorMessage2], options);
+      }
+    });
+  } else {
+    chat.say("You are not logged in!", options);
+  }
+});
+
 
 
 bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
@@ -330,54 +430,6 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
   }
 });
 
-
-
-
-
-
-
-
-bot.on('postback:BOT_LOG_OUT', (payload, chat) => {
-  const options = { typing: true };
-  if (config.login === true) {
-    request.get('http://localhost:8000/rest-auth/logout/', function (error, response, body) {
-      if (!error && response.statusCode == 200) {
-        config.login = false;
-        config.token = null;
-        config.userId = null;
-        config.allowedVotings = null;
-        config.actualVoting = null;
-        chat.getUserProfile().then((user) => {
-          const logoutMessage1 = `Logged out successfully!`;
-          const logoutMessage2 = `Well, ${user.first_name} , I hope I have been helpful.`;
-          const logoutMessage3 = `If you need me again, just let me know!`;
-          chat.say([logoutMessage1, logoutMessage2, logoutMessage3], options);
-        });
-      } else {
-        const errorMessage1 = `An error was produced while logging out...`;
-        const errorMessage2 = {
-          text: 'Do you want to try again?',
-          buttons: [
-            { type: 'postback', title: 'Try again', payload: 'BOT_LOG_OUT' },
-            { type: 'postback', title: 'Help', payload: 'BOT_HELP' }
-          ]
-        };
-        chat.say([errorMessage1, errorMessage2], options);
-      }
-    });
-  } else {
-    chat.say("You are not logged in!", options);
-  }
-});
-
-
-
-bot.on('postback:BOT_CANCEL', (payload, chat) => {
-  const options = { typing: true };
-  const message1 = "If you need me again you can call me by typing 'Get Started'.";
-  const message2 = "Bye!";
-  chat.say([message1, message2], options);
-});
 
 
 
