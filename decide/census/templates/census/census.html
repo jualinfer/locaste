@@ -2,7 +2,7 @@
 {% load i18n static %}
 
 {% block content %}
-    <style>
+<style>
         .container {
             height: auto;
             width: 100%;
@@ -17,32 +17,24 @@
           float:left;
         }
 
-        /* Clear floats after the columns */
-        .container-right{
-          width: 49%;
-          height:100px;
-          float:right;
-        }
-        
-      
-    </style>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/xlsx.full.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/jszip.js"></script>
+</style>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/xlsx.full.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/jszip.js"></script>
 
-    <h1>{{ voting.name }}</h1>
+<h1>{{ voting.name }}</h1>
 
-    <div id="census_form" class="container">
-        <div class="container-left">
+<div id="census_form" class="container">
+    <div class="container-left">
         <label for="voter_id">{% trans "User IDs" %}</label>
         <input type="text" id="voter_id" name="voter_id" value=""/>
         {%trans "(You can put multiples IDs, separating them by commas)" %}
         <br/><br/>
 
-        <input type="submit" value="{% trans "Add to census" %}" onClick="addToCensus()"/>
-        <input type="submit" value="{% trans "Remove from census" %}" onClick="removeFromCensus()"/><br><br>
+        <input type="submit" value="{% trans " Add to census" %}" onClick="addToCensus()"/>
+        <input type="submit" value="{% trans " Remove from census" %}" onClick="removeFromCensus()"/><br><br>
 
-        <input type="file" id="fileUpload" />
-        <input type="button" id="upload" value=" {% trans "Add Excel to census" %}" onclick="Upload()"/> <br><br>
+        <input type="file" id="fileUpload"/>
+        <input type="button" id="upload" value=" {% trans " Add Excel to census" %}" onclick="Upload()"/> <br><br>
 
         <p>
             {%trans "Excel file must have the following format (no header, no commas, on sheet 1):" %}
@@ -58,9 +50,9 @@
                     2
                 </th>
             </tr>
-                <th>
-                    3
-                </th>
+            <th>
+                3
+            </th>
             <tr>
                 <th>
                     4
@@ -72,13 +64,13 @@
             </tr>
         </table>
 
-        </div>
-        <div>
-            <input type="button" id="export" value="{% trans "Show voting's census" %}" onclick="Export()"/> <br><br>
-
-        </div>
+    </div>
+    <div>
+        <input type="button" id="export" value="{% trans " Show voting's census" %}" onclick="Export()"/> <br><br>
 
     </div>
+
+</div>
 
 <script>
         //var token = null;
@@ -167,6 +159,7 @@
                 alert(data);
             })
             .catch(error => {
+                debugger;
                 alert("{% trans "Error: " %}" + error);
                 console.error(error);
             });
@@ -188,12 +181,17 @@
 
 
     function genera_tabla(data) {
+        debugger;
+        var variable = document.getElementById("divTabla");
+        if (variable != null && typeof variable != 'undefined') {
+            variable.parentElement.removeChild(variable)
+        }
 
         // Obtener la referencia del elemento body
         var body = document.getElementsByTagName("body")[0];
         //Crear y asignar atributo class a la etiqueta div
         var div = document.createElement("div");
-        //div.class = "container-right";
+        div.id = "divTabla";
 
         var br = document.createElement("br");
         // Crea un elemento <table> y un elemento <tbody>
@@ -404,6 +402,17 @@
 		    AddExcelToCensus(excelRows);
 		}
     };
+
+
+
+
+
+
+
+
+
+
+
 
 </script>
 
