@@ -465,5 +465,42 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
 });
 
 
+bot.on('postback:BOT_OPEN_VOTING', (payload, chat) => {
+  const options = { typing: true };
+  if (config.actualVoting === null || config.actualVoting === undefined) {
+    const errorMessage1 = {
+      text: 'Please, select a voting:',
+      buttons: [
+        { type: 'postback', title: 'Access a voting', payload: 'BOT_GET_VOTING' },
+        { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+        { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
+      ]
+    };
+    chat.say([errorMessage1], options);
+
+  } else {
+    chat.getUserProfile().then((user) => {
+      const message1 = "Listen carefully!";
+      const message2 = "You are about to participate in this voting.";
+      const message3 = "The question of the voting will appear as soon as you press the Start button.";
+      const message4 = "Read it carefully and choose an answer.";
+      const message5 = `Please, ${user.first_name}, use the given options to answer the question!`;
+      const message6 = "Don't type anything or your answer won't be valid. ";
+      const message7 = "In the end, you will have to confirm your vote.";
+      const message8 = {
+        text: `Is everything clear, ${user.first_name}? Are you sure you want to continue?`,
+        buttons: [
+          { type: 'postback', title: 'Start', payload: 'BOT_START_VOTING' },
+          { type: 'postback', title: 'Access another voting', payload: 'BOT_GET_VOTING' },
+          { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
+        ]
+      };
+      chat.say([message1, message2, message3, message4, message5, message6, message7, message8], options);
+    });
+
+  }
+
+});
+
 
 bot.start()
