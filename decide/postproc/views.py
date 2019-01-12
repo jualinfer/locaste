@@ -101,41 +101,83 @@ class PostProcView(APIView):
 
         return Response(out)
 
-    def majorrest(self, options, seats, census, quotient):
-        results = []
-        residualvoteslist = []
+    def majorrest(self, options, seats, census):
         voters = sum(opt['votes'] for opt in options)
-        if quotient == 'hare':
-            q = round(voters/seats)
-        elif quotient == 'droop':
-            q = 1 + round(voters/(seats + 1))
-        elif quotient == 'imperiali':
-            q = round(voters/(seats + 2))
 
-        seatsleft = seats
+        qh = round(voters/seats)
+        results_hare = []
+        residualvoteslisth = []
+        seatslefth = seats
+
+        qd = 1 + round(voters/(seats + 1))
+        results_droop = []
+        residualvoteslistd = []
+        seatsleftd = seats
+
+        qi = round(voters/(seats + 2))
+        results_imperiali = []
+        residualvoteslisti = []
+        seatslefti = seats
 
         for option in options:
-            e = option['votes'] // q
-            seatsleft = seatsleft - e
-            results.append({
+            eh = option['votes'] // qh
+            seatslefth = seatslefth - eh
+            results_hare.append({
                 **option,
-                'postproc': e,
+                'postproc': eh,
             });
-            residualvoteslist.append({
+            residualvoteslisth.append({
                 **option,
-                'residualvotes': option['votes'] - (q*e),
+                'residualvotes': option['votes'] - (qh*eh),
             });
 
-        resultscopy = results
-        for seat in range(seatsleft):
-            opt = max(residualvoteslist, key=lambda opt: opt['residualvotes'])
-            aux = next((o for o in results if o['option'] == opt['option']), None)
+            ed = option['votes'] // qd
+            seatsleftd = seatsleftd - ed
+            results_droop.append({
+                **option,
+                'postproc': ed,
+            });
+            residualvoteslistd.append({
+                **option,
+                'residualvotes': option['votes'] - (qd*ed),
+            });
+
+            ei = option['votes'] // qi
+            seatslefti = seatslefti - ei
+            results_imperiali.append({
+                **option,
+                'postproc': ei,
+            });
+            residualvoteslisti.append({
+                **option,
+                'residualvotes': option['votes'] - (qi*ei),
+            });
+
+        resultscopyh = results_hare
+        resultscopyd = results_droop
+        resultscopyi = results_imperiali
+
+        for seat in range(seatslefth):
+            opt = max(residualvoteslisth, key=lambda opt: opt['residualvotes'])
+            aux = next((o for o in results_hare if o['option'] == opt['option']), None)
             aux['postproc'] = aux['postproc'] + 1
-            residualvoteslist.remove({**opt});
+            residualvoteslisth.remove({**opt});
+
+        for seat in range(seatsleftd):
+            opt = max(residualvoteslistd, key=lambda opt: opt['residualvotes'])
+            aux = next((o for o in results_droop if o['option'] == opt['option']), None)
+            aux['postproc'] = aux['postproc'] + 1
+            residualvoteslistd.remove({**opt});
+
+        for seat in range(seatslefti):
+            opt = max(residualvoteslisti, key=lambda opt: opt['residualvotes'])
+            aux = next((o for o in results_imperiali if o['option'] == opt['option']), None)
+            aux['postproc'] = aux['postproc'] + 1
+            residualvoteslisti.remove({**opt});
 
 
         part = self.participation(census, voters)
-        out = {'results': results, 'participation': part}
+        out = {'results_hare': results_hare, 'results_droop': results_droop, 'results_imperiali': results_imperiali, 'participation': part}
 
         return Response(out)
 
@@ -153,12 +195,8 @@ class PostProcView(APIView):
             return self.saintelague(opts,seats,census,'classic')
         elif t == 'BORDA':
             return self.borda(opts)
-        elif t == 'MAJORRESTHARE':
-            return self.majorrest(opts, seats, census, 'hare')
-        elif t == 'MAJORRESTDROOP':
-            return self.majorrest(opts, seats, census, 'droop')
-        elif t == 'MAJORRESTIMPERIALI':
-            return self.majorrest(opts, seats, census, 'imperiali')
+        elif t == 'MAJORREST':
+            return self.majorrest(opts, seats, census)
         elif t=='SAINTELAGUEMOD':
             return self.saintelague(opts,seats,census,'modified')
 
