@@ -123,9 +123,15 @@ bot.on('postback:BOT_LOG_IN', (payload, chat) => {
       const question = "Please, introduce your username.";
 
       const answer = (payload, convo) => {
+        if (payload.message === undefined) {
+          convo.say(`Please wait...`, options).then(() => { convo.say("You have interrupted the process of logging in!") });
+          convo.end();
+        } else {
+
         const username = payload.message.text;
         convo.set('username', username);
         convo.say(`Got it!`, options).then(() => askPassword(convo));
+        }
       };
 
       convo.ask(question, answer, options);
@@ -136,6 +142,12 @@ bot.on('postback:BOT_LOG_IN', (payload, chat) => {
 
 
       const answer = (payload, convo) => {
+        if (payload.message === undefined) {
+          convo.say(`Please wait...`, options).then(() => { convo.say("You have interrupted the process of logging in!") });
+          convo.end();
+        } else {
+
+
         const password = payload.message.text;
         convo.set('password', password);
         convo.say(`Ok!`, options);
@@ -179,8 +191,8 @@ bot.on('postback:BOT_LOG_IN', (payload, chat) => {
           }
         );
 
-      };
-
+      }
+    };
       convo.ask(question, answer, options);
     };
 
@@ -339,6 +351,10 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
           };
 
           const answer = (payload, convo) => {
+            if (payload.message === undefined) {
+              convo.say(`Please wait...`, options).then(() => { convo.say("You have interrupted the process of choosing a voting!") });
+              convo.end();
+            } else {
             const voting = payload.message.text;
             const allVotings = Object.keys(votings);
 
@@ -373,7 +389,8 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
               convo.say(`Good choice!`, options).then(() => askConfirmation(convo));
             }
 
-          };
+          }
+        }; 
 
           convo.ask(question, answer, options);
         };
@@ -388,6 +405,10 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
 
 
             const answer = (payload, convo) => {
+              if (payload.message === undefined) {
+                convo.say(`Please wait...`, options).then(() => { convo.say("You have interrupted the process of choosing a voting!") });
+                convo.end();
+              } else {
               const reply = payload.message.text;
 
               if (reply == "Yes" || reply == 'yes' || reply == 'YES') {
@@ -414,7 +435,7 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
               }
 
             }
-
+          };
             convo.ask(question, answer, options);
           });
         };
