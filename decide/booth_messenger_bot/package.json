@@ -18,6 +18,7 @@
   "author": "Asen Rangelov Baykushev",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.18.0",
     "body-parser": "^1.17.1",
     "bootbot": "^1.0.12",
     "config": "^1.26.1",
