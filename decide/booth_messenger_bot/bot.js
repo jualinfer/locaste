@@ -234,6 +234,7 @@ bot.on('postback:BOT_LOG_OUT', (payload, chat) => {
 
 
 
+
 bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
   const options = { typing: true };
   if (config.login === true) {
@@ -277,56 +278,60 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
           text: 'Do you want to try again?',
           buttons: [
             { type: 'postback', title: 'Try again', payload: 'BOT_GET_VOTING' },
-            { type: 'postback', title: 'Help', payload: 'BOT_HELP' }
+            { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+            { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
           ]
         };
         chat.say([errorMessage1, errorMessage2], options);
       } else if (config.allowedVotings.length === 0) {
-        const message = `I'm sorry. There aren't votings in which you can participate.`;
-        chat.say(message, options);
+        const message1 = `I'm sorry. There aren't votings in which you can participate.`;
+        const message2 = {
+          text: 'What would you want to do now?',
+          buttons: [
+            { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+            { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
+          ]
+        };
+        chat.say([message1, message2], options);
       } else {
-        console.log("I'm in!!!");
         const votingsIds = config.allowedVotings.map(String);
         const replies = [];
         const votings = [];
         const activeVotings = [];
 
-        
+
+        for (i = 0; i < votingsIds.length; i++) {
+
+          await axios.get('http://localhost:8000/voting/?id=' + votingsIds[i].toString())
+            .then((res) => {
+              var title = res.data[0].name;
+              var isActive = (res.data[0].start_date !== null && res.data[0].end_date === null) ? true : false;
+              var image = (!isActive) ? "https://http2.mlstatic.com/adventure-kidz-banz-age-2-5-gafas-de-sol-rockin-red-D_NQ_NP_638979-MLM26845819305_022018-O.jpg" :
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHsXY1PIZ4MgKi0XWj0uIOUks9TuP75Lkphk2bNLHNE2leQVF2BQ";
+
+              reply = {
+                "content_type": "text",
+                "title": title,
+                "image_url": image,
+                "payload": "BOT_PICK_VOTING_" + votingsIds[i].toString()
+              };
+              replies.push(reply);
+
+              votings[title] = votingsIds[i];
+
+              if (isActive) {
+                activeVotings.push(title);
+              }
+
+            })
+            .catch((err) => {
+              console.log(err.message);
+            })
           
-          for (i = 0; i < votingsIds.length; i++) {
 
-            await axios.get('http://localhost:8000/voting/?id=' + votingsIds[i].toString())
-              .then((res) => {
-                var title = res.data[0].name;
-                console.log(title);
-                var isActive = (res.data[0].start_date !== null && res.data[0].end_date === null) ? true : false;
-                console.log(isActive);
-                var image = (!isActive) ? "https://http2.mlstatic.com/adventure-kidz-banz-age-2-5-gafas-de-sol-rockin-red-D_NQ_NP_638979-MLM26845819305_022018-O.jpg" :
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHsXY1PIZ4MgKi0XWj0uIOUks9TuP75Lkphk2bNLHNE2leQVF2BQ";
-
-                reply = {
-                  "content_type": "text",
-                  "title": title,
-                  "image_url": image,
-                  "payload": "BOT_PICK_VOTING_" + votingsIds[i].toString()
-                };
-                replies.push(reply);
-
-                votings[title] = votingsIds[i];
-
-                if (isActive) {
-                  activeVotings.push(title);
-                }
-
-              })
-              .catch((err) => {
-                console.log(err.message);
-              })
-            console.log(activeVotings);
-
-          }
+        }
         const chooseVoting = (convo) => {
-          
+
 
           const question = {
             text: `Here's a list of the votings in which you can participate. The active votings are marked in green, while the inactive are marked in red. Please, choose an active voting!`,
@@ -335,8 +340,6 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
 
           const answer = (payload, convo) => {
             const voting = payload.message.text;
-            console.log(Object.keys(votings));
-            console.log(activeVotings);
             const allVotings = Object.keys(votings);
 
             if (!allVotings.includes(voting)) {
@@ -345,7 +348,8 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
                 text: 'What would you want to do now?',
                 buttons: [
                   { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
-                  { type: 'postback', title: 'Help', payload: 'BOT_HELP' }
+                  { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+                  { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
                 ]
               };
               convo.say([errorMessage1, errorMessage2], options);
@@ -356,7 +360,8 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
                 text: 'What would you want to do now?',
                 buttons: [
                   { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
-                  { type: 'postback', title: 'Help', payload: 'BOT_HELP' }
+                  { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+                  { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
                 ]
               };
               convo.say([errorMessage1, errorMessage2, errorMessage3], options);
@@ -374,43 +379,43 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
         };
 
         const askConfirmation = (convo) => {
-          
+
           convo.getUserProfile().then((user) => {
             const question = {
-              text: `So ${user.first_name} , do you want to participate in the voting '` + convo.get('votingName') + "'?" ,
+              text: `So ${user.first_name} , do you want to participate in the voting '` + convo.get('votingName') + "'?",
               quickReplies: ["Yes", "No"]
             };
 
 
             const answer = (payload, convo) => {
               const reply = payload.message.text;
-            
+
               if (reply == "Yes" || reply == 'yes' || reply == 'YES') {
                 config.actualVoting = convo.get('votingId');
                 const message1 = `Ok, ${user.first_name}. `;
                 convo.sendButtonTemplate(message1, [
                   { type: 'postback', title: 'Open the voting', payload: 'BOT_OPEN_VOTING' }], options).then(() => convo.end());
-                }
-                
-               else if (reply == "No" || reply == 'no' || reply == 'NO') {
+              }
+
+              else if (reply == "No" || reply == 'no' || reply == 'NO') {
                 const message1 = `Got it.`;
                 const message2 = {
-                text: 'What would you want to do now?',
-                buttons: [
-                  { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
-                  { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
-                ]
-              };
-              convo.say([message1, message2], options).then(() => convo.end());
+                  text: 'What would you want to do now?',
+                  buttons: [
+                    { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
+                    { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
+                  ]
+                };
+                convo.say([message1, message2], options).then(() => convo.end());
               } else {
                 const message1 = `I didn't understand that.`;
                 convo.sendButtonTemplate(message1, [
                   { type: 'postback', title: 'Help', payload: 'BOT_HELP' }], options).then(() => convo.end());
-                }
-             
               }
-  
-              convo.ask(question, answer, options);
+
+            }
+
+            convo.ask(question, answer, options);
           });
         };
 
@@ -426,11 +431,17 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
     };
     conversation();
   } else {
+    const errorMessage = {
+      text: 'You must be logged in in order to access a voting.',
+      buttons: [
+        { type: 'postback', title: 'Log in', payload: 'BOT_LOG_IN' },
+        { type: 'postback', title: 'Help', payload: 'BOT_HELP' }
+      ]
+    };
+    chat.say(errorMessage, options);
 
   }
 });
-
-
 
 
 
