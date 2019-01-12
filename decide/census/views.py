@@ -1,7 +1,6 @@
 from django.views.generic import TemplateView
 from django.db.utils import IntegrityError
-from django.core.exceptions import ValidationError
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError, ObjectDoesNotExist, PermissionDenied
 from rest_framework import generics
 from rest_framework.response import Response
 from .serializers import CensusSerializer
@@ -35,19 +34,22 @@ class CensusCreate(generics.ListCreateAPIView):
         voter_id = request.data.get('voter_id')
         if voter_id:
             voters.append(voter_id)
-        if not voters:
-            return Response('No voter ids where provided', status=ST_400)
 
         try:
+            voters = Census.public_or_private(voting_id, voters, request.user)
+            if not voters:
+                return Response('No voter ids where provided', status=ST_400)
             Census.check_restrictions_multiple_voters(voting_id, voters)
 
             for voter in voters:
-                census = Census.create(voting_id=voting_id, voter_id=voter, check_restrictions=False)
+                census = Census.create(voting_id=voting_id, voter_id=voter)
                 census.save()
         except IntegrityError:
             return Response('Error trying to create census', status=ST_409)
         except ValidationError as e:
             return Response(str(e), status=ST_400)
+        except PermissionDenied as p:
+            return Response(str(p), status=ST_403)
         return Response('Census created', status=ST_201)
 
     def list(self, request, *args, **kwargs):
