@@ -14,8 +14,6 @@ from rest_framework.status import (
     HTTP_409_CONFLICT as ST_409
 )
 
-# from base.perms import UserIsStaff
-# from rest_framework.permissions import AllowAny
 from .models import Census
 from django.http import Http404
 
@@ -33,7 +31,13 @@ class CensusCreate(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
 
         voting_id = request.data.get('voting_id')
-        voters = request.data.get('voters')
+        voters = request.data.get('voters') or []
+        voter_id = request.data.get('voter_id')
+        if voter_id:
+            voters.append(voter_id)
+        if not voters:
+            return Response('No voter ids where provided', status=ST_400)
+
         try:
             Census.check_restrictions_multiple_voters(voting_id, voters)
 
@@ -41,7 +45,7 @@ class CensusCreate(generics.ListCreateAPIView):
                 census = Census.create(voting_id=voting_id, voter_id=voter, check_restrictions=False)
                 census.save()
         except IntegrityError:
-            return Response('Error try to create census', status=ST_409)
+            return Response('Error trying to create census', status=ST_409)
         except ValidationError as e:
             return Response(str(e), status=ST_400)
         return Response('Census created', status=ST_201)
@@ -63,7 +67,7 @@ class CensusCreate(generics.ListCreateAPIView):
 class CensusDetail(generics.RetrieveDestroyAPIView):
 
     def destroy(self, request, voting_id, *args, **kwargs):
-        voters = request.data.get('voters')
+        voters = request.data.get('voters') or []
         census = Census.objects.filter(voting_id=voting_id, voter_id__in=voters)
         census.delete()
         return Response('Voters deleted from census', status=ST_204)
