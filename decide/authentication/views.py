@@ -7,8 +7,8 @@ from django.views.generic import TemplateView
 from rest_framework import status
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserChangeForm
-from authentication.forms import EditProfileForm
+from .models import UserProfile
+from authentication.forms import UserProfileForm, UserForm
 
 
 from .serializers import UserSerializer
@@ -16,15 +16,22 @@ from .serializers import UserSerializer
 def edit_profile(request):
     template_name="edit_profile.html"
     if request.method == 'POST':
-        form = EditProfileForm(request.POST, instance=request.user)
-
-        if form.is_valid():
-            form.save()
+        userForm = UserForm(request.POST, instance=request.user)
+        userProfileForm = UserProfileForm(request.POST, instance=request.user.userprofile)
+        print(userForm.errors)
+        print(userProfileForm.errors)
+        
+        if userForm.is_valid() and userProfileForm.is_valid():
+            userForm.save()
+            userProfileForm.save()
             return redirect('/authentication/profile')
+
     else:
-        form = EditProfileForm(instance=request.user)
-        args = {'form': form}
-        return render(request, 'edit_profile.html', args)
+        userForm = UserForm(instance=request.user)
+        userProfileForm = UserProfileForm(instance=request.user)
+
+    args = {'userForm': userForm, 'userProfileForm' : userProfileForm}
+    return render(request, 'edit_profile.html', args)
 
 
 class GetUserView(APIView):
