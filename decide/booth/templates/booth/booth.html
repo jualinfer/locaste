@@ -54,6 +54,8 @@
         };
 
         var token = null;
+        var csrftoken = null;
+        var csrftoken_value = null;
         var user = null;
 
         function postData(url, data) {
@@ -67,6 +69,9 @@
           };
           if (token) {
               fdata.headers['Authorization'] = 'Token ' + token;
+          }
+          if(csrftoken_value){
+              fdata.headers['X-CSRFToken'] = csrftoken_value;
           }
           return fetch(url, fdata)
           .then(response => {
@@ -110,17 +115,19 @@
 
             token = null;
             user = null;
-            document.cookie = 'decide=; path=/';
+            document.cookie = 'decide=;csrftoken=; path=/';
             panel('login');
             window.location.href = "/authentication/logout";
         }
 
         function decideUser() {
-            var data = { token: token };
+            var data = { token: token , csrftoken: csrftoken_value };
             postData("{{auth_url}}" + "/authentication/getuser/", data)
               .then(data => {
                 user = data;
-                panel('voting');
+                if(user.id){
+                    panel('voting');
+                }
               }).catch(error => {
                 alert("{% trans "Error: " %}" + error);
               });
@@ -159,11 +166,17 @@
 
         function init() {
             panel('login');
+            
             var cookies = document.cookie.split("; ");
             cookies.forEach((c) => {
                 var cs = c.split("=");
                 if (cs[0] == 'decide' && cs[1]) {
                     token = cs[1];
+                    decideUser();
+                }
+
+                if(cs[0] == 'csrftoken' && cs[1]){
+                    csrftoken_value = cs[1];
                     decideUser();
                 }
             });
