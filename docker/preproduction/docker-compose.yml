@@ -12,7 +12,7 @@ services:
   web:
     restart: always
     container_name: decide_web
-    image: alexgue/decide-locaste-web:production
+    image: alexgue/decide-locaste-web:latest
     build: .
     command: ash -c "python manage.py migrate && gunicorn -w 5 decide.wsgi --timeout=500 -b 0.0.0.0:5000"
     expose:
@@ -33,7 +33,7 @@ services:
     volumes:
       - static:/app/static
     ports:
-      - "80:80"
+      - "9000:80"
     depends_on:
       - web
     networks:
