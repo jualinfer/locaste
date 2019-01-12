@@ -21,27 +21,29 @@ from django.http import Http404
 
 from base import mods
 
+from rest_framework.permissions import IsAuthenticated
+
 
 class CensusCreate(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
+
     queryset = Census.objects.all()
     serializer_class = CensusSerializer
-    # permission_classes = (AllowAny,)
 
     def create(self, request, *args, **kwargs):
-        # if not request.user.is_authenticated:
-        #    return Response('Unauthorized', status=ST_401)
-        # if not request.user.is_staff:
-        #    return Response('Forbidden', status=ST_403)
+
         voting_id = request.data.get('voting_id')
         voters = request.data.get('voters')
         try:
+            Census.check_restrictions_multiple_voters(voting_id, voters)
+
             for voter in voters:
-                census = Census.create(voting_id=voting_id, voter_id=voter)
+                census = Census.create(voting_id=voting_id, voter_id=voter, check_restrictions=False)
                 census.save()
         except IntegrityError:
             return Response('Error try to create census', status=ST_409)
         except ValidationError as e:
-            return Response(str(e), status=400)
+            return Response(str(e), status=ST_400)
         return Response('Census created', status=ST_201)
 
     def list(self, request, *args, **kwargs):

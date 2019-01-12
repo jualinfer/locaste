@@ -13,14 +13,73 @@ class Census(models.Model):
         unique_together = (('voting_id', 'voter_id'),)
 
     @classmethod
-    def create(cls, voting_id, voter_id):
+    def create(cls, voting_id, voter_id, check_restrictions=True):
 
-        # check if the user satisfies the voting restrictions
-        voter = User.objects.get(id=voter_id)
+        if check_restrictions:
+            Census.check_restrictions(voting_id, voter_id)
+
+        census = cls(voting_id=voting_id, voter_id=voter_id)
+
+        return census
+
+    @staticmethod
+    def check_restrictions(voting_id, voter_id):
+        """
+        This method checks all the conditions that must be satisfied in order for the census to be created:
+
+        1. The voting id must exist.
+        2. The voter id must exist.
+        3. The census object must not already exist in the database.
+        4. The voter must pass the voting age and gender restricctions if any.
+
+        :return: True if all conditions are passed, an Exception should be raised otherwise.
+        """
+
         voting = Voting.objects.get(id=voting_id)
+        voter = User.objects.get(id=voter_id)
+
+        if Census.objects.filter(voting_id=voting_id, voter_id=voter_id).count():
+            raise ValidationError('Conflict: This census already exists')
+
+        return Census.gender_and_age(voting, voter)
+
+    @staticmethod
+    def check_restrictions_multiple_voters(voting_id, voters):
+        """
+        This method checks all the conditions that must be satisfied in order for the census objects to be created:
+
+        1. The voting id must exist.
+        2. All the voters ids must exist.
+        3. All the census objects must not already exist in the database.
+        4. All the voters must pass the voting age and gender restricctions if any.
+
+        :return: True if all conditions are passed, an Exception is raised otherwise.
+        """
+
+        # This will fail if any of the elements does not exist
+        voting = Voting.objects.get(id=voting_id)
+        users = [User.objects.get(id=voter_id) for voter_id in voters]
+
+        for voter_id in voters:
+            if Census.objects.filter(voting_id=voting_id, voter_id=voter_id).count():
+                raise ValidationError(
+                    'Conflict: The census (voting_id:{},voter_id:{}) already exists'.format(voting_id, voter_id))
+
+        for user in users:
+            Census.gender_and_age(voting, user)
+
+        return True
+
+    @staticmethod
+    def gender_and_age(voting, voter):
+        """
+        Given a voting and user object, checks the gender and age restrictions.
+        :return: True if the conditions are passed, and Exception should be raised otherwise.
+        """
 
         if voting.gender and voter.userprofile.gender != voting.gender:
-            raise ValidationError('This voting is restricted for a specific Gender')
+            raise ValidationError(
+                'The user {} with id {} does not pass the gender restriction'.format(voter.username, voter.id))
 
         birthdate = voter.userprofile.birthdate
 
@@ -30,11 +89,11 @@ class Census(models.Model):
             age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
         if voting.min_age and age and age < voting.min_age:
-            raise ValidationError("You don't reach de minimum age for this voting")
+            raise ValidationError(
+                'The user {} with id {} does not pass the minimum age restriction'.format(voter.username, voter.id))
 
         if voting.max_age and age and age > voting.max_age:
-            raise ValidationError("You exceed the maximum age for this voting")
+            raise ValidationError(
+                'The user {} with id {} does not pass the maximum age restriction'.format(voter.username, voter.id))
 
-        census = cls(voting_id=voting_id, voter_id=voter_id)
-
-        return census
+        return True
