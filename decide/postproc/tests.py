@@ -17,6 +17,41 @@ class PostProcTestCase(APITestCase):
     def tearDown(self):
         self.client = None
 
+    def test_percentage(self):
+        data = {
+            'type' : 'PERCENTAGE',
+            'census': 100000,
+            'options': [
+                { 'option': 'Option 1', 'number': 1, 'votes': 30000 },
+                { 'option': 'Option 2', 'number': 2, 'votes': 20000 },
+                { 'option': 'Option 3', 'number': 3, 'votes': 7500 },
+                { 'option': 'Option 4', 'number': 4, 'votes': 15000 },
+                { 'option': 'Option 5', 'number': 5, 'votes': 25000 },
+                { 'option': 'Option 6', 'number': 6, 'votes': 2500 },
+            ]
+        }
+        expected_result = {
+            'results': [
+                { 'option': 'Option 1', 'number': 1, 'votes': 30000, 'percentage': 30.00 },
+                { 'option': 'Option 5', 'number': 5, 'votes': 25000, 'percentage': 25.00 },
+                { 'option': 'Option 2', 'number': 2, 'votes': 20000, 'percentage': 20.00 },
+                { 'option': 'Option 4', 'number': 4, 'votes': 15000, 'percentage': 15.00 },
+                { 'option': 'Option 3', 'number': 3, 'votes': 7500, 'percentage': 7.50 },
+                { 'option': 'Option 6', 'number': 6, 'votes': 2500, 'percentage': 2.50 },
+            ],
+            'participation': 100.00,
+        }
+
+        response = self.client.post('/postproc/', data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        values = response.json()
+        self.assertEqual(values, expected_result)
+
+
+
+
+
     def test_identity(self):
         data = {
             'type': 'IDENTITY',
