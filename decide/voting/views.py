@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, render
 from rest_framework import generics, status
 from rest_framework.response import Response
 from django.views import generic
+from django.db import connection
 
 from .models import Question, QuestionOption, Voting
 from .serializers import VotingSerializer
@@ -225,8 +226,7 @@ class VotingList(generic.ListView):
         """
         return Voting.objects.all()
 
-class VotingRange(generic.View):
-    template_name = 'voting/questionRange.html'
+
 
 
 def valid_objects(objects):
@@ -376,4 +376,49 @@ def create_question_options_formularies(request,question_forms,question_option_f
 
 
 
+
+def voting_statistics(request):
+    statistics =[
+         ['Voting with questions of type normal:'],
+         ['Voting with questions of type range:'] ,
+         ['Voting with questions of type percentage:'],
+         ['Percentage of Voting with questions of type normal:'],
+         ['Percentage of Voting with questions of type range:'],
+         ['Percentage of Voting with questions of type percentage:'],
+         ['Average number of questions per voting:'],
+         ['Average number of options per question:'],
+         ['Total votings:'],
+         ['Total questions:'],
+         ['Total options:']
+    ]
+
+
+    #Calculamos los datos
+    votingQuestionsNormal = Voting.objects.filter(question__type__contains="Normal").distinct().count()
+    votingQuestionsPercentage = Voting.objects.filter(question__type__contains="Range").count()
+    votingQuestionsRange = Voting.objects.filter(question__type__contains="Percentage").count()
+    num_questions = Question.objects.all().count()
+    num_options = QuestionOption.objects.all().count()
+    totalVotings = Voting.objects.all().count()
+
+    #Seteamos las variables
+    statistics[0].append(votingQuestionsNormal)
+    statistics[1].append(votingQuestionsRange )
+    statistics[2].append(votingQuestionsPercentage)
+    statistics[3].append(votingQuestionsNormal / totalVotings)
+    statistics[4].append(votingQuestionsRange / totalVotings)
+    statistics[5].append(votingQuestionsPercentage / totalVotings)
+    statistics[6].append(num_questions / totalVotings)
+    statistics[7].append(num_options / num_questions)
+    statistics[8].append(totalVotings)
+    statistics[9].append(num_questions)
+    statistics[10].append(num_options)
+
+
+
+
+
+    return render(request,'voting/votingStatistics.html',
+                  {'statistics': statistics,
+                   'voting_url': 'http://127.0.0.1:8000/voting/statistics/'}, )
 
