@@ -66,7 +66,7 @@
                 "            <br>\n" +
                 "            <button type=\"button\" onclick=\"add_answer(event);\">Add answer</button>\n" +
                 "            <br>\n" +
-                "            <div id=\"answer\">\n" +
+                "            <div id=\"answer\" class=\"answer\"> \n" +
                 "                <label for=\"id_option\">Option:</label><textarea name=\"option\" cols=\"40\" rows=\"10\" id=\"id_option\"></textarea>\n" +
                 "            </div>\n" +
                 "\n" +
@@ -86,7 +86,7 @@
     }
      function add_answer(event) {
         //alert(event.target);
-        var html_obj =  "            <div id=\"answer\">\n" +
+        var html_obj =  "            <div id=\"answer\" class=\"answer\"> \n" +
                 "                <label for=\"id_option\">Option:</label><textarea name=\"option\" cols=\"40\" rows=\"10\" id=\"id_option\"></textarea>\n" +
                 "<button type=\"button\" onclick=\"remove_element(event);\">X</button>"+
                 "            </div>\n";
@@ -108,13 +108,11 @@
         for (var i=0; i<question_formulary.length; i++){
             answers[i] = [];
             descs[i] = $(question_formulary[i]).find('#id_desc').val();
-             for(var j=0; j< $(question_formulary[i]).find('#answer').length; j++){
-                answers[i][j] = $($(question_formulary[i]).find('#answer')[j]).find('textarea').val();
+             for(var j=0; j< $(question_formulary[i]).find('.answer').length; j++){
+                answers[i][j] = $($(question_formulary[i]).find('.answer')[j]).find('textarea').val();
              }
              types[i]=$(question_formulary[i]).find("#id_type").children("option:selected").val();
         }
-        alert(types);
-        alert(answers);
         $.post("{{ voting_url }}", {'descs': descs, "answers": answers, 'csrfmiddlewaretoken':$('#question_form').find('input').first().val()}).done(function(data){
             window.location.replace('/admin');
         });
