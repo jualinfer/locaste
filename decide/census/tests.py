@@ -19,8 +19,9 @@ class CensusTestCase(BaseTestCase):
             u = User(username='testvoter{}'.format(i))
             u.set_password('1234abcd')
             u.save()
-            user_profile = UserProfile(user=u, gender='Male', birthdate='2019-01-13 11:39:48.792042+01:00')
-            user_profile.save()
+            u.userprofile.gender = 'Male'
+            u.userprofile.birthdate = '2019-01-13 11:39:48.792042+01:00'
+            u.save()
 
             user_id = User.objects.filter(username='testvoter{}'.format(i)).values('id')[0]['id']
             res.append(user_id)
@@ -34,8 +35,9 @@ class CensusTestCase(BaseTestCase):
         self.u = User(username='newUserGeneral')
         self.u.set_password('1234abcd')
         self.u.save()
-        self.user_profile = UserProfile(user=self.u, gender='Male', birthdate='2019-01-13 11:39:48.792042+01:00')
-        self.user_profile.save()
+        self.u.userprofile.gender = 'Male'
+        self.u.userprofile.birthdate = '2019-01-13 11:39:48.792042+01:00'
+        self.u.save()
 
         voting_data = {
             'name': 'test_voting_General',
@@ -57,6 +59,8 @@ class CensusTestCase(BaseTestCase):
         super().tearDown()
         self.census.delete()
         self.voting.delete()
+        self.u.delete()
+        # self.user_profile.delete()
 
     def test_check_vote_permissions(self):
         user_id = User.objects.filter(username='newUserGeneral').values('id')[0]['id']
