@@ -12,8 +12,8 @@ import { PullListPage } from '../pullList/pullList';
 
 export class LoginPage {
 
-    username: string = "user0";
-    password: string = "practica";
+    username: string = "";
+    password: string = "";
     password2: string;
     birthdate: Date;
     gender: string;

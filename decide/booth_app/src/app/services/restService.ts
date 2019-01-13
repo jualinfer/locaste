@@ -2,13 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { ConfigService } from './../../config/configService';
 import { AbstractService } from './abstractService';
 import { Injectable } from "@angular/core";
-import { User, Voting } from '../app.data.models';
+import { User, Voting, Option } from '../app.data.models';
 import { CookieService } from 'ngx-cookie-service';
 
 @Injectable()
 export class RestService extends AbstractService {
     path: string;
-
+   
     constructor(
         private config: ConfigService,
         http: HttpClient,
@@ -95,5 +95,7 @@ export class RestService extends AbstractService {
         });
     }
 
-
+    public vote(voting: Voting, option: Option): Promise<any> {
+        return null;
+    }
 }

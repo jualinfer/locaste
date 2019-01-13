@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+        <script src="https://code.jquery.com/jquery-3.3.1.js"
+			  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+			  crossorigin="anonymous"></script>
+        <style>
+            body, h1, h2, h3, h4, h5 {
+                font-family: "Raleway", sans-serif
+            }
+        </style>
+        <title class="w3-container w3-red">Voting list</title>
+    </head>
+
+    <body>
+        <header id="voting_management">
+            <div class="w3-container">
+                <h1><b>VOTING MANAGEMENT</b></h1>
+                <div class="w3-section w3-bottombar w3-padding-16">
+                    <a href="/voting/list" class="w3-bar-item w3-button w3-padding w3-black"><i class="fa fa-list fa-fw"></i> List</a>
+                    <a href="/voting/create/" class="w3-bar-item w3-button w3-padding w3-black"><i class="fa fa-plus-circle fa-fw"></i> New Voting</a>
+                    <a href="/voting/statistics/" class="w3-bar-item w3-button w3-padding w3-black"><i class="fa fa-signal"></i> Statistics</a>
+                </div>
+            </div>
+        </header>
+    {% block content %}{% endblock content %}
+    </body>
+</html>

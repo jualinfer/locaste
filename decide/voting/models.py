@@ -17,8 +17,18 @@ QUESTIONS_TYPES = [
     ("Percentage", "Percentage"),
     ("Normal", "Normal"),
 ]
+
+TALLY_TYPES = [
+    ("SAINTELAGUE", "SAINTELAGUE"),
+    ("DHONDT", "PDHONDT"),
+    ("NMAJORREST", "MAJORREST"),
+    ("SAINTELAGUEMOD", "SAINTELAGUEMOD"),
+]
+
+
 class Question(models.Model):
     desc = models.TextField()
+    type = models.TextField(blank=True, null=True, default=("Normal", "Normal"), choices=QUESTIONS_TYPES)
 
     def __str__(self):
         return self.desc
@@ -27,9 +37,9 @@ class Question(models.Model):
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
+    range = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField(blank=True, null=True)
     percentage = models.DecimalField(blank=True, null=True,decimal_places=2,max_digits=3)
-    type = models.TextField(blank=True, null=True,choices=QUESTIONS_TYPES)
 
     def save(self):
         if not self.number:
@@ -37,12 +47,22 @@ class QuestionOption(models.Model):
         return super().save()
 
     def __str__(self):
-        return '{} ({})'.format(self.option, self.number)
+        if self.number != None:
+            return '{} ({})'.format(self.number, self.number)
+        elif self.range != None:
+            return '{} ({})'.format(self.range, self.number)
+        else :
+            return '{} ({})'.format(self.option, self.number)
+
+
+
+
 
 
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
+    image_header = models.CharField(max_length=200,blank=True, null=True)
     question = models.ManyToManyField(Question, related_name='voting_questions')
 
     start_date = models.DateTimeField(blank=True, null=True)
@@ -50,6 +70,8 @@ class Voting(models.Model):
     gender = models.TextField(blank=True, null=True, choices=GENRES_CHOICES)
     min_age = models.IntegerField(blank=True, null=True)
     max_age = models.IntegerField(blank=True, null=True)
+    seats = models.IntegerField(blank=True, null=True)
+    tally_type = models.TextField(blank=True, null=True, choices=TALLY_TYPES)
 
     pub_key = models.OneToOneField(Key, related_name='voting', blank=True, null=True, on_delete=models.SET_NULL)
     auths = models.ManyToManyField(Auth, related_name='votings')
@@ -138,7 +160,8 @@ class Voting(models.Model):
                 'votes': votes
             })
 
-        data = {'type': 'IDENTITY', 'options': opts, 'census': census}
+        data = {'type': self.tally_type, 'options': opts, 'census': census}
+        print(data)
         directory = "voting/tallies/"
         if not os.path.exists(directory):
             os.makedirs(directory)

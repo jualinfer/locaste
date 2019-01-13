@@ -2,6 +2,8 @@ import { DataManagement } from './../../app/services/dataManagemen';
 import { Component } from '@angular/core';
 import { NavController, NavParams, LoadingController, Loading } from 'ionic-angular';
 import { Voting } from '../../app/app.data.models';
+import { VotingPage } from '../votingClass/voting';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
     selector: 'page-list',
@@ -17,6 +19,7 @@ export class ListPage {
         public navCtrl: NavController,
         public navParams: NavParams,
         public dm: DataManagement,
+        public cookieService: CookieService,
         public loadingCtrl: LoadingController
     ) {
         this.loading = this.loadingCtrl.create({
@@ -47,8 +50,10 @@ export class ListPage {
     }
 
     itemTapped(event, item) {
-        this.navCtrl.push(ListPage, {
-            item: item
+        console.log(item);
+        this.navCtrl.push(VotingPage, {
+            voting: item,
         });
     }
+
 }

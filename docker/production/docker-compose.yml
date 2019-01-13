@@ -12,7 +12,7 @@ services:
   web:
     restart: always
     container_name: decide_web
-    image: alexgue/decide-locaste-web:preproduction
+    image: alexgue/decide-locaste-web:production
     build: .
     command: ash -c "python manage.py migrate && gunicorn -w 5 decide.wsgi --timeout=500 -b 0.0.0.0:5000"
     expose:

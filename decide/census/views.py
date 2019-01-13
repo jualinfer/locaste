@@ -1,7 +1,6 @@
 from django.views.generic import TemplateView
 from django.db.utils import IntegrityError
-from django.core.exceptions import ValidationError
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError, ObjectDoesNotExist, PermissionDenied
 from rest_framework import generics
 from rest_framework.response import Response
 from .serializers import CensusSerializer
@@ -14,34 +13,43 @@ from rest_framework.status import (
     HTTP_409_CONFLICT as ST_409
 )
 
-# from base.perms import UserIsStaff
-# from rest_framework.permissions import AllowAny
 from .models import Census
 from django.http import Http404
 
 from base import mods
 
+from rest_framework.permissions import IsAuthenticated
+
 
 class CensusCreate(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
+
     queryset = Census.objects.all()
     serializer_class = CensusSerializer
-    # permission_classes = (AllowAny,)
 
     def create(self, request, *args, **kwargs):
-        # if not request.user.is_authenticated:
-        #    return Response('Unauthorized', status=ST_401)
-        # if not request.user.is_staff:
-        #    return Response('Forbidden', status=ST_403)
+
         voting_id = request.data.get('voting_id')
-        voters = request.data.get('voters')
+        voters = request.data.get('voters') or []
+        voter_id = request.data.get('voter_id')
+        if voter_id:
+            voters.append(voter_id)
+
         try:
+            voters = Census.public_or_private(voting_id, voters, request.user)
+            if not voters:
+                return Response('No voter ids where provided', status=ST_400)
+            Census.check_restrictions_multiple_voters(voting_id, voters)
+
             for voter in voters:
                 census = Census.create(voting_id=voting_id, voter_id=voter)
                 census.save()
         except IntegrityError:
-            return Response('Error try to create census', status=ST_409)
+            return Response('Error trying to create census', status=ST_409)
         except ValidationError as e:
-            return Response(str(e), status=400)
+            return Response(str(e), status=ST_400)
+        except PermissionDenied as p:
+            return Response(str(p), status=ST_403)
         return Response('Census created', status=ST_201)
 
     def list(self, request, *args, **kwargs):
@@ -61,7 +69,7 @@ class CensusCreate(generics.ListCreateAPIView):
 class CensusDetail(generics.RetrieveDestroyAPIView):
 
     def destroy(self, request, voting_id, *args, **kwargs):
-        voters = request.data.get('voters')
+        voters = request.data.get('voters') or []
         census = Census.objects.filter(voting_id=voting_id, voter_id__in=voters)
         census.delete()
         return Response('Voters deleted from census', status=ST_204)
