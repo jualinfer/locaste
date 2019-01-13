@@ -18,6 +18,13 @@ QUESTIONS_TYPES = [
     ("Normal", "Normal"),
 ]
 
+TALLY_TYPES = [
+    ("SAINTELAGUE", "SAINTELAGUE"),
+    ("DHONDT", "PDHONDT"),
+    ("NMAJORREST", "MAJORREST"),
+    ("SAINTELAGUEMOD", "SAINTELAGUEMOD"),
+]
+
 
 class Question(models.Model):
     desc = models.TextField()
@@ -64,6 +71,7 @@ class Voting(models.Model):
     min_age = models.IntegerField(blank=True, null=True)
     max_age = models.IntegerField(blank=True, null=True)
     seats = models.IntegerField(blank=True, null=True)
+    tally_type = models.TextField(blank=True, null=True, choices=TALLY_TYPES)
 
     pub_key = models.OneToOneField(Key, related_name='voting', blank=True, null=True, on_delete=models.SET_NULL)
     auths = models.ManyToManyField(Auth, related_name='votings')
@@ -152,7 +160,8 @@ class Voting(models.Model):
                 'votes': votes
             })
 
-        data = {'type': 'IDENTITY', 'options': opts, 'census': census}
+        data = {'type': self.tally_type, 'options': opts, 'census': census}
+        print(data)
         directory = "voting/tallies/"
         if not os.path.exists(directory):
             os.makedirs(directory)

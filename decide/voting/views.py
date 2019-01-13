@@ -302,6 +302,8 @@ def save_voting(request):
                 voting.image_header = voting_form["image_header"].value()
             if voting_form["seats"].value() != '':
                 voting.seats = voting_form["seats"].value()
+            if voting_form["tally_type"].value() != '':
+                voting.seats = voting_form["tally_type"].value()
             voting.save()
             voting.question.set(saved_questions)
             voting.auths.set(saved_auths)
