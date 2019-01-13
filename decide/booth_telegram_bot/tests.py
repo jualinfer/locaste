@@ -123,7 +123,7 @@ with client.conversation(bot) as conv:
     success = conv.get_response().raw_text
 
 import time
-time.sleep(5)
+time.sleep(10)
 with client.conversation(bot) as conv:
     conv.send_message('/start') 
     welcome = conv.get_response().raw_text 
