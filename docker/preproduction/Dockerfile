@@ -18,7 +18,7 @@ RUN pip install -r /app/requirements.txt
 WORKDIR /app/decide
 
 # local settings.py
-ADD ./docker/production/docker-settings.py /app/decide/local_settings.py
+ADD ./docker/preproduction/docker-settings.py /app/decide/local_settings.py
 
 # RUN /app/decide/manage.py runserver
 
