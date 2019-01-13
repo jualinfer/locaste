@@ -387,7 +387,7 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
                     { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
                   ]
                 };
-                convo.say([errorMessage1, errorMessage2, errorMessage3], options);
+                convo.say([errorMessage1, errorMessage2, errorMessage3], options).then(()=> {convo.end()});;
               } else {
                 convo.set('votingName', voting);
                 votingId = votings[convo.get('votingName')];
@@ -555,6 +555,7 @@ bot.on('postback:BOT_START_VOTING', (payload, chat) => {
 
 
       elements = [];
+      config.choice = [];
       var min = (choices.length > 4) ? 4 : choices.length;
       for (i = 0; i < min; i++) {
         element = {
@@ -569,7 +570,6 @@ bot.on('postback:BOT_START_VOTING', (payload, chat) => {
             }
           ]
         };
-        config.choice = [];
         config.choice[i + 1] = choices[i].number;
         elements.push(element);
       }
@@ -586,9 +586,7 @@ bot.on('postback:BOT_START_VOTING', (payload, chat) => {
         }]
       };
 
-      console.log(config.choice);
-      console.log(config.choice[1]);
-      console.log(config.choice[2]);
+  
       
       const message1 = title + ":";
       const message2 = "Here is a short description of the voting:";
@@ -641,7 +639,6 @@ bot.on('postback:BOT_CANCEL_VOTING', (payload, chat) => {
     chat.say([message1, message2], options);
   }
 });
-
 
 
 
