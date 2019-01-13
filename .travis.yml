@@ -27,8 +27,8 @@ before_script:
 script:
 - whereis google-chrome-stable
 - whereis chromedriver
-- python manage.py runserver
-- travis_wait 20 python manage.py test &
+- python manage.py runserver &
+- travis_wait 20 python manage.py test
 addons:
     postgresql: "9.6"
     chrome: stable
