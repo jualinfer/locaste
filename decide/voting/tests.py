@@ -26,11 +26,11 @@ import time
 class VotingTestCaseSelenium(BaseTestCase):
     def setUp(self):
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox mode")
-        # self.selenium = webdriver.Chrome('C:/Users/Daniel Diment/Downloads/chromedriver_win32/chromedriver.exe',chrome_options=chrome_options)
-        self.selenium = webdriver.Chrome('/usr/local/bin/chromedriver',chrome_options=chrome_options)
+        # chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("--disable-gpu")
+        # chrome_options.add_argument("--no-sandbox mode")
+        self.selenium = webdriver.Chrome('C:/Users/Daniel Diment/Downloads/chromedriver_win32/chromedriver.exe',chrome_options=chrome_options)
+        # self.selenium = webdriver.Chrome('/usr/local/bin/chromedriver',chrome_options=chrome_options)
         super().setUp()
 
     def tearDown(self):
@@ -40,7 +40,7 @@ class VotingTestCaseSelenium(BaseTestCase):
     def create_voting(self):
         selenium = self.selenium
 
-    def non_test_create_voting(self):
+    def not_test_create_voting(self):
         selenium = self.selenium
         selenium.get('http://127.0.0.1:8000/voting/create/')
         time.sleep(10)
@@ -60,14 +60,18 @@ class VotingTestCaseSelenium(BaseTestCase):
         custom_url.send_keys('test')
         public_voting.click()
         submit.click()
+        time.sleep(5)
         assert "Name" in selenium.page_source
         selenium.find_element_by_id('id_name').send_keys('test')
         selenium.find_element_by_id('id_url').send_keys('http://127.0.0.1:8000')
         selenium.find_element_by_xpath("//input[@type='submit' and @value='Create']").click()
-        assert "add question" in selenium.page_source
+        time.sleep(5)
+        assert "Add a new question" in selenium.page_source
         selenium.find_element_by_id('add_questions').click()
+        selenium.find_element_by_id('question').click()
         selenium.find_element_by_id('id_desc').send_keys('test question')
-        selenium.find_element_by_id('id_option').send_keys('test answer')
+        selenium.find_element_by_id('submit').click()
+        time.sleep(5)
 
 
 
