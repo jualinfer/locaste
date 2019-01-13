@@ -39,6 +39,9 @@
                 <th>
                     Image Header
                 </th>
+                <th>
+                    Seats
+                </th>
 
             </tr>
             {% for voting in voting_list %}
@@ -79,6 +82,9 @@
                     </td>
                     <td>
                         <img src="{{ voting.image_header }}" alt="" style="width:150px; height:auto;">
+                    </td>
+                    <td>
+                        {{ voting.seats }}
                     </td>
 
                 </tr>
