@@ -15,8 +15,3 @@ django-allauth==0.38.0
 django-heroku
 gunicorn
 
-#Visualization Telegram bot requirements
-python-telegram-bot
-python-dotenv
-pillow
-plotly
