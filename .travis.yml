@@ -11,9 +11,8 @@ global:
 before_install:
 - cd decide
 install:
-- travis_wait 30 mvn install
 - pip install -r ../requirements.txt
-- wget -N http://chromedriver.storage.googleapis.com/2.30/chromedriver_linux64.zip -P ~/
+- travis_wait 30 wget -N http://chromedriver.storage.googleapis.com/2.30/chromedriver_linux64.zip -P ~/
 - unzip ~/chromedriver_linux64.zip -d ~/
 - rm ~/chromedriver_linux64.zip
 - sudo mv -f ~/chromedriver /usr/local/share/
@@ -29,7 +28,7 @@ script:
 - whereis google-chrome-stable
 - whereis chromedriver
 - python manage.py runserver
-- python manage.py test
+- travis_wait 10 python manage.py test
 addons:
     postgresql: "9.6"
     chrome: stable
