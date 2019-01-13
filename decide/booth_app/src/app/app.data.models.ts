@@ -3,7 +3,7 @@ export class Voting {
     id: string;
     name: string;
     desc: string;
-    question: Question;
+    question: Question[];
     start_date: string;
     end_date: string;
     pub_key: string;

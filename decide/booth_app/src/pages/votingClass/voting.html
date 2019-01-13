@@ -14,9 +14,9 @@
     <h3>Fecha de Inicio: {{ start_date }}</h3>
     <h3 *ngIf="booleanEnd">Fecha de finalización: {{ end_date }}</h3>
     <div class="container">
-      <div class="voting-form">
-        <ion-label>{{ voting.question.desc }}</ion-label>
-        <ion-card ion-item padding *ngFor="let item of options" (click)="vote(voting,item)">
+      <div class="voting-form" *ngFor="let question of questions">
+        <ion-label>{{ question.desc }}</ion-label>
+        <ion-card ion-item padding *ngFor="let item of question.options" (click)="vote(voting,item)">
           <ion-card-content>
             <p>{{ item.number }} . {{ item.option }} </p>
           </ion-card-content>

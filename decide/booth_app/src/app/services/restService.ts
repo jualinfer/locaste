@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpRequest } from '@angular/common/http';
 import { ConfigService } from './../../config/configService';
 import { AbstractService } from './abstractService';
 import { Injectable } from "@angular/core";
@@ -61,7 +61,9 @@ export class RestService extends AbstractService {
     }
 
     public getPollWithId(id: string): Promise<Voting> {
-        return this.makeGetRequest(this.path + 'voting/?format=json&id=' + id, null).then((res) => {
+        let user = this.cookieService.get('username');
+        let password = this.cookieService.get('password');
+        return this.makeGetRequest2(this.path + 'voting/?format=json&id=' + id, null, user, password).then((res) => {
             return Promise.resolve(res);
         }).catch((error) => {
             console.log("Error " + error);
@@ -73,7 +75,8 @@ export class RestService extends AbstractService {
         let user = new User;
         return this.getUserWithToken(this.cookieService.get('decide')).then((response) => {
             user = response;
-            return this.makeGetRequest(this.path + 'census/?voter_id=' + user.id, null).then((res) => {
+            let password = this.cookieService.get('password');
+            return this.makeGetRequest2(this.path + 'census/?voter_id=' + user.id, null, user.username, password).then((res) => {
                 return Promise.resolve(res);
             }).catch((error) => {
                 console.log("Error " + error);

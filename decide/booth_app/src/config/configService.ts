@@ -8,7 +8,7 @@ export class ConfigService {
     }
 
     public getConfig(): any {
-        let urlPrefix = 'http://localhost:8000/';
+        let urlPrefix = 'http://locaste-decide.herokuapp.com/';
         let urlApi = '';
 
         return {
