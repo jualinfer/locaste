@@ -15,9 +15,5 @@ django-allauth==0.38.0
 django-heroku
 gunicorn
 
-#Booth Telegram bot requirements
-python-telegram-bot
-python-dotenv
-requests==2.18.4
-numpy
+
 
