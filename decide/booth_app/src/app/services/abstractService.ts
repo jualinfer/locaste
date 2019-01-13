@@ -12,7 +12,17 @@ export class AbstractService {
 
     private getHeaders(): Promise<HttpHeaders> {
         return new Promise((resolve) => {
-            let headers = new HttpHeaders().set("Accept", "application/json");
+            let headers = new HttpHeaders();
+            headers = headers.append("Accept", "application/json");
+            resolve(headers);
+        })
+    }
+
+    private getHeaders2(user, password): Promise<HttpHeaders> {
+        return new Promise((resolve) => {
+            let headers = new HttpHeaders();
+            headers = headers.append("Accept", "application/json");
+            headers = headers.append("Authorization", "Basic " + btoa(user + ":" + password));
             resolve(headers);
         })
     }
@@ -22,6 +32,25 @@ export class AbstractService {
             paramsRequest = {};
 
         return this.getHeaders().then((result) => {
+            return new Promise((resolve, reject) => {
+                this.http.get(path, { headers: result, params: paramsRequest }).subscribe(response => {
+                    resolve(response);
+                }, error => {
+                    if (error.status == 200) {
+                        resolve(null);
+                    } else {
+                        console.log(error);
+                        reject(error);
+                    }
+                });
+            });
+        });
+    }
+
+    protected makeGetRequest2(path: string, paramsRequest: any, user: string, password: string): Promise<any> {
+        if (!paramsRequest)
+            paramsRequest = {};
+        return this.getHeaders2(user, password).then((result) => {
             return new Promise((resolve, reject) => {
                 this.http.get(path, { headers: result, params: paramsRequest }).subscribe(response => {
                     resolve(response);
