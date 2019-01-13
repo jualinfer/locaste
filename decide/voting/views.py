@@ -353,22 +353,22 @@ def create_question_options_formularies(request,question_forms,question_option_f
         if typesList[j]=="Normal":
             question_option_forms.append([])
             for answer in answers[index]:
-                question_option_forms[j].append(QuestionOptionForm({'option': answer,'number':None,'percentage':None}))
+                question_option_forms[j].append(QuestionOptionForm({'option': answer,'number':None,'percentage':None,'range':None}))
         elif typesList[j]=="Range":
             #posible cambio en otra issue para que el rango sea configurable
             question_option_forms.append([])
-            question_option_forms[j].append(QuestionOptionForm({'option':None,'number':1,'percentage':None}))
-            question_option_forms[j].append(QuestionOptionForm({'option': None, 'number': 2, 'percentage': None}))
-            question_option_forms[j].append(QuestionOptionForm({'option': None, 'number': 3, 'percentage': None}))
-            question_option_forms[j].append(QuestionOptionForm({'option': None, 'number': 4, 'percentage': None}))
-            question_option_forms[j].append(QuestionOptionForm({'option': None, 'number': 5, 'percentage': None}))
+            question_option_forms[j].append(QuestionOptionForm({'option':None,'number':None,'percentage':None,'range':1}))
+            question_option_forms[j].append(QuestionOptionForm({'option': None, 'number': None, 'percentage': None,'range':2}))
+            question_option_forms[j].append(QuestionOptionForm({'option': None, 'number': None, 'percentage': None,'range':3}))
+            question_option_forms[j].append(QuestionOptionForm({'option': None, 'number': None, 'percentage': None,'range':4}))
+            question_option_forms[j].append(QuestionOptionForm({'option': None, 'number': None, 'percentage': None,'range':5}))
 
         elif typesList[j]=="Percentage":
             percentage = 0
             question_option_forms.append([])
             # posible cambio en otra issue para que el porcentaje sea configurable
             for b in range(0,21):
-                question_option_forms[j].append(QuestionOptionForm({'option':None,'number':'','percentage':percentage/100}))
+                question_option_forms[j].append(QuestionOptionForm({'option':None,'number':None,'percentage':percentage/100}))
                 percentage += 5
                 b+=1
 
