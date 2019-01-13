@@ -21,6 +21,9 @@ entre ellos. Para conseguir esto, los subsistemas se conectarán entre si median
 
 Este proyecto Django estará dividido en apps (subsistemas y proyecto base), donde cualquier app podrá ser reemplazada individualmente.
 
+La documentación relativa a cada uno de los subsistemas puede encontrarse en la wiki:
+[Subsistemas Wiki](https://github.com/EGC-Decide/locaste/wiki)
+
 
 Configurar y ejecutar el proyecto
 ---------------------------------
@@ -49,6 +52,13 @@ Por último, ya podremos ejecutar el módulos o módulos seleccionados en la con
 siguiente manera:
 
     ./manage.py runserver
+
+Antes de empezar a desarrollar para el proyecto, debes leer toda la documentación relativa al desarrollo del proyecto que existe en la Wiki del repositorio.
+[Commits](https://github.com/EGC-Decide/locaste/wiki/Acerca-de-los-commits)
+[Control de versiones](https://github.com/EGC-Decide/locaste/wiki/Control-de-versiones)
+[Despliegue continuo](https://github.com/EGC-Decide/locaste/wiki/Despliegue-continuo)
+[Gestión de las incidencias](https://github.com/EGC-Decide/locaste/wiki/Gesti%C3%B3n-de-las-incidencias)
+[Integración continua](https://github.com/EGC-Decide/locaste/wiki/Integraci%C3%B3n-Continua)
 
 Ejecutar con docker
 -------------------
@@ -109,4 +119,6 @@ Para el entorno de desarrollo existe un compose que despliega el entorno necesar
 
 Para ejecutarlo debe lanzarse el docker-compose que existe dentro de la carpeta docker/development.
 
-Toda la información relativa al desarrollo y despliegue con docker, puede encontrarse en la Wiki del proyecto.
+Toda la información relativa al desarrollo y despliegue con docker, puede encontrarse en la Wiki del proyecto. 
+
+[Docker Wiki](https://github.com/EGC-Decide/locaste/wiki/Docker)
