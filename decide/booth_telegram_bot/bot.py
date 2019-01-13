@@ -247,7 +247,7 @@ def get_census_logged_user(bot, update, user_data):
 
     url = "https://locaste-decide.herokuapp.com/census/?voter_id="+str(user_data['user_id'])
     #url = "http://localhost:8000/census/?voter_id="+str(user_data['user_id'])
-    r = requests.get(url)
+    r = requests.get(url, auth=(user_data['username'], user_data['password']))
     if len(r.json()['voting']) != 0:
         update.message.reply_text("You are registered to vote in the following votings:")
         msg=""
@@ -295,7 +295,7 @@ def get_voting(bot, update, user_data):
         #Check first if the user is registered to vote in this voting, that's has a census object
         url = "https://locaste-decide.herokuapp.com/census/?voter_id="+str(user_data['user_id'])
         #url = "http://localhost:8000/census/?voter_id="+str(user_data['user_id'])
-        r2 = requests.get(url)
+        r2 = requests.get(url, auth=(user_data['username'], user_data['password']))
         #if the user is registered to vote
         if int(id) in r2.json()['voting']:
             update.message.reply_text("Here It is:")
@@ -427,7 +427,7 @@ def register_census(bot, update, user_data):
 
     url = "https://locaste-decide.herokuapp.com/voting/?id="+id
     #url = "http://localhost:8000/voting/?id="+id
-    r = requests.get(url)
+    r = requests.get(url,auth=(user_data['username'], user_data['password']))
     #Check if voting exists or not
     if r.json() != []:
         msg= "*ID = " + str(r.json()[0]['id']) + "* | " + r.json()[0]['name']
@@ -443,7 +443,7 @@ def register_census(bot, update, user_data):
             #Then check if the user is registered to vote in this voting, that's has a census object
             url = "https://locaste-decide.herokuapp.com/census/?voter_id="+str(user_data['user_id'])
             #url = "http://localhost:8000/census/?voter_id="+str(user_data['user_id'])
-            r2 = requests.get(url)
+            r2 = requests.get(url,auth=(user_data['username'], user_data['password']))
             #if the user is registered to vote
             if int(id) in r2.json()['voting']:
                 update.message.reply_text('You are already registered in this voting census!')
@@ -453,7 +453,7 @@ def register_census(bot, update, user_data):
                 #Register in census
                 url = "https://locaste-decide.herokuapp.com/census/"
                 #url = "http://localhost:8000/census/"
-                r3 = requests.post(url, json={'voting_id' : id, 'voters' : [user_data['user_id']]})
+                r3 = requests.post(url, auth=(user_data['username'], user_data['password']), json={'voting_id' : id, 'voters' : [user_data['user_id']]})
                 if(r3.status_code == 201):
                     update.message.reply_text('Registered in census successfully!')
                     update.message.reply_text('You can access to the voting now')
@@ -463,6 +463,9 @@ def register_census(bot, update, user_data):
                     if(len(msg) == 1):
                         msg = r3.json().split("'")
                     update.message.reply_text(msg[1])
+                elif(r3.status_code == 403):
+                    update.message.reply_text('Sorry you are not allowed to register in this voting census because:')
+                    update.message.reply_text('This voting is private and you are not a staff member')
                 else:
                     update.message.reply_text('There was a problem try it again later please')
         else:
