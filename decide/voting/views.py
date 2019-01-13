@@ -298,6 +298,8 @@ def save_voting(request):
                 voting.custom_url = voting_form["custom_url"].value()
             if voting_form["public_voting"].value() != '':
                 voting.public_voting = voting_form["public_voting"].value()
+            if voting_form["image_header"].value() != '':
+                voting.image_header = voting_form["image_header"].value()
             voting.save()
             voting.question.set(saved_questions)
             voting.auths.set(saved_auths)
