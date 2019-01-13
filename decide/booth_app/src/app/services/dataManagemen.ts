@@ -1,5 +1,6 @@
 import { RestService } from './restService';
 import { Injectable } from "@angular/core";
+import { Voting, Option } from '../app.data.models';
 
 @Injectable()
 export class DataManagement {
@@ -57,6 +58,15 @@ export class DataManagement {
 
     public getPollWithId(id: string): Promise<any> {
         return this.restService.getPollWithId(id).then((data) => {
+            return Promise.resolve(data);
+        }).catch((error) => {
+            console.log(error);
+            return Promise.reject(error);
+        });
+    }
+
+    public vote(voting: Voting, option: Option): Promise<any> {
+        return this.restService.vote(voting, option).then((data) => {
             return Promise.resolve(data);
         }).catch((error) => {
             console.log(error);

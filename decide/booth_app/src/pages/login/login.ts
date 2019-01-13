@@ -12,8 +12,8 @@ import { PullListPage } from '../pullList/pullList';
 
 export class LoginPage {
 
-    username: string = "user0";
-    password: string = "practica";
+    username: string = "";
+    password: string = "";
     password2: string;
     birthdate: Date;
     gender: string;
@@ -52,6 +52,8 @@ export class LoginPage {
         this.loading.present();
         this.dm.login(this.username, this.password).then((data) => {
             this.cookieService.set('decide', data.key, this.getTimeToExpire());
+            this.cookieService.set('username', this.username, this.getTimeToExpire());
+            this.cookieService.set('password', this.password, this.getTimeToExpire());
             this.logged.emit(false);
             this.loading.dismiss();
         }).catch((error) => {

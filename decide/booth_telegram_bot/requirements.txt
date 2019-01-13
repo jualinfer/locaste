@@ -1,0 +1,6 @@
+#Booth Telegram bot requirements
+python-telegram-bot
+python-dotenv
+requests==2.18.4
+numpy
+telethon
