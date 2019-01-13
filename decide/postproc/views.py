@@ -207,7 +207,7 @@ class PostProcView(APIView):
         census = request.data.get('census')
         opts = request.data.get('options', [])
 
-        if t == 'IDENTITY':
+        if t == None:
             return self.identity(opts, census)
         elif t == 'DHONDT':
             return self.dhondt(opts, seats, census)
