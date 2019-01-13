@@ -14,10 +14,7 @@ from telegram import ReplyKeyboardMarkup, ParseMode, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, RegexHandler, ConversationHandler
 import logging
 import numpy
-import sys
-sys.path.insert(0, '../decide')
 
-import settings
 
 
 # Enable logging
@@ -180,7 +177,7 @@ def signup(bot, update, user_data):
 
         return TYPING_GENDER_SINGUP
     else:
-        url = settings.BASEURL + "/authentication/signup/"
+        url = "https://locaste-decide.herokuapp.com/authentication/signup/"
         #url = "http://localhost:8000/authentication/signup/"
         r = requests.post(url, data={'username': user_data['username'], 'password1': user_data['password'], 'password2': user_data['confirmation'], 'birthdate': user_data['birthdate']+"T00:00",'gender': user_data['gender']})
         if r.status_code == 201:
@@ -218,7 +215,7 @@ def login(bot, update, user_data):
     text = update.message.text
     user_data['password'] = text
 
-    url = settings.BASEURL + "/rest-auth/login/"
+    url = "https://locaste-decide.herokuapp.com/rest-auth/login/"
     #url = "http://localhost:8000/rest-auth/login/"
     r = requests.post(url, data={'username': user_data['username'], 'password': user_data['password']})
     
@@ -228,7 +225,7 @@ def login(bot, update, user_data):
         user_data['token'] = r.json()['key']
 
         #Now we have the token, so we can request the user id to the Decide Locaste API
-        url = settings.BASEURL +"/authentication/getuser/"
+        url = "https://locaste-decide.herokuapp.com/authentication/getuser/"
         #url = "http://localhost:8000/authentication/getuser/"
         r = requests.post(url, data={'token': user_data['token'], })
         user_data['user_id'] = r.json()['id']
@@ -248,14 +245,14 @@ def login(bot, update, user_data):
 def get_census_logged_user(bot, update, user_data):
     update.message.reply_text("Ok")
 
-    url = settings.BASEURL + "/census/?voter_id="+str(user_data['user_id'])
+    url = "https://locaste-decide.herokuapp.com/census/?voter_id="+str(user_data['user_id'])
     #url = "http://localhost:8000/census/?voter_id="+str(user_data['user_id'])
     r = requests.get(url)
     if len(r.json()['voting']) != 0:
         update.message.reply_text("You are registered to vote in the following votings:")
         msg=""
         for voting_id in r.json()['voting']:
-            url = settings.BASEURL + "/voting/?id="+str(voting_id)
+            url = "https://locaste-decide.herokuapp.com/voting/?id="+str(voting_id)
             #url = "http://localhost:8000/voting/?id="+str(voting_id)
             r = requests.get(url)
             voting = r.json()[0]
@@ -291,12 +288,12 @@ def get_voting(bot, update, user_data):
     update.message.reply_text("Got it")
     update.message.reply_text("Let's search for the voting...")
 
-    url = settings.BASEURL + "/voting/?id="+id
+    url = "https://locaste-decide.herokuapp.com/voting/?id="+id
     #url = "http://localhost:8000/voting/?id="+id
     r = requests.get(url)
     if r.json() != []:
         #Check first if the user is registered to vote in this voting, that's has a census object
-        url = settings.BASEURL + "/census/?voter_id="+str(user_data['user_id'])
+        url = "https://locaste-decide.herokuapp.com/census/?voter_id="+str(user_data['user_id'])
         #url = "http://localhost:8000/census/?voter_id="+str(user_data['user_id'])
         r2 = requests.get(url)
         #if the user is registered to vote
@@ -363,7 +360,7 @@ def option_voted(bot, update, user_data):
         key = elgamal.construct(tupla)
         import random
         cifrado = key.encrypt(vote_number_for_decide, random.getrandbits(256))
-        url = settings.BASEURL + "/store/"
+        url = "https://locaste-decide.herokuapp.com/store/"
         #url = "http://localhost:8000/store/"
         r = requests.post(url, auth=(user_data['username'], user_data['password']), json={'voting': user_data['voting_id'], 'voter': user_data['user_id'],'vote': {'a':str(cifrado[0]), 'b':str(cifrado[1])} })
         if r.status_code == 200:
@@ -389,7 +386,7 @@ def cancel_vote(bot, update, user_data):
 def show_all_votings(bot, update, user_data):
     update.message.reply_text("Showing all votings stored in Decide Locaste system...")
 
-    url = settings.BASEURL + "/voting/"
+    url = "https://locaste-decide.herokuapp.com/voting/"
     #url = "http://localhost:8000/voting/"
     r = requests.get(url)
     if len(r.json()) != 0:
@@ -428,7 +425,7 @@ def register_census(bot, update, user_data):
             reply_markup=markup_logged)
         return CHOOSING_LOGGED
 
-    url = settings.BASEURL + "/voting/?id="+id
+    url = "https://locaste-decide.herokuapp.com/voting/?id="+id
     #url = "http://localhost:8000/voting/?id="+id
     r = requests.get(url)
     #Check if voting exists or not
@@ -444,7 +441,7 @@ def register_census(bot, update, user_data):
         #Check first if voting is finished or not
         if(r.json()[0]['end_date'] == None):
             #Then check if the user is registered to vote in this voting, that's has a census object
-            url = settings.BASEURL + "/census/?voter_id="+str(user_data['user_id'])
+            url = "https://locaste-decide.herokuapp.com/census/?voter_id="+str(user_data['user_id'])
             #url = "http://localhost:8000/census/?voter_id="+str(user_data['user_id'])
             r2 = requests.get(url)
             #if the user is registered to vote
@@ -454,7 +451,7 @@ def register_census(bot, update, user_data):
             #if the user is not registered to vote       
             else:
                 #Register in census
-                url = settings.BASEURL + "/census/"
+                url = "https://locaste-decide.herokuapp.com/census/"
                 #url = "http://localhost:8000/census/"
                 r3 = requests.post(url, json={'voting_id' : id, 'voters' : [user_data['user_id']]})
                 if(r3.status_code == 201):
