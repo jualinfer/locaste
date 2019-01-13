@@ -1,0 +1,25 @@
+version: '3.4'
+
+services:
+  db:
+    restart: always
+    container_name: decide_db
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - decide
+
+volumes:
+  db:
+    name: decide_db
+
+networks:
+  decide:
+    driver: bridge
+    ipam:
+     driver: default
+     config:
+       - subnet: 10.5.0.0/16

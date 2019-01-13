@@ -15,6 +15,65 @@ from mixnet.mixcrypt import MixCrypt
 from mixnet.models import Auth
 from voting.models import Voting, Question, QuestionOption
 
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import Select
+
+import time
+
+
+
+class VotingTestCaseSelenium(BaseTestCase):
+    def setUp(self):
+        chrome_options = Options()
+        # chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("--disable-gpu")
+        # chrome_options.add_argument("--no-sandbox mode")
+        self.selenium = webdriver.Chrome('C:/Users/Daniel Diment/Downloads/chromedriver_win32/chromedriver.exe',chrome_options=chrome_options)
+        # self.selenium = webdriver.Chrome('/usr/local/bin/chromedriver',chrome_options=chrome_options)
+        super().setUp()
+
+    def tearDown(self):
+        self.selenium.quit()
+        super().tearDown()
+
+    def create_voting(self):
+        selenium = self.selenium
+
+    def not_test_create_voting(self):
+        selenium = self.selenium
+        selenium.get('http://127.0.0.1:8000/voting/create/')
+        time.sleep(10)
+        name = selenium.find_element_by_id('id_name')
+        desc = selenium.find_element_by_id('id_desc')
+        gender = Select(selenium.find_element_by_id('id_gender'))
+        min_age = selenium.find_element_by_id('id_min_age')
+        max_age = selenium.find_element_by_id('id_max_age')
+        custom_url = selenium.find_element_by_id('id_custom_url')
+        public_voting = selenium.find_element_by_id('id_public_voting')
+        submit=selenium.find_element_by_xpath("//input[@type='submit' and @value='Create']")
+        name.send_keys('Test Voting')
+        desc.send_keys('This is a test voting')
+        gender.select_by_index(0)
+        min_age.send_keys('3')
+        max_age.send_keys('80')
+        custom_url.send_keys('test')
+        public_voting.click()
+        submit.click()
+        time.sleep(5)
+        assert "Name" in selenium.page_source
+        selenium.find_element_by_id('id_name').send_keys('test')
+        selenium.find_element_by_id('id_url').send_keys('http://127.0.0.1:8000')
+        selenium.find_element_by_xpath("//input[@type='submit' and @value='Create']").click()
+        time.sleep(5)
+        assert "Add a new question" in selenium.page_source
+        selenium.find_element_by_id('add_questions').click()
+        selenium.find_element_by_id('question').click()
+        selenium.find_element_by_id('id_desc').send_keys('test question')
+        selenium.find_element_by_id('submit').click()
+        time.sleep(5)
+
+
 
 class VotingTestCase(BaseTestCase):
 
@@ -35,9 +94,11 @@ class VotingTestCase(BaseTestCase):
         q = Question(desc='test question')
         q.save()
         for i in range(5):
-            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt = QuestionOption(question=q, option='option {}'.format(i + 1))
             opt.save()
-        v = Voting(name='test voting', question=q)
+        v = Voting(name='test voting')
+        v.save()
+        v.question.set([q])
         v.save()
 
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
@@ -67,20 +128,21 @@ class VotingTestCase(BaseTestCase):
         voter = voters.pop()
 
         clear = {}
-        for opt in v.question.options.all():
-            clear[opt.number] = 0
-            for i in range(random.randint(0, 5)):
-                a, b = self.encrypt_msg(opt.number, v)
-                data = {
-                    'voting': v.id,
-                    'voter': voter.voter_id,
-                    'vote': { 'a': a, 'b': b },
-                }
-                clear[opt.number] += 1
-                user = self.get_or_create_user(voter.voter_id)
-                self.login(user=user.username)
-                voter = voters.pop()
-                mods.post('store', json=data)
+        for q in v.question.all():
+            for opt in q.options.all():
+                clear[opt.number] = 0
+                for i in range(random.randint(0, 5)):
+                    a, b = self.encrypt_msg(opt.number, v)
+                    data = {
+                        'voting': v.id,
+                        'voter': voter.voter_id,
+                        'vote': {'a': a, 'b': b},
+                    }
+                    clear[opt.number] += 1
+                    user = self.get_or_create_user(voter.voter_id)
+                    self.login(user=user.username)
+                    voter = voters.pop()
+                    mods.post('store', json=data)
         return clear
 
     def test_complete_voting(self):
@@ -99,9 +161,9 @@ class VotingTestCase(BaseTestCase):
         tally = v.tally
         tally.sort()
         tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
-
-        for q in v.question.options.all():
-            self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
+        for q in v.question.all():
+            for o in q.options.all():
+                self.assertEqual(tally.get(o.number, 0), clear.get(o.number, 0))
 
         for q in v.postproc['results']:
             self.assertEqual(tally.get(q["number"], 0), q["votes"])
@@ -135,8 +197,8 @@ class VotingTestCase(BaseTestCase):
         voting = self.create_voting()
 
         data = {'action': 'start'}
-        #response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
-        #self.assertEqual(response.status_code, 401)
+        # response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
+        # self.assertEqual(response.status_code, 401)
 
         # login with user no admin
         self.login(user='noadmin')

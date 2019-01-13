@@ -28,6 +28,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('rest-auth/',include('rest_auth.urls')),
     path('authentication/', include('authentication.urls')),
+    path('voting/', include('voting.urls')),
     path('',IndexView.as_view(),name='index')
 ]
 
