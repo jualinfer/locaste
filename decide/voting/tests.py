@@ -197,8 +197,8 @@ class VotingTestCase(BaseTestCase):
         voting = self.create_voting()
 
         data = {'action': 'start'}
-        # response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
-        # self.assertEqual(response.status_code, 401)
+        response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
+        self.assertEqual(response.status_code, 401)
 
         # login with user no admin
         self.login(user='noadmin')
