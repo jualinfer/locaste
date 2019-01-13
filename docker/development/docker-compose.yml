@@ -6,7 +6,7 @@ services:
     container_name: decide_db
     image: postgres:alpine
     ports:
-      - "5432"
+      - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
     networks:
