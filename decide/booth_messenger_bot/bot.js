@@ -38,7 +38,9 @@ const bot = new BootBot({
   appSecret: process.env.APP_SECRET
 })
 
-bot.deletePersistentMenu();
+bot.setPersistentMenu([{ type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+{ type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' },
+]);
 bot.setGreetingText("Hello, I'm Decide-Locaste-Booth Bot. I'm here to help you vote with Decide. Click on the 'Get Started' button to begin.")
 
 
@@ -72,6 +74,8 @@ bot.on('postback:BOT_RESTART', (payload, chat) => {
           .then((res) => {
             config.login = false;
             config.token = null;
+            config.username = null;
+            config.password = null;
             config.userId = null;
             config.allowedVotings = null;
             config.actualVoting = null;
@@ -128,9 +132,9 @@ bot.on('postback:BOT_LOG_IN', (payload, chat) => {
           convo.end();
         } else {
 
-        const username = payload.message.text;
-        convo.set('username', username);
-        convo.say(`Got it!`, options).then(() => askPassword(convo));
+          const username = payload.message.text;
+          convo.set('username', username);
+          convo.say(`Got it!`, options).then(() => askPassword(convo));
         }
       };
 
@@ -148,51 +152,52 @@ bot.on('postback:BOT_LOG_IN', (payload, chat) => {
         } else {
 
 
-        const password = payload.message.text;
-        convo.set('password', password);
-        convo.say(`Ok!`, options);
+          const password = payload.message.text;
+          convo.set('password', password);
+          convo.say(`Ok!`, options);
 
-        let requestBody = {
-          "username": convo.get('username'),
-          "password": convo.get('password')
-        };
+          let requestBody = {
+            "username": convo.get('username'),
+            "password": convo.get('password')
+          };
 
-        request.post(
-          'http://localhost:8000/rest-auth/login/',
-          { json: requestBody },
-          function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-              convo.getUserProfile().then((user) => {
-                const loginMessage1 = `Well done, ${user.first_name} !`;
-                const loginMessage2 = 'You have logged in successfully as ' + convo.get('username') + '!';
-                const loginMessage3 = {
-                  text: 'What would you want to do now?',
+          request.post(
+            'http://localhost:8000/rest-auth/login/',
+            { json: requestBody },
+            function (error, response, body) {
+              if (!error && response.statusCode == 200) {
+                convo.getUserProfile().then((user) => {
+                  const loginMessage1 = `Well done, ${user.first_name} !`;
+                  const loginMessage2 = 'You have logged in successfully as ' + convo.get('username') + '!';
+                  const loginMessage3 = {
+                    text: 'What would you want to do now?',
+                    buttons: [
+                      { type: 'postback', title: 'Access to a voting', payload: 'BOT_GET_VOTING' },
+                      { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+                    ]
+                  };
+                  convo.say([loginMessage1, loginMessage2, loginMessage3], options).then(() => convo.end());
+                });
+                config.login = true;
+                config.token = body.key;
+                config.username = convo.get('username');
+                config.password = convo.get('password');
+              } else {
+                convo.say(`Ooops! Something went wrong.`, options);
+                const errorMessage = {
+                  text: 'Please, make sure you typed your username and password correctly.',
                   buttons: [
-                    { type: 'postback', title: 'Access to a voting', payload: 'BOT_GET_VOTING' },
-                    { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }, 
-                    { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
+                    { type: 'postback', title: 'Try again', payload: 'BOT_LOG_IN' },
+                    { type: 'postback', title: 'Help', payload: 'BOT_HELP' }
                   ]
                 };
-                convo.say([loginMessage1, loginMessage2, loginMessage3], options).then(() => convo.end());
-              });
-              config.login = true;
-              config.token = body.key;
-            } else {
-              convo.say(`Ooops! Something went wrong.`, options);
-              const errorMessage = {
-                text: 'Please, make sure you typed your username and password correctly.',
-                buttons: [
-                  { type: 'postback', title: 'Try again', payload: 'BOT_LOG_IN' },
-                  { type: 'postback', title: 'Help', payload: 'BOT_HELP' }
-                ]
-              };
-              convo.say(errorMessage, options).then(() => convo.end());
+                convo.say(errorMessage, options).then(() => convo.end());
+              }
             }
-          }
-        );
+          );
 
-      }
-    };
+        }
+      };
       convo.ask(question, answer, options);
     };
 
@@ -213,6 +218,8 @@ bot.on('postback:BOT_LOG_OUT', (payload, chat) => {
       if (!error && response.statusCode == 200) {
         config.login = false;
         config.token = null;
+        config.username = null;
+        config.password = null;
         config.userId = null;
         config.allowedVotings = null;
         config.actualVoting = null;
@@ -291,7 +298,7 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
           buttons: [
             { type: 'postback', title: 'Try again', payload: 'BOT_GET_VOTING' },
             { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
-            { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
+            { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
           ]
         };
         chat.say([errorMessage1, errorMessage2], options);
@@ -301,7 +308,7 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
           text: 'What would you want to do now?',
           buttons: [
             { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
-            { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
+            { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
           ]
         };
         chat.say([message1, message2], options);
@@ -339,7 +346,7 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
             .catch((err) => {
               console.log(err.message);
             })
-          
+
 
         }
         const chooseVoting = (convo) => {
@@ -355,42 +362,42 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
               convo.say(`Please wait...`, options).then(() => { convo.say("You have interrupted the process of choosing a voting!") });
               convo.end();
             } else {
-            const voting = payload.message.text;
-            const allVotings = Object.keys(votings);
+              const voting = payload.message.text;
+              const allVotings = Object.keys(votings);
 
-            if (!allVotings.includes(voting)) {
-              const errorMessage1 = `This voting does not exist!!!`;
-              const errorMessage2 = {
-                text: 'What would you want to do now?',
-                buttons: [
-                  { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
-                  { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
-                  { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
-                ]
-              };
-              convo.say([errorMessage1, errorMessage2], options);
-            } else if (!activeVotings.includes(voting)) {
-              const errorMessage1 = `You have chosen an inactive voting.`;
-              const errorMessage2 = `I told you not to do that!`;
-              const errorMessage3 = {
-                text: 'What would you want to do now?',
-                buttons: [
-                  { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
-                  { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
-                  { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
-                ]
-              };
-              convo.say([errorMessage1, errorMessage2, errorMessage3], options);
-            } else {
-              convo.set('votingName', voting);
-              votingId = votings[convo.get('votingName')];
-              convo.set('votingId', votingId);
+              if (!allVotings.includes(voting)) {
+                const errorMessage1 = `This voting does not exist!!!`;
+                const errorMessage2 = {
+                  text: 'What would you want to do now?',
+                  buttons: [
+                    { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
+                    { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+                    { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+                  ]
+                };
+                convo.say([errorMessage1, errorMessage2], options).then(()=> {convo.end()});
+              } else if (!activeVotings.includes(voting)) {
+                const errorMessage1 = `You have chosen an inactive voting.`;
+                const errorMessage2 = `I told you not to do that!`;
+                const errorMessage3 = {
+                  text: 'What would you want to do now?',
+                  buttons: [
+                    { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
+                    { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+                    { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+                  ]
+                };
+                convo.say([errorMessage1, errorMessage2, errorMessage3], options);
+              } else {
+                convo.set('votingName', voting);
+                votingId = votings[convo.get('votingName')];
+                convo.set('votingId', votingId);
 
-              convo.say(`Good choice!`, options).then(() => askConfirmation(convo));
+                convo.say(`Good choice!`, options).then(() => askConfirmation(convo));
+              }
+
             }
-
-          }
-        }; 
+          };
 
           convo.ask(question, answer, options);
         };
@@ -409,33 +416,33 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
                 convo.say(`Please wait...`, options).then(() => { convo.say("You have interrupted the process of choosing a voting!") });
                 convo.end();
               } else {
-              const reply = payload.message.text;
+                const reply = payload.message.text;
 
-              if (reply == "Yes" || reply == 'yes' || reply == 'YES') {
-                config.actualVoting = convo.get('votingId');
-                const message1 = `Ok, ${user.first_name}. `;
-                convo.sendButtonTemplate(message1, [
-                  { type: 'postback', title: 'Open the voting', payload: 'BOT_OPEN_VOTING' }], options).then(() => convo.end());
+                if (reply == "Yes" || reply == 'yes' || reply == 'YES') {
+                  config.actualVoting = convo.get('votingId');
+                  const message1 = `Ok, ${user.first_name}. `;
+                  convo.sendButtonTemplate(message1, [
+                    { type: 'postback', title: 'Open the voting', payload: 'BOT_OPEN_VOTING' }], options).then(() => convo.end());
+                }
+
+                else if (reply == "No" || reply == 'no' || reply == 'NO') {
+                  const message1 = `Got it.`;
+                  const message2 = {
+                    text: 'What would you want to do now?',
+                    buttons: [
+                      { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
+                      { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+                    ]
+                  };
+                  convo.say([message1, message2], options).then(() => convo.end());
+                } else {
+                  const message1 = `I didn't understand that.`;
+                  convo.sendButtonTemplate(message1, [
+                    { type: 'postback', title: 'Help', payload: 'BOT_HELP' }], options).then(() => convo.end());
+                }
+
               }
-
-              else if (reply == "No" || reply == 'no' || reply == 'NO') {
-                const message1 = `Got it.`;
-                const message2 = {
-                  text: 'What would you want to do now?',
-                  buttons: [
-                    { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
-                    { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
-                  ]
-                };
-                convo.say([message1, message2], options).then(() => convo.end());
-              } else {
-                const message1 = `I didn't understand that.`;
-                convo.sendButtonTemplate(message1, [
-                  { type: 'postback', title: 'Help', payload: 'BOT_HELP' }], options).then(() => convo.end());
-              }
-
-            }
-          };
+            };
             convo.ask(question, answer, options);
           });
         };
@@ -492,7 +499,7 @@ bot.on('postback:BOT_OPEN_VOTING', (payload, chat) => {
         buttons: [
           { type: 'postback', title: 'Start', payload: 'BOT_START_VOTING' },
           { type: 'postback', title: 'Access another voting', payload: 'BOT_GET_VOTING' },
-          { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
+          { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
         ]
       };
       chat.say([message1, message2, message3, message4, message5, message6, message7, message8], options);
@@ -501,6 +508,142 @@ bot.on('postback:BOT_OPEN_VOTING', (payload, chat) => {
   }
 
 });
+
+
+bot.on('postback:BOT_START_VOTING', (payload, chat) => {
+  const options = { typing: true };
+  if (config.actualVoting === null || config.actualVoting === undefined) {
+    const errorMessage1 = {
+      text: 'Please, select a voting:',
+      buttons: [
+        { type: 'postback', title: 'Access a voting', payload: 'BOT_GET_VOTING' },
+        { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+        { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
+      ]
+    };
+    chat.say([errorMessage1], options);
+
+  } else {
+    var title = null;
+    var description = null;
+    var key = null;
+    var question = null;
+    var choices = null;
+
+
+    async function getActualVoting() {
+      await axios.get('http://localhost:8000/voting/?id=' + config.actualVoting)
+        .then((res) => {
+          title = res.data[0].name;
+          description = res.data[0].desc;
+          key = res.data[0].pub_key;
+          question = res.data[0].question.desc;
+          choices = res.data[0].question.options;
+        })
+        .catch((err) => {
+          console.log(err.message);
+        });
+    }
+
+    async function showQuestion() {
+      await getActualVoting();
+
+      config.votingKey = [];
+      config.votingKey['p'] = key.p;
+      config.votingKey['g'] = key.g;
+      config.votingKey['y'] = key.y;
+
+
+      elements = [];
+      var min = (choices.length > 4) ? 4 : choices.length;
+      for (i = 0; i < min; i++) {
+        element = {
+          "title": "Option №" + choices[i].number,
+          "subtitle": choices[i].option,
+          "buttons": [
+            {
+              "title": "Vote №" + choices[i].number,
+              "type": "postback",
+              "webview_height_ratio": "tall",
+              "payload": "BOT_VOTE_" + (i + 1)
+            }
+          ]
+        };
+        config.choice = [];
+        config.choice[i + 1] = choices[i].number;
+        elements.push(element);
+      }
+
+      template = {
+        "template_type": "list",
+        "top_element_style": "compact",
+        "elements": elements,
+        "buttons": [{
+          "title": "Cancel",
+          "type": "postback",
+          "webview_height_ratio": "full",
+          "payload": "BOT_CANCEL_VOTING"
+        }]
+      };
+
+      console.log(config.choice);
+      console.log(config.choice[1]);
+      console.log(config.choice[2]);
+      
+      const message1 = title + ":";
+      const message2 = "Here is a short description of the voting:";
+      const message3 = "Here is the question:";
+      const message4 = "Answer the question by choosing one of the following options:";
+      if (description !== null && description != "") {
+
+        chat.say([message1, message2, description, message3, question, message4], options).then(() => { chat.sendTemplate(template, options) });
+
+      } else {
+        chat.say([message1, message3, question, message4], options).then(() => { chat.sendTemplate(template, options) });
+
+      }
+
+
+
+
+    }
+
+    showQuestion();
+  }
+
+});
+
+
+bot.on('postback:BOT_CANCEL_VOTING', (payload, chat) => {
+  const options = { typing: true };
+  if (config.actualVoting === null || config.actualVoting === undefined) {
+    const errorMessage1 = {
+      text: 'Please, select a voting:',
+      buttons: [
+        { type: 'postback', title: 'Access a voting', payload: 'BOT_GET_VOTING' },
+        { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+        { type: 'postback', title: 'Restart bot', payload: 'BOT_RESTART' }
+      ]
+    };
+    chat.say([errorMessage1], options);
+  } else {
+    config.actualVoting = null;
+    config.votingKey = null;
+    config.choice = null;
+    const message1 = "You have left this voting.";
+    const message2 = {
+      text: 'What do you want to do now?',
+      buttons: [
+        { type: 'postback', title: 'Access another voting', payload: 'BOT_GET_VOTING' },
+        { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+      ]
+    };
+    chat.say([message1, message2], options);
+  }
+});
+
+
+
 
 
 bot.start()
