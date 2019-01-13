@@ -217,4 +217,10 @@ REST_AUTH_REGISTER_SERIALIZERS = {
     'REGISTER_SERIALIZER': 'authentication.serializers.UserSignupSerializer'
  }
 
+GOOGLE_RECAPTCHA_SECRET_KEY = '6LdmCYkUAAAAAOGBm-GHWdhKiI1B35LY_7tdoBPo'
+
+# Set to False to run Selenium tests
+ENABLE_CAPTCHA = False
+
+
 ACCOUNT_LOGOUT_ON_GET = True
