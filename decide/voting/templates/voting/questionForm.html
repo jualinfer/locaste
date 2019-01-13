@@ -1,0 +1,179 @@
+{% extends "voting/base.html" %}
+
+
+{% block content %}
+    <div class="w3-container">
+<p hidden id="counter">1</p>
+<form id="question_form">
+    {% csrf_token %}
+    <div id="content">
+        {% comment %}<div id="question">
+
+            <div id="remove">
+            </div>
+            {{ question_form }}
+            <br/>
+            <button type="button" onclick="add_answer(event);">Add answer</button>
+            <br/>
+            <div id="answer">
+                {{ question_option_form }}
+            </div>
+        </div>{% endcomment %}
+    </div>
+    <div>
+        <select id="question_type" name="question_type">
+
+            <option>Normal</option>
+            <option>Range</option>
+            <option>Percentage</option>
+            <option>Date</option>
+            <option>Date and Time</option>
+
+        </select>
+        <button type="button" onclick="add_question();" id="add_questions">Add a new question</button>
+    </div>
+
+    <input type="button" value="Send questions" id="submit" onclick="submit_questions();"/>
+</form>
+
+    </div>
+<script>
+    function updateSummary(event) {
+        let value=$(event.target).val();
+        $(event.target).parent().find('#question_summary').html(value+" <span onclick=\"deleteQuestion(event)\" style=\"color:red;\">X</span>");
+    }
+    function deleteQuestion(event) {
+        if(confirm("Are you sure you want to delete this question?")){
+            $(event.target).parent().parent().remove();
+        }
+    }
+    function add_question() {
+        var question_formulary = $('#content');
+        //empty_input.find('textarea').val('');
+        //empty_input.find('#answer').find('textarea').val('');
+        //empty_input.find('#remove').append("<button type=\"button\" onclick=\"remove_element(event);\">X</button>");
+
+        var type_question = $('#question_form').find("#question_type").children("option:selected").val();
+        var html_obj = "<details id=\"question\"><summary id=\"question_summary\"><span onclick=\"deleteQuestion(event)\" style=\"color:red;\">X</span></summary>\n" +
+                "            <label for=\"id_desc\">Desc:</label><textarea name=\"desc\" cols=\"80\" rows=\"20\" required=\"\" id=\"id_desc\" onchange=\"updateSummary(event);\"></textarea>\n";
+        switch (type_question) {
+            case "Normal":
+                html_obj+= "<br/><label for=\"id_type\">Type:</label><select name=\"type\" readonly=\"\" disabled=\"\" id=\"id_type\">" +
+                "  <option value=\"\">---------</option>\n" +
+                "\n" +
+                "  <option value=\"Normal\" selected=\"\">Normal</option>\n" +
+                "\n" +
+                "</select>\n" +
+                "            <br>\n" +
+                "            <button type=\"button\" onclick=\"add_answer(event);\">Add new answer</button>\n" +
+                "            <br>\n" +
+                "            <div id=\"answer\" class=\"answer\"> \n" +
+                "                <label for=\"id_option\">Option:</label><textarea name=\"option\" cols=\"40\" rows=\"10\" id=\"id_option\"></textarea>\n" +
+                "            </div>\n"
+                break;
+            case "Date and Time":
+                html_obj+= "<br/><label for=\"id_type\">Type:</label><select name=\"type\" readonly=\"\" disabled=\"\" id=\"id_type\">" +
+                   "  <option value=\"\">---------</option>\n" +
+                   "\n" +
+                   "  <option value=\"Normal\" selected=\"\">Normal</option>\n" +
+                   "\n" +
+                   "</select>\n" +
+                   "            <br>\n" +
+                   "            <button type=\"button\" onclick=\"add_answer(event,'datetime-local');\">Add new answer</button>\n" +
+                   "            <br>\n" +
+                   "            <div id=\"answer\" class=\"answer\"> \n" +
+                   "                <label for=\"id_option\">Option:</label><input type=\"datetime-local\" name=\"option\" cols=\"40\" rows=\"10\" id=\"id_option\"></input>\n" +
+                   "            </div>\n"
+                break;
+            case "Date":
+                html_obj+= "<br/><label for=\"id_type\">Type:</label><select name=\"type\" readonly=\"\" disabled=\"\" id=\"id_type\">" +
+                   "  <option value=\"\">---------</option>\n" +
+                   "\n" +
+                   "  <option value=\"Normal\" selected=\"\">Normal</option>\n" +
+                   "\n" +
+                   "</select>\n" +
+                   "            <br>\n" +
+                   "            <button type=\"button\" onclick=\"add_answer(event,'date');\">Add new answer</button>\n" +
+                   "            <br>\n" +
+                   "            <div id=\"answer\" class=\"answer\"> \n" +
+                   "                <label for=\"id_option\">Option:</label><input type=\"date\" name=\"option\" cols=\"40\" rows=\"10\" id=\"id_option\"></input>\n" +
+                   "            </div>\n"
+                break;
+            case "Range":
+                html_obj+= "<br/><label for=\"id_type\">Type:</label><select name=\"type\" readonly=\"\" disabled=\"\" id=\"id_type\">\n" +
+                    "  <option value=\"\">---------</option>\n" +
+                    "\n" +
+                    "  <option selected=\"\" value=\""+type_question+"\" >"+type_question+"</option>\n" +
+                    "\n" +
+                    "</select>\n" +
+                    "            <br>\n";
+                break;
+            case "Percentage":
+                html_obj+= "<br/><label for=\"id_type\">Type:</label><select name=\"type\" readonly=\"\" disabled=\"\" id=\"id_type\">\n" +
+                    "  <option value=\"\">---------</option>\n" +
+                    "\n" +
+                    "  <option selected=\"\" value=\""+type_question+"\" >"+type_question+"</option>\n" +
+                    "\n" +
+                    "</select>\n" +
+                    "            <br>\n";
+                break;
+            default:
+                html_obj+= "<br/><label for=\"id_type\">Type:</label><select name=\"type\" readonly=\"\" disabled=\"\" id=\"id_type\">" +
+                "  <option value=\"\">---------</option>\n" +
+                "\n" +
+                "  <option value=\"Normal\" selected=\"\">Normal</option>\n" +
+                "\n" +
+                "</select>\n" +
+                "            <br>\n" +
+                "            <button type=\"button\" onclick=\"add_answer(event);\">Add new answer</button>\n" +
+                "            <br>\n" +
+                "            <div id=\"answer\" class=\"answer\"> \n" +
+                "                <label for=\"id_option\">Option:</label><textarea name=\"option\" cols=\"40\" rows=\"10\" id=\"id_option\"></textarea>\n" +
+                "            </div>\n"
+                break;
+        }
+        html_obj+="</details>"
+        question_formulary.append(html_obj);
+        //$('#content').append(empty_input);
+
+    }
+     function add_answer(event,answerType) {
+        //alert(event.target);
+        var html_obj =  "            <div id=\"answer\" class=\"answer\"> \n" +
+                "                <label for=\"id_option\">Option:</label><textarea name=\"option\" cols=\"40\" rows=\"10\" id=\"id_option\"></textarea>\n" +
+                "<button type=\"button\" onclick=\"remove_element(event);\">X</button>"+
+                "            </div>\n";
+        if(answerType){
+            html_obj="            <div id=\"answer\" class=\"answer\"> \n" +
+                   "                <label for=\"id_option\">Option:</label><input type=\""+answerType+"\" name=\"option\" cols=\"40\" rows=\"10\" id=\"id_option\"></input>\n" +
+                   "            </div>\n"
+        }
+        //$('#question_form').find('div').first().append(empty_input);
+         $(event.target).parent().append(html_obj);
+
+    }
+
+    function remove_element(event) {
+         $(event.target).parent().remove();
+    }
+
+    function submit_questions(){
+        var descs = [];
+        var answers = [];
+        var types = [];
+        var question_formulary = $('#content').children('#question');
+
+        for (var i=0; i<question_formulary.length; i++){
+            answers[i] = [];
+            descs[i] = $(question_formulary[i]).find('#id_desc').val();
+             for(var j=0; j< $(question_formulary[i]).find('.answer').length; j++){
+                answers[i][j] = $($(question_formulary[i]).find('.answer')[j]).find('#id_option').val();
+             }
+             types[i]=$(question_formulary[i]).find("#id_type").children("option:selected").val();
+        }
+        $.post("{{ voting_url }}", {'descs': descs, "answers": answers,'types':types, 'csrfmiddlewaretoken':$('#question_form').find('input').first().val()}).done(function(data){
+            window.location.replace('/voting/list');
+        })
+    }
+</script>
+{% endblock content %}

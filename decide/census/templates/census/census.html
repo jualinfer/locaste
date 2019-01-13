@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block content %}
+<style>
+        .container {
+            height: auto;
+            width: 100%;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        .container-left {
+          width: 49%;
+          height:auto;
+          float:left;
+        }
+</style>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/xlsx.full.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/jszip.js"></script>
+
+<h1>{{ voting.name }}</h1>
+
+<div id="census_form" class="container">
+    <div class="container-left">
+        <label for="voter_id">{% trans "User IDs" %}</label>
+        <input type="text" id="voter_id" name="voter_id" value=""/>
+        <p>{%trans "(You can put multiples IDs, separating them by commas)" %}</p>
+        <br/><br/>
+
+        <input type="submit" value="{% trans " Add to census" %}" onClick="addToCensus()"/>
+        <input type="submit" value="{% trans " Remove from census" %}" onClick="removeFromCensus()"/><br><br>
+
+        <input type="file" id="fileUpload"/>
+        <input type="button" id="upload" value=" {% trans " Add Excel to census" %}" onclick="Upload()"/> <br><br>
+
+        <p>
+            {%trans "Excel file must have the following format (no header, no commas, on sheet 1):" %}
+        </p>
+
+        <table>
+            <tr>
+                <th>
+                    1
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    2
+                </th>
+            </tr>
+            <th>
+                3
+            </th>
+            <tr>
+                <th>
+                    4
+                </th>
+            <tr>
+                <th>
+                    5
+                </th>
+            </tr>
+        </table>
+
+    </div>
+
+    <div>
+        <input type="button" id="export" value="{% trans " Show voting's census" %}" onclick="Export()"/> <br><br>
+    </div>
+
+</div>
+
+<script>
+
+        function getData(url) {
+            // Default options are marked with *
+            var fdata = {
+                method: 'GET',
+            };
+
+            return fetch(url, fdata)
+            .then(response => {
+                if (response.status === 200) {
+                    return response.json();
+                } else {
+                    return Promise.reject(response.statusText);
+                }
+            });
+        }
+
+        function postData(url, data) {
+            // Default options are marked with *
+            var fdata = {
+                body: JSON.stringify(data),
+                headers: {
+                    'content-type': 'application/json',
+                },
+                method: 'POST',
+            };
+
+            return fetch(url, fdata)
+            .then(response => {
+                if (response.status === 201) {
+                    return response.json();
+                } else {
+                    return Promise.reject(response.statusText);
+                }
+            });
+        }
+
+        function deleteData(url, data) {
+            // Default options are marked with *
+            var fdata = {
+                body: JSON.stringify(data),
+                headers: {
+                    'content-type': 'application/json',
+                },
+                method: 'DELETE',
+            };
+
+            return fetch(url, fdata)
+            .then(response => {
+                if (response.status === 204) {
+                    return "Voters deleted from census";
+                } else {
+                    return Promise.reject(response.statusText);
+                }
+            });
+        }
+
+        function addToCensus() {
+            var voters = document.querySelector("#voter_id").value.split(",");
+            var data = {
+                voting_id: {{voting.id}},
+                voters: voters
+            };
+            postData("{{census_url}}" + "/census/", data)
+            .then(data => {
+                alert(data);
+            })
+            .catch(error => {
+                alert("{% trans "Error: " %}" + error);
+                console.error(error);
+            });
+        }
+
+        function Export(){
+            var data = {
+                voting_id: {{voting.id}},
+            };
+            getData("{{census_url}}" + "/census/?voting_id="+{{voting.id}})
+            .then(data => {
+                genera_tabla(data);
+            })
+            .catch(error => {
+                alert("{% trans "Error: " %}" + error);
+                console.error(error);
+            });
+        }
+
+        function genera_tabla(data) {
+            //No tabla duplicada
+            var variable = document.getElementById("divTabla");
+            if (variable != null && typeof variable != 'undefined') {
+                variable.parentElement.removeChild(variable)
+            }
+
+            // Obtener la referencia del elemento body
+            var body = document.getElementsByTagName("body")[0];
+
+            //Crear y asignar atributo id a la etiqueta div
+            var div = document.createElement("div");
+            div.id = "divTabla";
+
+            //Crear elemento <br>
+            var br = document.createElement("br");
+
+            // Crea un elemento <table>, asignarle id y crear un elemento <tbody>
+            var tabla   = document.createElement("table");
+            tabla.id = "tablaId";
+            var tblBody = document.createElement("tbody");
+
+            if(data["voters"].length != 0){
+                // Crea las celdas.
+                for (var i = 0; i < data["voters"].length; i++) {
+                    // Crea las hileras de la tabla
+                    var hilera = document.createElement("tr");
+
+                    //Fijado a uno ya que solo mostraremos una columna con los IDs
+                    for (var j = 0; j < 1; j++) {
+                        // Crea un elemento <td> y un nodo de texto, haz que el nodo de
+                        // texto sea el contenido de <td>, ubica el elemento <td> al final
+                        // de la hilera de la tabla
+                        var celda = document.createElement("td");
+                        var textoCelda = document.createTextNode(data["voters"][i]);
+                        celda.appendChild(textoCelda);
+                        hilera.appendChild(celda);
+                    }
+
+                    // agrega la hilera al final de la tabla (al final del elemento tblbody)
+                    tblBody.appendChild(hilera);
+                }
+
+                // posiciona el <tbody> debajo del elemento <table>
+                tabla.appendChild(tblBody);
+
+                //añadir div al body
+                body.appendChild(div);
+
+                // appends <table> into <body>
+                div.appendChild(tabla);
+
+                // modifica el atributo "border" de la tabla y lo fija a "2";
+                tabla.setAttribute("border", "2");
+
+                //Crear input type = button "export census" con Id y funcion onclick
+                var boton = document.createElement("input");
+                boton.type = "button";
+                boton.id = "botonId";
+                boton.value = "Export census to xls file";
+                boton.setAttribute("onclick", "exportTableToExcel(tablaId)");
+
+                //anyadir al div el elemento br y boton. Añyadir div a elemento referencia body
+                div.appendChild(br);
+                div.appendChild(boton);
+                document.body.appendChild(div);
+
+            }else{
+                //Crea tabla para censo de votacion vacio
+                var hilera = document.createElement("tr");
+                var celda = document.createElement("td");
+                var textoCelda = document.createTextNode("0");
+
+                celda.appendChild(textoCelda);
+                hilera.appendChild(celda);
+                tblBody.appendChild(hilera);
+                tabla.appendChild(tblBody);
+
+                div.appendChild(tabla);
+                body.appendChild(div);
+
+                tabla.setAttribute("border", "2");
+            }
+
+        }
+
+        function exportTableToExcel(tablaID, filename = ''){
+            var downloadLink;
+            var dataType = 'application/vnd.ms-excel';
+            var tableSelect = tablaID;
+            var tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+
+            // Especificar nombre de archivo
+            filename = filename?filename+'.xls':'excel_data.xls';
+
+            // Crear elemento link de descarga
+            downloadLink = document.createElement("a");
+
+            document.body.appendChild(downloadLink);
+
+            if(navigator.msSaveOrOpenBlob){
+                var blob = new Blob(['\ufeff', tableHTML], {
+                    type: dataType
+                });
+                navigator.msSaveOrOpenBlob( blob, filename);
+            }else{
+                // Crear un link al archivo
+                downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+
+                // configurar nombre del archivo
+                downloadLink.download = filename;
+
+                //Activando funcion
+                downloadLink.click();
+            }
+        }
+
+        function removeFromCensus() {
+            var voters = document.querySelector("#voter_id").value.split(",");
+            var data = {
+                voters: voters
+            };
+            deleteData("{{census_url}}" + "/census/" + {{voting.id}} + "/", data)
+            .then(data => {
+                alert(data);
+            })
+            .catch(error => {
+                alert("{% trans "Error: " %}" + error);
+                console.error(error);
+            });
+        }
+
+        function isNumber(excelRows){
+            var out = [];
+            var filtro = '1234567890';//Caracteres validos
+            var valSplit = excelRows.split(",");
+            var secondOut = [];
+            for (var j=0; j<valSplit.length; j++){
+                var firstOut = ''
+                if(! isNaN(valSplit[j])){
+                    var string = valSplit[j];
+                    //Recorrer el texto y verificar si el caracter es valido
+                    for (var i=0; i<string.length; i++){
+                        if (filtro.indexOf(string.charAt(i)) != -1){
+                            firstOut += string.charAt(i)
+                        }
+                    }
+                    if(firstOut != ""){
+                        secondOut = secondOut.concat(firstOut);
+                    }
+                }
+            }
+            //Se añaden a la salida los caracteres validos
+            out = out.concat(secondOut);
+
+            return out;
+        }
+
+        function AddExcelToCensus(excelRows){
+            var voters = isNumber(excelRows);
+            var data = {
+                voting_id: {{voting.id}},
+                voters: voters
+            };
+            postData("{{census_url}}" + "/census/", data)
+            .then(data => {
+                alert(data);
+            })
+            .catch(error => {
+                alert("{% trans "Error: " %}" + error);
+                console.error(error);
+            });
+        }
+
+        function Upload() {
+        //Obtenemos dato subido (id = fileUpload)
+        var fileUpload = document.getElementById("fileUpload");
+
+        //Validar si el archivo es un archivo de Excel valido.
+        var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx|.ods)$/;
+        if (regex.test(fileUpload.value.toLowerCase())) {
+            if (typeof (FileReader) != "undefined") {
+                var reader = new FileReader();
+
+                //Para navegadores que no sean IE.
+                if (reader.readAsBinaryString) {
+                    reader.onload = function (e) {
+                        ProcessExcel(e.target.result);
+                    };
+                    reader.readAsBinaryString(fileUpload.files[0]);
+                } else {
+                    //Para navegador IE.
+                    reader.onload = function (e) {
+                        var data = "";
+                        var bytes = new Uint8Array(e.target.result);
+                        for (var i = 0; i < bytes.byteLength; i++) {
+                            data += String.fromCharCode(bytes[i]);
+                        }
+                        ProcessExcel(data);
+                    };
+                    reader.readAsArrayBuffer(fileUpload.files[0]);
+                }
+            } else {
+                alert("This browser does not support HTML5.");
+            }
+        } else {
+            alert("Please upload a valid Excel file.");
+        }
+    };
+
+    function ProcessExcel(data) {
+        //Lee los datos del archivo Excel.
+        var workbook = XLSX.read(data, {
+            type: 'binary'
+        });
+
+        var firstSheet = workbook.SheetNames[0];
+
+        //Lee todas las filas de la primera hoja y la convierte a un CSV.
+        //FS: ",", RS: "," --> separa columnas y filas por ","
+		var excelRows = XLSX.utils.sheet_to_csv(workbook.Sheets[firstSheet], {FS:",",RS:","});
+		if(excelRows.length != 0){
+		    AddExcelToCensus(excelRows);
+		}
+    };
+
+</script>
+
+{% endblock %}
+
+{% block extrabody %}
+
+{% endblock %}

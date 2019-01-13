@@ -1,0 +1,103 @@
+{% extends "voting/base.html" %}
+{% block content %}
+{% if voting_list %}
+
+    <div class="w3-container">
+        <h5>Votings</h5>
+        <table class="w3-table w3-striped w3-bordered w3-border w3-hoverable w3-white">
+            <tr>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Description
+                </th>
+                <th>
+                    Questions
+                </th>
+                <th>
+                    Start date
+                </th>
+                <th>
+                    End date
+                </th>
+                <th>
+                    Gender
+                </th>
+                <th>
+                    Min age
+                </th>
+                <th>
+                    Max age
+                </th>
+                <th>
+                    Custom url
+                </th>
+                <th>
+                    Public voting
+                </th>
+                <th>
+                    Image Header
+                </th>
+                <th>
+                    Seats
+                </th>
+                <th>
+                    Tally Type
+                </th>
+
+            </tr>
+            {% for voting in voting_list %}
+                <tr>
+                    <td>
+                        {{ voting.name }}
+                    </td>
+                    <td>
+                        {{ voting.desc }}
+                    </td>
+                    <td>
+                        <ul>
+                            {% for question in voting.question.all %}
+                                <li>{{ question.desc }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>
+                        {{ voting.start_date }}
+                    </td>
+                    <td>
+                        {{ voting.end_date }}
+                    </td>
+                    <td>
+                        {{ voting.gender }}
+                    </td>
+                    <td>
+                        {{ voting.min_age }}
+                    </td>
+                    <td>
+                        {{ voting.max_age }}
+                    </td>
+                    <td>
+                        {{ voting.custom_url }}
+                    </td>
+                    <td>
+                        {{ voting.public_voting }}
+                    </td>
+                    <td>
+                        <img src="{{ voting.image_header }}" alt="" style="width:150px; height:auto;">
+                    </td>
+                    <td>
+                        {{ voting.seats }}
+                    </td>
+                    <td>
+                        {{ voting.tally_type }}
+                    </td>
+
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% else %}
+    <p>No votings are available.</p>
+{% endif %}
+{% endblock content %}
