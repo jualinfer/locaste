@@ -89,8 +89,7 @@ def votingForm(request):
     elif request.method == 'POST' and voting_form is not None and voting_form.is_valid() and auth_form is not None and auth_form.is_valid() and (
             'descs[]' in request.POST.keys() or  'questionRange' in request.POST.keys()) :
 
-        save_voting(request, voting_form, auth_forms,question_forms,
-                    question_option_forms)
+        save_voting(request)
 
         return render(request, 'voting/list')
 
@@ -240,8 +239,12 @@ def valid_objects(objects):
 
 
 @transaction.non_atomic_requests
-def save_voting(request, voting_form, auth_forms, question_forms,
-                question_option_forms):
+def save_voting(request):
+    global voting_form
+    global auth_form
+    global auth_forms
+    global question_forms
+    global question_option_forms
     create_question_options_formularies(request, question_forms, question_option_forms)
     saved_questions = []
     saved_auths = []
