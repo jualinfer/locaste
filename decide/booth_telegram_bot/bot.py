@@ -459,9 +459,7 @@ def register_census(bot, update, user_data):
                     update.message.reply_text('You can access to the voting now')
                 elif(r3.status_code == 400):
                     update.message.reply_text('Sorry you are not allowed to register in this voting census because:')
-                    msg = r3.json().split('"')
-                    if(len(msg) == 1):
-                        msg = r3.json().split("'")
+                    msg = r3.json().split("'")
                     update.message.reply_text(msg[1])
                 elif(r3.status_code == 403):
                     update.message.reply_text('Sorry you are not allowed to register in this voting census because:')
