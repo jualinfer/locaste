@@ -1,0 +1,34 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Votings</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+  <ng-container *ngIf="availableVotigns">
+    <ion-card ion-item padding *ngFor="let item of availableVotigns" (click)="itemTapped($event, item)">
+      <ion-card-header>
+        {{item.name}}
+
+      </ion-card-header>
+      <ion-card-content>
+        <p> {{ item.question.desc }} </p>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+  <ng-container *ngIf="availableVotigns.length === 0">
+    <ion-row style="height: 100%">
+      <ion-col col-xl-3 col-0></ion-col>
+      <ion-col col-xl-6 col-12>
+        <h4 style="text-align: center; margin-left: 20px; margin-right: 20px">
+          There is no voting for you
+        </h4>
+        <img class="img-pet" src="{{ url }}" />
+      </ion-col>
+      <ion-col col-xl-3 col-0></ion-col>
+    </ion-row>
+  </ng-container>
+</ion-content>

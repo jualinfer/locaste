@@ -21,6 +21,9 @@ entre ellos. Para conseguir esto, los subsistemas se conectarán entre si median
 
 Este proyecto Django estará dividido en apps (subsistemas y proyecto base), donde cualquier app podrá ser reemplazada individualmente.
 
+La documentación relativa a cada uno de los subsistemas puede encontrarse en la wiki:
+[Subsistemas Wiki](https://github.com/EGC-Decide/locaste/wiki)
+
 
 Configurar y ejecutar el proyecto
 ---------------------------------
@@ -50,10 +53,18 @@ siguiente manera:
 
     ./manage.py runserver
 
+Antes de empezar a desarrollar para el proyecto, debes leer toda la documentación relativa al desarrollo del proyecto que existe en la Wiki del repositorio.
+[Commits](https://github.com/EGC-Decide/locaste/wiki/Acerca-de-los-commits)
+[Control de versiones](https://github.com/EGC-Decide/locaste/wiki/Control-de-versiones)
+[Despliegue continuo](https://github.com/EGC-Decide/locaste/wiki/Despliegue-continuo)
+[Gestión de las incidencias](https://github.com/EGC-Decide/locaste/wiki/Gesti%C3%B3n-de-las-incidencias)
+[Integración continua](https://github.com/EGC-Decide/locaste/wiki/Integraci%C3%B3n-Continua)
+
 Ejecutar con docker
 -------------------
+Existen varias configuraciones de docker, una para cada entorno, estas configuraciones pueden encontrarse dentro de la carpeta /docker y en su correspondiente subcarpeta.
 
-Existe una configuración de docker compose que lanza 3 contenedores, uno
+Para el entorno de preproduccion o produccion, existen una configuracion de docker-compose que lanza 3 contenedores, uno
 para el servidor de base de datos, otro para el django y otro con un
 servidor web nginx para servir los ficheros estáticos y hacer de proxy al
 servidor django:
@@ -61,6 +72,10 @@ servidor django:
  * decide\_db
  * decide\_web
  * decide\_nginx
+
+En el caso del entorno de producción, el sistema se desplegará por defecto en el puerto 80.
+
+En el caso del entorno de preproducción, el sistema se desplegará en el puerto 9000. (Tanto el servidor interno, como nginx)
 
 Además se crean dos volúmenes, uno para los ficheros estáticos y medias del
 proyecto y otro para la base de datos postgresql, de esta forma los
@@ -72,10 +87,12 @@ contenedores se pueden destruir sin miedo a perder datos:
 Se puede editar el fichero docker-settings.py para modificar el settings
 del proyecto django antes de crear las imágenes del contenedor.
 
-Crear imágenes y lanzar contenedores:
+Para lanzar los contenedores:
 
     $ cd docker
     $ docker-compose up -d
+
+(Si quiere obtenerse la salida de los contenedores para tareas de debug, no se le especificará el parametro -d; pero este dejara los contenedores asociados a la ventana de ejecución y se cerrarán una vez finalizada la ventana)
 
 Parar contenedores:
 
@@ -96,3 +113,12 @@ Lanzar tests:
 Lanzar una consola SQL:
 
     $ docker exec -ti decide_db ash -c "su - postgres -c 'psql postgres'"
+
+
+Para el entorno de desarrollo existe un compose que despliega el entorno necesario para el proyecto a excepcion de los modulos del sistema (código).
+
+Para ejecutarlo debe lanzarse el docker-compose que existe dentro de la carpeta docker/development.
+
+Toda la información relativa al desarrollo y despliegue con docker, puede encontrarse en la Wiki del proyecto. 
+
+[Docker Wiki](https://github.com/EGC-Decide/locaste/wiki/Docker)

@@ -1,0 +1,45 @@
+<ion-header>
+
+  <ion-navbar>
+    <div *ngIf="!showLoginPage">
+      <ion-toolbar>
+        <ion-buttons left>
+          <button ion-button menuToggle>
+            <ion-icon name="menu"></ion-icon>
+          </button>
+        </ion-buttons>
+        <ion-title>Home</ion-title>
+        <ion-buttons right>
+          <button ion-button *ngIf="!showLoginPage" (click)="logout()">
+            <img src="..\\..\\assets\\imgs\\logout-24.png" />
+          </button>
+        </ion-buttons>
+      </ion-toolbar>
+    </div>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+
+  <div *ngIf="showLoginPage">
+    <page-login (logged)="hiddeLogin($event)">
+
+    </page-login>
+  </div>
+
+  <div *ngIf="!showLoginPage">
+    <ion-row style="height: 100%">
+      <ion-col col-xl-3 col-0></ion-col>
+      <ion-col col-xl-6 col-12>
+        <h4 style="text-align: justify; margin-left: 20px; margin-right: 20px">
+          Welcome to our application decide where you can vote in the voting that you are enviting. We guarantee you
+          that
+          this application is safe. Thanks for trusting us.
+        </h4>
+        <img class="img-pet" src="{{ url }}" />
+      </ion-col>
+      <ion-col col-xl-3 col-0></ion-col>
+    </ion-row>
+  </div>
+
+</ion-content>

@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
-
+import urllib.request, urllib.error
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
@@ -65,7 +65,8 @@ class AuthTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         response = self.client.post('/authentication/getuser/', token, format='json')
-        self.assertEqual(response.status_code, 404)
+
+        self.assertEqual(response.data.get(id), None)
 
     def test_logout(self):
         data = {'username': 'voter1', 'password': '1234abcd'}
@@ -92,9 +93,27 @@ class AuthTestCase(APITestCase):
     def test_signup_duplicated_username(self):
         data = {'username': 'newvoter', 'password1': '1234abcd', 'password2': '1234abcd','gender':'Male','birthdate':'2018-12-08T02:03'}
         response = self.client.post('/authentication/signup/', data, format='json')
-        
+
         data2 = {'username': 'newvoter', 'password1': '1234abcd', 'password2': '1234abcd','gender':'Male','birthdate':'2018-12-08T02:03'}
         response2 = self.client.post('/authentication/signup/', data, format='json')
-        
+
         self.assertEqual(response2.status_code, 400)
         self.assertEqual(User.objects.filter(username='voter1').count(), 1)
+
+    def test_request_google_expired(self):
+        try:
+            request = urllib.request.urlopen('https://accounts.google.com/signin/oauth/oauthchooseaccount?client_id=479028502719-ums97b8c1dmn9hmdugmuibcrbma4eq9i.apps.googleusercontent.com&as=TpLMUFh-0ltXx3GkVrDr4g&destination=http%3A%2F%2Flocalhost%3A8000&approval_state=!ChRtblVrV010VXBNUW1fdExLWDZyYhIfMDVTRWJFUDFPU3NSMEVBN1JaNXdOM09kLXJ2b2Z4WQ%E2%88%99APNbktkAAAAAXCnn9kXUYpEVfktV84uqPHmUQ-y16QsT&oauthgdpr=1&xsrfsig=AHgIfE9v5HryxFZmiqcR-oPZ2lhKs65LxA&flowName=GeneralOAuthFlow')
+        except urllib.error.HTTPError as err:
+            self.assertEqual(err.code, 400) #Since url is expired
+
+    def test_request_twitter_correct(self):
+        try:
+            request = urllib.request.urlopen('https://api.twitter.com/oauth/authenticate')
+        except urllib.error.HTTPError as err:
+            self.assertEqual(err.code,403) #Since no token is provided
+
+    def test_request_facebook_correct(self):
+        try:
+            request = urllib.request.urlopen('https://www.facebook.com/v3.2/dialog/oauth?app_id=2046681465554360&redirect_uri=https://locaste-decide.herokuapp.com')
+        except urllib.error.HTTPError as err:
+            self.assertEqual(err.code,403) #Since no token is provided

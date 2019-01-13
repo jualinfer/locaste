@@ -1,24 +1,42 @@
-language: python 
+language: python
 python:
-- "3.6"
-- "3.5"
+- '3.6'
+- '3.5'
 services:
 - postgresql
 env:
 - DJANGO=2.0 DB=postgres
 global:
-  - PGPORT=5432
+- PGPORT=5432
 before_install:
 - cd decide
 install:
 - pip install -r ../requirements.txt
+- wget -N http://chromedriver.storage.googleapis.com/2.30/chromedriver_linux64.zip -P ~/
+- unzip ~/chromedriver_linux64.zip -d ~/
+- rm ~/chromedriver_linux64.zip
+- sudo mv -f ~/chromedriver /usr/local/share/
+- sudo chmod +x /usr/local/share/chromedriver
+- sudo ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver
 before_script:
 - cp local_settings.example.py local_settings.py
 - psql -c "create user decide with password 'decide'"
 - psql -c "create database decide owner decide"
 - python manage.py makemigrations
 - python manage.py migrate
+- python manage.py loaddata initial_data
 script:
-- python manage.py test
+- travis_wait 20 python manage.py test
 addons:
-    postgresql: "9.6"
+  postgresql: '9.6'
+jobs:
+  include:
+  - stage: deploy
+    script: skip
+    before_deploy:
+    - cd ..
+    deploy:
+      provider: heroku
+      api_key:
+        secure: Ccx9q/ba1THnb3TprsuXPIrQdgRpXYVu8gtHVWDaBceOt/HCyMvCWII5MtFu2kbTaIR3jlP2RI+6y+bSrDDceXh1638GeW3b/vcMBcTr43RtNdSo3ZhvLKJZxDmp6QBqI0uj4kUWBVseCPJfZ/8Ilr/iovLPN/JscVX5tz6r9CvQXU4IBq1iie5dSUVgyEHU6c3YlAC1rS7JwpPKmNJEqWlKbPyTUra7v8bqRLlXaJl1McficEK1s0gwgl0JRLDCZyHBmTh8Jy/WSRiErh9L/Jf/nu0d6wbRMAX+mQFtl8l2SJR7Xcp4mTUuzRUEErYifpThXuLxDuCV45p0EZrNH3E4Qnkqwhp0WKPR2tGwLuVub64qS8RDnMf6CzsVVujK7J/r+APYvFPjtkolCPUykYcjfUFom+o0/pmT4SNNlbyDwqa8/+vUxOJhA6moYLVotlijRBl1bfwP2EN/67PVewfEPiC9CABJ9y70BZQCEkWi9kbIdCndn9iNZGPsjpGxt80PKS4TSGFDeZULdJAlaxJ+cB+SjoqUawZ4XoUbViJdVHQ6nvy0neF19gXlYMAjoWQlIuwUGY0xLZR+b5RMix6vNjKTBWG2zYsFV9Iv4tW9bAJcXuauAo7lUJTP2zoeylQHv/2gUTMlcC07enhseJibRhdcieZe2UbQPqWIRHA=
+      app: locaste-decide
