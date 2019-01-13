@@ -4,6 +4,7 @@ const request = require('request');
 const app = express();
 const BootBot = require('bootbot');
 const axios = require('axios');
+import ElGamal from './crypto/elgamal.js';
 
 
 require('dotenv').config()
@@ -319,7 +320,7 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
         const activeVotings = [];
 
 
-        for (i = 0; i < votingsIds.length; i++) {
+        for (var i = 0; i < votingsIds.length; i++) {
 
           await axios.get('http://localhost:8000/voting/?id=' + votingsIds[i].toString())
             .then((res) => {
@@ -328,7 +329,7 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
               var image = (!isActive) ? "https://http2.mlstatic.com/adventure-kidz-banz-age-2-5-gafas-de-sol-rockin-red-D_NQ_NP_638979-MLM26845819305_022018-O.jpg" :
                 "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHsXY1PIZ4MgKi0XWj0uIOUks9TuP75Lkphk2bNLHNE2leQVF2BQ";
 
-              reply = {
+              var reply = {
                 "content_type": "text",
                 "title": title,
                 "image_url": image,
@@ -375,7 +376,7 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
                     { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
                   ]
                 };
-                convo.say([errorMessage1, errorMessage2], options).then(()=> {convo.end()});
+                convo.say([errorMessage1, errorMessage2], options).then(() => { convo.end() });
               } else if (!activeVotings.includes(voting)) {
                 const errorMessage1 = `You have chosen an inactive voting.`;
                 const errorMessage2 = `I told you not to do that!`;
@@ -387,10 +388,10 @@ bot.on('postback:BOT_GET_VOTING', (payload, chat) => {
                     { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
                   ]
                 };
-                convo.say([errorMessage1, errorMessage2, errorMessage3], options).then(()=> {convo.end()});;
+                convo.say([errorMessage1, errorMessage2, errorMessage3], options).then(() => { convo.end() });;
               } else {
                 convo.set('votingName', voting);
-                votingId = votings[convo.get('votingName')];
+                var votingId = votings[convo.get('votingName')];
                 convo.set('votingId', votingId);
 
                 convo.say(`Good choice!`, options).then(() => askConfirmation(convo));
@@ -554,11 +555,11 @@ bot.on('postback:BOT_START_VOTING', (payload, chat) => {
       config.votingKey['y'] = key.y;
 
 
-      elements = [];
+      var elements = [];
       config.choice = [];
       var min = (choices.length > 4) ? 4 : choices.length;
-      for (i = 0; i < min; i++) {
-        element = {
+      for (var i = 0; i < min; i++) {
+        var element = {
           "title": "Option №" + choices[i].number,
           "subtitle": choices[i].option,
           "buttons": [
@@ -574,7 +575,7 @@ bot.on('postback:BOT_START_VOTING', (payload, chat) => {
         elements.push(element);
       }
 
-      template = {
+      var template = {
         "template_type": "list",
         "top_element_style": "compact",
         "elements": elements,
@@ -586,8 +587,7 @@ bot.on('postback:BOT_START_VOTING', (payload, chat) => {
         }]
       };
 
-  
-      
+
       const message1 = title + ":";
       const message2 = "Here is a short description of the voting:";
       const message3 = "Here is the question:";
@@ -600,10 +600,6 @@ bot.on('postback:BOT_START_VOTING', (payload, chat) => {
         chat.say([message1, message3, question, message4], options).then(() => { chat.sendTemplate(template, options) });
 
       }
-
-
-
-
     }
 
     showQuestion();
@@ -639,6 +635,397 @@ bot.on('postback:BOT_CANCEL_VOTING', (payload, chat) => {
     chat.say([message1, message2], options);
   }
 });
+
+
+
+bot.on('postback:BOT_VOTE_1', (payload, chat) => {
+  const options = { typing: true };
+
+  if (config.votingKey !== null && config.votingKey !== undefined) {
+    chat.say("Processing your vote...", options).then(() => { chat.say("Please wait.", options) });
+
+    var encryptedVote = null;
+    var encryptedVoteA = null;
+    var encryptedVoteB = null;
+    var privateKey = null;
+
+    const prime = config.votingKey.p;
+    const generator = config.votingKey.g;
+    const publicKey = config.votingKey.y;
+    const vote = parseInt(config.choice[1]);
+
+    async function generatePrivateKey() {
+      privateKey = await ElGamal.generatePrivateKey(prime);
+    };
+
+    async function inicializeElGamal() {
+      await generatePrivateKey();
+      const egInstance = new ElGamal(prime, generator, publicKey, privateKey);
+      encryptedVote = await egInstance.encryptAsync(vote);
+    };
+
+    async function encryptVote() {
+
+      await inicializeElGamal();
+      encryptedVoteA = encryptedVote.a + '';
+      encryptedVoteB = encryptedVote.b + '';
+    };
+
+
+    async function sendVote() {
+
+      await encryptVote();
+
+      await axios.post('http://localhost:8000/store/', { 'voting': config.actualVoting, "voter": config.userId, "vote": { "a": encryptedVoteA, "b": encryptedVoteB } },
+        { auth: { username: config.username, password: config.password } })
+        .then((res) => {
+          config.actualVoting = null;
+          config.votingKey = null;
+          config.choice = null;
+          const message1 = "Congratulations! Your vote has been processed!";
+          const message2 = "You can still change your vote if you want to.";
+          const message3 = "Just open this voting again and choose your new option.";
+          const message4 = {
+            text: 'So, what do you want to do now?',
+            buttons: [
+              { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
+              { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+              { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+            ]
+          };
+          chat.say([message1, message2, message3, message4], options);
+
+        })
+        .catch((err) => {
+          console.log(err.message);
+          config.votingKey = null;
+          config.choice = null;
+          const errorMessage1 = "Ooops!"
+          const errorMessage2 = "An unexpected error occurred while processing your vote!";
+          const errorMessage3 = {
+            text: 'What do you want to do now?',
+            buttons: [
+              { type: 'postback', title: 'Try again', payload: 'BOT_START_VOTING' },
+              { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
+              { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+            ]
+          };
+          chat.say([errorMessage1, errorMessage2, errorMessage3], options);
+        });
+    }
+    sendVote();
+
+  } else {
+    const message1 = "You have left this voting. You can no longer submit your vote.";
+    const message2 = {
+      text: 'Do you want to enter this voting again?',
+      buttons: [
+        { type: 'postback', title: 'Enter again', payload: 'BOT_START_VOTING' },
+        { type: 'postback', title: 'See the other votings ', payload: 'BOT_GET_VOTING' },
+      ]
+    };
+    chat.say([message1, message2], options);
+  }
+
+});
+
+
+bot.on('postback:BOT_VOTE_2', (payload, chat) => {
+  const options = { typing: true };
+
+  if (config.votingKey !== null && config.votingKey !== undefined) {
+    chat.say("Processing your vote...", options).then(() => { chat.say("Please wait.", options) });
+
+    var encryptedVote = null;
+    var encryptedVoteA = null;
+    var encryptedVoteB = null;
+    var privateKey = null;
+
+    const prime = config.votingKey.p;
+    const generator = config.votingKey.g;
+    const publicKey = config.votingKey.y;
+    const vote = parseInt(config.choice[2]);
+
+    async function generatePrivateKey() {
+      privateKey = await ElGamal.generatePrivateKey(prime);
+    };
+
+    async function inicializeElGamal() {
+      await generatePrivateKey();
+      const egInstance = new ElGamal(prime, generator, publicKey, privateKey);
+      encryptedVote = await egInstance.encryptAsync(vote);
+    };
+
+    async function encryptVote() {
+
+      await inicializeElGamal();
+      encryptedVoteA = encryptedVote.a + '';
+      encryptedVoteB = encryptedVote.b + '';
+    };
+
+
+    async function sendVote() {
+
+      await encryptVote();
+
+      await axios.post('http://localhost:8000/store/', { 'voting': config.actualVoting, "voter": config.userId, "vote": { "a": encryptedVoteA, "b": encryptedVoteB } },
+        { auth: { username: config.username, password: config.password } })
+        .then((res) => {
+          config.actualVoting = null;
+          config.votingKey = null;
+          config.choice = null;
+          const message1 = "Congratulations! Your vote has been processed!";
+          const message2 = "You can still change your vote if you want to.";
+          const message3 = "Just open this voting again and choose your new option.";
+          const message4 = {
+            text: 'So, what do you want to do now?',
+            buttons: [
+              { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
+              { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+              { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+            ]
+          };
+          chat.say([message1, message2, message3, message4], options);
+
+        })
+        .catch((err) => {
+          console.log(err.message);
+          config.votingKey = null;
+          config.choice = null;
+          const errorMessage1 = "Ooops!"
+          const errorMessage2 = "An unexpected error occurred while processing your vote!";
+          const errorMessage3 = {
+            text: 'What do you want to do now?',
+            buttons: [
+              { type: 'postback', title: 'Try again', payload: 'BOT_START_VOTING' },
+              { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
+              { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+            ]
+          };
+          chat.say([errorMessage1, errorMessage2, errorMessage3], options);
+        });
+    }
+    sendVote();
+
+  } else {
+    const message1 = "You have left this voting. You can no longer submit your vote.";
+    const message2 = {
+      text: 'Do you want to enter this voting again?',
+      buttons: [
+        { type: 'postback', title: 'Enter again', payload: 'BOT_START_VOTING' },
+        { type: 'postback', title: 'See the other votings ', payload: 'BOT_GET_VOTING' },
+      ]
+    };
+    chat.say([message1, message2], options);
+  }
+
+});
+
+bot.on('postback:BOT_VOTE_3', (payload, chat) => {
+  const options = { typing: true };
+
+  if (config.votingKey !== null && config.votingKey !== undefined) {
+    chat.say("Processing your vote...", options).then(() => { chat.say("Please wait.", options) });
+
+    var encryptedVote = null;
+    var encryptedVoteA = null;
+    var encryptedVoteB = null;
+    var privateKey = null;
+
+    const prime = config.votingKey.p;
+    const generator = config.votingKey.g;
+    const publicKey = config.votingKey.y;
+    const vote = parseInt(config.choice[3]);
+
+    async function generatePrivateKey() {
+      privateKey = await ElGamal.generatePrivateKey(prime);
+    };
+
+    async function inicializeElGamal() {
+      await generatePrivateKey();
+      const egInstance = new ElGamal(prime, generator, publicKey, privateKey);
+      encryptedVote = await egInstance.encryptAsync(vote);
+    };
+
+    async function encryptVote() {
+
+      await inicializeElGamal();
+      encryptedVoteA = encryptedVote.a + '';
+      encryptedVoteB = encryptedVote.b + '';
+    };
+
+
+    async function sendVote() {
+
+      await encryptVote();
+
+      await axios.post('http://localhost:8000/store/', { 'voting': config.actualVoting, "voter": config.userId, "vote": { "a": encryptedVoteA, "b": encryptedVoteB } },
+        { auth: { username: config.username, password: config.password } })
+        .then((res) => {
+          config.actualVoting = null;
+          config.votingKey = null;
+          config.choice = null;
+          const message1 = "Congratulations! Your vote has been processed!";
+          const message2 = "You can still change your vote if you want to.";
+          const message3 = "Just open this voting again and choose your new option.";
+          const message4 = {
+            text: 'So, what do you want to do now?',
+            buttons: [
+              { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
+              { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+              { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+            ]
+          };
+          chat.say([message1, message2, message3, message4], options);
+
+        })
+        .catch((err) => {
+          console.log(err.message);
+          config.votingKey = null;
+          config.choice = null;
+          const errorMessage1 = "Ooops!"
+          const errorMessage2 = "An unexpected error occurred while processing your vote!";
+          const errorMessage3 = {
+            text: 'What do you want to do now?',
+            buttons: [
+              { type: 'postback', title: 'Try again', payload: 'BOT_START_VOTING' },
+              { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
+              { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+            ]
+          };
+          chat.say([errorMessage1, errorMessage2, errorMessage3], options);
+        });
+    }
+    sendVote();
+
+  } else {
+    const message1 = "You have left this voting. You can no longer submit your vote.";
+    const message2 = {
+      text: 'Do you want to enter this voting again?',
+      buttons: [
+        { type: 'postback', title: 'Enter again', payload: 'BOT_START_VOTING' },
+        { type: 'postback', title: 'See the other votings ', payload: 'BOT_GET_VOTING' },
+      ]
+    };
+    chat.say([message1, message2], options);
+  }
+
+});
+
+bot.on('postback:BOT_VOTE_4', (payload, chat) => {
+  const options = { typing: true };
+
+  if (config.votingKey !== null && config.votingKey !== undefined) {
+    chat.say("Processing your vote...", options).then(() => { chat.say("Please wait.", options) });
+
+    var encryptedVote = null;
+    var encryptedVoteA = null;
+    var encryptedVoteB = null;
+    var privateKey = null;
+
+    const prime = config.votingKey.p;
+    const generator = config.votingKey.g;
+    const publicKey = config.votingKey.y;
+    const vote = parseInt(config.choice[4]);
+
+    async function generatePrivateKey() {
+      privateKey = await ElGamal.generatePrivateKey(prime);
+    };
+
+    async function inicializeElGamal() {
+      await generatePrivateKey();
+      const egInstance = new ElGamal(prime, generator, publicKey, privateKey);
+      encryptedVote = await egInstance.encryptAsync(vote);
+    };
+
+    async function encryptVote() {
+
+      await inicializeElGamal();
+      encryptedVoteA = encryptedVote.a + '';
+      encryptedVoteB = encryptedVote.b + '';
+    };
+
+
+    async function sendVote() {
+
+      await encryptVote();
+
+      await axios.post('http://localhost:8000/store/', { 'voting': config.actualVoting, "voter": config.userId, "vote": { "a": encryptedVoteA, "b": encryptedVoteB } },
+        { auth: { username: config.username, password: config.password } })
+        .then((res) => {
+          config.actualVoting = null;
+          config.votingKey = null;
+          config.choice = null;
+          const message1 = "Congratulations! Your vote has been processed!";
+          const message2 = "You can still change your vote if you want to.";
+          const message3 = "Just open this voting again and choose your new option.";
+          const message4 = {
+            text: 'So, what do you want to do now?',
+            buttons: [
+              { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
+              { type: 'postback', title: 'Help', payload: 'BOT_HELP' },
+              { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+            ]
+          };
+          chat.say([message1, message2, message3, message4], options);
+
+        })
+        .catch((err) => {
+          console.log(err.message);
+          config.votingKey = null;
+          config.choice = null;
+          const errorMessage1 = "Ooops!"
+          const errorMessage2 = "An unexpected error occurred while processing your vote!";
+          const errorMessage3 = {
+            text: 'What do you want to do now?',
+            buttons: [
+              { type: 'postback', title: 'Try again', payload: 'BOT_START_VOTING' },
+              { type: 'postback', title: 'See the votings again', payload: 'BOT_GET_VOTING' },
+              { type: 'postback', title: 'Log out', payload: 'BOT_LOG_OUT' }
+            ]
+          };
+          chat.say([errorMessage1, errorMessage2, errorMessage3], options);
+        });
+    }
+    sendVote();
+
+  } else {
+    const message1 = "You have left this voting. You can no longer submit your vote.";
+    const message2 = {
+      text: 'Do you want to enter this voting again?',
+      buttons: [
+        { type: 'postback', title: 'Enter again', payload: 'BOT_START_VOTING' },
+        { type: 'postback', title: 'See the other votings ', payload: 'BOT_GET_VOTING' },
+      ]
+    };
+    chat.say([message1, message2], options);
+  }
+
+});
+
+bot.on('postback:BOT_HELP', (payload, chat) => {
+  const options = { typing: true };
+
+  const helpMessage1 = "Hello, I'm Decide-Locaste-Booth Bot.";
+  const helpMessage2 = "You can use me to participate in votings using the Decide platform.";
+  const helpMessage3 = "Here is a short tutorial of how to interact with me:";
+  const helpMessage4 = "Sadly, I am not intelligent enough to understand and answer your text messages.";
+  const helpMessage5 = "That's why I will always send you buttons that you can use to interact with me.";
+  const helpMessage6 = "Here are the most important ones:";
+  const helpMessage7 = "->'Log in'<- : use this button to log in into your Decide account. You'll have to type your Decide username and password."
+  const helpMessage8 = "->'Access to a voting'<- : use this button to see the votings that are available for you. To participate in a voting, select one from the list. You'll have to select a voting that is active (marked in green)."
+  const helpMessage9 = "->'Open'<- : use this button to open the selected voting. You will receive instructions how to choose and submit your vote.";
+  const helpMessage10 = "->'Start'<- : use this button to see the question and the possible options.";
+  const helpMessage11 = "->'Vote'<- : use this button to vote the corresponding option";
+  const helpMessage12 = "->'Cancel'<- : use this button to close the voting without submitting a vote";
+  const helpMessage13 = "->'Log out'<- : use this button to log out of the Decide platform.";
+  const helpMessage14 = "->'Restart bot'<- : use this button to restart the conversation with me.";
+  const helpMessage15 = "That's all. I hope I have been helpful.";
+
+  chat.say([helpMessage1, helpMessage2, helpMessage3, helpMessage4, helpMessage5, helpMessage6, helpMessage7, helpMessage8, helpMessage9, helpMessage10,
+    helpMessage11, helpMessage12, helpMessage13, helpMessage14, helpMessage15], options);
+})
+
 
 
 
