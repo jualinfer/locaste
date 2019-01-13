@@ -2,6 +2,7 @@
 
 
 {% block content %}
+    <div class="w3-container">
 <p hidden id="counter">1</p>
 <form id="question_form">
     {% csrf_token %}
@@ -35,7 +36,7 @@
     <input type="button" value="Send questions" id="submit" onclick="submit_questions();"/>
 </form>
 
-
+    </div>
 <script>
     function updateSummary(event) {
         let value=$(event.target).val();
