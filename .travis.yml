@@ -11,6 +11,7 @@ global:
 before_install:
 - cd decide
 install:
+- travis_wait 30 mvn install
 - pip install -r ../requirements.txt
 - wget -N http://chromedriver.storage.googleapis.com/2.30/chromedriver_linux64.zip -P ~/
 - unzip ~/chromedriver_linux64.zip -d ~/
