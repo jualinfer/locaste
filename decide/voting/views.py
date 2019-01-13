@@ -300,6 +300,8 @@ def save_voting(request):
                 voting.public_voting = voting_form["public_voting"].value()
             if voting_form["image_header"].value() != '':
                 voting.image_header = voting_form["image_header"].value()
+            if voting_form["seats"].value() != '':
+                voting.seats = voting_form["seats"].value()
             voting.save()
             voting.question.set(saved_questions)
             voting.auths.set(saved_auths)
