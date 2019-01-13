@@ -5,6 +5,8 @@ from rest_framework.test import APIClient
 
 from .models import Census
 from voting.models import Voting
+from authentication.models import UserProfile
+
 from base import mods
 from base.tests import BaseTestCase
 
@@ -14,31 +16,26 @@ class CensusTestCase(BaseTestCase):
     def create_voters(self):
         res = []
         for i in range(10):
-            user_data = {'username': 'testvoter{}'.format(i),
-                         'password1': '1234abcd',
-                         'password2': '1234abcd',
-                         'gender': 'Male',
-                         'birthdate': '2001-12-08T00:00'}
-
-            response = self.client.post('/authentication/signup/', user_data, format='json')
-            self.assertEqual(response.status_code, 201)
+            u = User(username='testvoter{}'.format(i))
+            u.set_password('1234abcd')
+            u.save()
+            user_profile = UserProfile(user=u, gender='Male', birthdate='2019-01-13 11:39:48.792042+01:00')
+            user_profile.save()
 
             user_id = User.objects.filter(username='testvoter{}'.format(i)).values('id')[0]['id']
-
             res.append(user_id)
         return res
 
     def setUp(self):
         super().setUp()
-        self.login()
-        user_data = {'username': 'newUserGeneral',
-                     'password1': '1234abcd',
-                     'password2': '1234abcd',
-                     'gender': 'Male',
-                     'birthdate': '2001-12-08T00:00'}
 
-        response = self.client.post('/authentication/signup/', user_data, format='json')
-        self.assertEqual(response.status_code, 201)
+        self.login()
+
+        self.u = User(username='newUserGeneral')
+        self.u.set_password('1234abcd')
+        self.u.save()
+        self.user_profile = UserProfile(user=self.u, gender='Male', birthdate='2019-01-13 11:39:48.792042+01:00')
+        self.user_profile.save()
 
         voting_data = {
             'name': 'test_voting_General',
@@ -51,13 +48,15 @@ class CensusTestCase(BaseTestCase):
 
         user_id = User.objects.filter(username='newUserGeneral').values('id')[0]['id']
         voting_id = Voting.objects.filter(name='test_voting_General').values('id')[0]['id']
+        self.voting = Voting.objects.get(id=voting_id)
 
         self.census = Census.create(voting_id=voting_id, voter_id=user_id)
         self.census.save()
 
     def tearDown(self):
         super().tearDown()
-        self.census = None
+        self.census.delete()
+        self.voting.delete()
 
     def test_check_vote_permissions(self):
         user_id = User.objects.filter(username='newUserGeneral').values('id')[0]['id']
@@ -82,10 +81,6 @@ class CensusTestCase(BaseTestCase):
         self.logout()
         response = self.client.get('/census/?voting_id={}'.format(voting_id), format='json')
         self.assertEqual(response.status_code, 401)
-
-        # self.login(user='noadmin')
-        # response = self.client.get('/census/?voting_id={}'.format(1), format='json')
-        # self.assertEqual(response.status_code, 403)
 
     def test_add_new_voters_conflict(self):
         user_id = User.objects.filter(username='newUserGeneral').values('id')[0]['id']
