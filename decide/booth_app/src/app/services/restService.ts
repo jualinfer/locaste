@@ -96,34 +96,6 @@ export class RestService extends AbstractService {
     }
 
     public vote(voting: Voting, option: Option): Promise<any> {
-        let fd = new FormData();
-        let user = new User;
-        
-        return this.getUserWithToken(this.cookieService.get('decide')).then((response) => {
-            user = response;
-            fd.append('voting', voting.id);
-            fd.append('voter', user.id);
-            return this.makePostRequest(this.path + 'store/', fd).then((res) => {
-                return Promise.resolve(res);
-            }).catch((error) => {
-                console.log("Error " + error);
-                return Promise.reject(error);
-            });
-        }).catch((error) => {
-            console.log("Error " + error);
-        });
+        return null;
     }
-
-
-
-
-
-    public decideEncrypt() {
-        let msg = document.querySelector("input[name=question]:checked");
-        let bigmsg = BigInt.fromJSONObject(msg);
-        console.log(bigmsg);
-        this.cypher = ElGamal.encrypt(this.bigpk, bigmsg);
-    }
-
-
 }
