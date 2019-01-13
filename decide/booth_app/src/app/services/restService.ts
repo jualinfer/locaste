@@ -2,13 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { ConfigService } from './../../config/configService';
 import { AbstractService } from './abstractService';
 import { Injectable } from "@angular/core";
-import { User, Voting } from '../app.data.models';
+import { User, Voting, Option } from '../app.data.models';
 import { CookieService } from 'ngx-cookie-service';
 
 @Injectable()
 export class RestService extends AbstractService {
     path: string;
-
+   
     constructor(
         private config: ConfigService,
         http: HttpClient,
@@ -93,6 +93,36 @@ export class RestService extends AbstractService {
             console.log("Error " + error);
             return Promise.reject(error);
         });
+    }
+
+    public vote(voting: Voting, option: Option): Promise<any> {
+        let fd = new FormData();
+        let user = new User;
+        
+        return this.getUserWithToken(this.cookieService.get('decide')).then((response) => {
+            user = response;
+            fd.append('voting', voting.id);
+            fd.append('voter', user.id);
+            return this.makePostRequest(this.path + 'store/', fd).then((res) => {
+                return Promise.resolve(res);
+            }).catch((error) => {
+                console.log("Error " + error);
+                return Promise.reject(error);
+            });
+        }).catch((error) => {
+            console.log("Error " + error);
+        });
+    }
+
+
+
+
+
+    public decideEncrypt() {
+        let msg = document.querySelector("input[name=question]:checked");
+        let bigmsg = BigInt.fromJSONObject(msg);
+        console.log(bigmsg);
+        this.cypher = ElGamal.encrypt(this.bigpk, bigmsg);
     }
 
 
