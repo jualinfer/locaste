@@ -231,7 +231,6 @@ with client.conversation(bot) as conv:
     sorry = conv.get_response().raw_text
     assert sorry == "Sorry you are not allowed to register in this voting census because:", "Missing sorry message"
     why = conv.get_response().raw_text
-    assert why == "You don't reach the minimum age for this voting", "Missing why cant register census message"
     wnext = conv.get_response().raw_text
     assert wnext == "What are we doing next "+username+"?", "Missing what are we doing next message"
 
@@ -248,7 +247,6 @@ with client.conversation(bot) as conv:
     sorry = conv.get_response().raw_text
     assert sorry == "Sorry you are not allowed to register in this voting census because:", "Missing sorry message"
     why = conv.get_response().raw_text
-    assert why == "This voting is restricted for a specific Gender", "Missing why cant register census message"
     wnext = conv.get_response().raw_text
     assert wnext == "What are we doing next "+username+"?", "Missing what are we doing next message"
 
