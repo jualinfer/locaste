@@ -56,6 +56,9 @@
                 <th>
                     Public voting
                 </th>
+                <th>
+                    Image Header
+                </th>
 
             </tr>
             {% for voting in voting_list %}
@@ -93,6 +96,9 @@
                     </td>
                     <td>
                         {{ voting.public_voting }}
+                    </td>
+                    <td>
+                        {{ voting.image_header }}
                     </td>
 
                 </tr>
