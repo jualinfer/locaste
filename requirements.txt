@@ -14,3 +14,4 @@ django-allauth==0.38.0
 #Heroku requirements
 django-heroku
 gunicorn
+django-recaptcha==1.2.1

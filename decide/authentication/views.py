@@ -5,8 +5,33 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import TemplateView
 from rest_framework import status
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from .models import UserProfile
+from authentication.forms import UserProfileForm, UserForm
+
 
 from .serializers import UserSerializer
+
+def edit_profile(request):
+    template_name="edit_profile.html"
+    if request.method == 'POST':
+        userForm = UserForm(request.POST, instance=request.user)
+        userProfileForm = UserProfileForm(request.POST, instance=request.user.userprofile)
+        print(userForm.errors)
+        print(userProfileForm.errors)
+        
+        if userForm.is_valid() and userProfileForm.is_valid():
+            userForm.save()
+            userProfileForm.save()
+            return redirect('/authentication/profile')
+
+    else:
+        userForm = UserForm(instance=request.user)
+        userProfileForm = UserProfileForm(instance=request.user)
+
+    args = {'userForm': userForm, 'userProfileForm' : userProfileForm}
+    return render(request, 'edit_profile.html', args)
 
 
 class GetUserView(APIView):
@@ -20,6 +45,12 @@ class GetUserView(APIView):
             if request.user.is_authenticated:
                 user = request.user
         return Response(UserSerializer(user, many=False).data)
+
+class ProfileView(TemplateView):
+    template_name="profile.html"
+    def get_context_data(self):
+        context=super().get_context_data()
+        return context
 
 
 class LogoutView(TemplateView):

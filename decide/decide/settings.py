@@ -60,6 +60,9 @@ INSTALLED_APPS = [
 
     #Required for authentication with twitter
     'allauth.socialaccount.providers.twitter',
+
+    #Required for reCaptcha
+    'captcha'
 ]
 
 SITE_ID = 1
@@ -218,3 +221,8 @@ REST_AUTH_REGISTER_SERIALIZERS = {
  }
 
 ACCOUNT_LOGOUT_ON_GET = True
+
+RECAPTCHA_PUBLIC_KEY = '6Lc6h4UUAAAAAKV3jjkEn0W3I_o_wprhVOUzXI9p'
+RECAPTCHA_PRIVATE_KEY = '6Lc6h4UUAAAAAPtcxLE0pQiDjdtVfGM024PJAKpV'
+NOCAPTCHA = True
+DATE_INPUT_FORMATS = ['%d/%m/%Y']

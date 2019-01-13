@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Profile</title>
+{% endblock %}
+{% block body %}
+<div class="container">
+  <form method="post">
+    {% csrf_token %}
+    {{ userForm.as_p }}
+    {{ userProfileForm.as_p }}
+    <button type="submit" >Submit</button>
+  </form>
+  <br>
+</div>
+
+<script>
+	
+	function addTimezone(){
+		document.querySelector("#id_birthdate").value = document.querySelector("#id_birthdate").value + 'T00:00'
+	}
+
+</script>
+
+{% endblock %}
