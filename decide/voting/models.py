@@ -50,6 +50,7 @@ class Voting(models.Model):
     gender = models.TextField(blank=True, null=True, choices=GENRES_CHOICES)
     min_age = models.IntegerField(blank=True, null=True)
     max_age = models.IntegerField(blank=True, null=True)
+    seats = models.IntegerField(blank=True, null=True)
 
     pub_key = models.OneToOneField(Key, related_name='voting', blank=True, null=True, on_delete=models.SET_NULL)
     auths = models.ManyToManyField(Auth, related_name='votings')
