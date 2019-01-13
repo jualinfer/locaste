@@ -1,5 +1,6 @@
 {% load i18n static %}
 {% block content %}
+
 <head>
   <button class="logout" onClick="decideLogout()">{% trans "Logout" %}</button>
     <meta charset="UTF-8"> 
@@ -8,6 +9,7 @@
 <meta name="HandheldFriendly" content="true"> 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+{% if url_not_found != 'true' %}
   
 {% if not voting.start_date %}
        
@@ -502,6 +504,13 @@ button.logout:active {
 
   
     </style>
+    {% else %}
+        <h1>{% trans 'Sorry!' %}</h1>
+
+        <h2>{% trans 'This resource is not available' %}</h2>
+
+        <h2>{% trans 'Please check that the resource identifier is correct' %}</h2>
+    {% endif %}
 
  
  {% endblock %}  
