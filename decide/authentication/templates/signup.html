@@ -3,42 +3,59 @@
 
 {% block content %}
 {% if not user.is_authenticated %}
-	<div>
+	<div class="text-center">
 		<h1>Sign up</h1>
 		<h2>Please enter your username and your password</h2>
 	</div>
 
-    <div id="signup">
+    <div id="signup" class="text-center">
         <p>
             Already have an account?
-            <button onClick="window.location.href='../sign-in'">Sign in</button>
+            <button class="btn btn-outline-primary btn-sm" onClick="window.location.href='../sign-in'">Sign in</button>
         </p>
-        <label for="username">{% trans "Username" %}</label>
-        <input type="text" id="username_signup" name="username" value="" />
-        <br />
-        <label for="password1">{% trans "Password" %}</label>
-        <input type="password" id="password1" name="password1" value="" />
-        <br />
-        <label for="password2">{% trans "Password(again)" %}</label>
-        <input type="password" id="password2" name="password2" value="" />
-        <br />
-        <label for="birthDate">{% trans " Birth date" %}</label>
-        <input type="date" id="birthDate" name="birthDate" value=""  />
-        <br />
-        <label for="gender">{% trans "Gender" %}:</label>
-        <br />
-        <input type="radio" id ="gender_male" name="gender" value="Male"> Male<br>
-        <input type="radio" id ="gender_female" name="gender" value="Female"> Female<br>
-        <input type="radio" id ="gender_other" name="gender" value="Other"> Other<br>
-        <br />
-        <input type="submit" value="{% trans " Sign up" %}" onClick="signUp()" />
+
+        <div style="width:800px; margin:0 auto;" class="form-group-lg align-items-center form-group col-lg-3">
+            <label for="username">{% trans "Username" %}</label><br>
+            <input type="text" id="username_signup" class="form-control" name="username" value="" placeholder=""/>
+            <br />
+
+            <label for="password1">{% trans "Password" %}</label><br>
+            <input type="password" id="password1" class="form-control" name="password1" value="" placeholder=""/>
+            <br />
+
+            <label for="password2">{% trans "Repeat password" %}</label><br>
+            <input type="password" id="password2" class="form-control" name="password2" value="" placeholder=""/>
+            <br />
+
+            <label for="birthDate">{% trans " Birth date" %}</label><br>
+            <input type="date" id="birthDate" name="birthDate" class="form-control" value="" placeholder=""/>
+            <br />
+
+            <label for="gender">{% trans "Gender" %}:</label>
+            <br />
+            <input type="radio" id ="gender_male" name="gender" value="Male"> Male<br>
+            <input type="radio" id ="gender_female" name="gender" value="Female"> Female<br>
+            <input type="radio" id ="gender_other" name="gender" value="Other"> Other<br>
+            <br />
+
+            <!-- queda como opcional -->
+            <label for="reCaptcha">{% trans "Captcha" %}</label>
+            <script src='https://www.google.com/recaptcha/api.js'></script>
+            <div class="g-recaptcha" data-sitekey="6Lc6h4UUAAAAAKV3jjkEn0W3I_o_wprhVOUzXI9p"></div>
+            <br />
+            
+            <input type="submit" class="form-control btn btn-success" value="{% trans " Sign up" %}" onClick="signUp()" />
+            
+        </div>
+
     </div>
+
   {% endif %}
 {% endblock %}
 
 {% block extrabody %}
 	 <script>
-     
+
 
         var token = null;
         var user = null;
@@ -67,7 +84,7 @@
           });
         }
 
-       
+
 
         function decideUser() {
             var data = { token: token };
@@ -79,7 +96,7 @@
               });
         }
 
-        
+
 
         function signUp() {
             var data = {
@@ -102,7 +119,7 @@
               });
         }
 
-   
+
 
         function init() {
 
@@ -120,4 +137,3 @@
     </script>
 </body>
 {% endblock %}
-
