@@ -1,18 +1,21 @@
 <ion-header>
+
   <ion-navbar>
-    <ion-toolbar>
-      <ion-buttons left>
-        <button ion-button menuToggle>
-          <ion-icon name="menu"></ion-icon>
-        </button>
-      </ion-buttons>
-      <ion-title>Home</ion-title>
-      <ion-buttons right>
-        <button ion-button *ngIf="!showLoginPage" (click)="logout()">
-            <img src="..\\..\\assets\\imgs\\logout-24.png"/>
-        </button>
-      </ion-buttons>
-    </ion-toolbar>
+    <div *ngIf="!showLoginPage">
+      <ion-toolbar>
+        <ion-buttons left>
+          <button ion-button menuToggle>
+            <ion-icon name="menu"></ion-icon>
+          </button>
+        </ion-buttons>
+        <ion-title>Home</ion-title>
+        <ion-buttons right>
+          <button ion-button *ngIf="!showLoginPage" (click)="logout()">
+            <img src="..\\..\\assets\\imgs\\logout-24.png" />
+          </button>
+        </ion-buttons>
+      </ion-toolbar>
+    </div>
   </ion-navbar>
 </ion-header>
 
