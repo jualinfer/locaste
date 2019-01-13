@@ -1,0 +1,73 @@
+{% extends "voting/base.html" %}
+
+{% block content %}
+<form method="post" id="formulary" action="/voting/create/" onsubmit="return checkRestrictions($('#id_custom_url').val(), $('#id_max_age').val(), $('#id_min_age').val());">
+    <div id="content" class="w3-container w3-padding-large w3-white">
+        {% csrf_token %}
+        <div id="fields">
+            {% for field in form %}
+                {% if field.name in "me" %}
+                    <input id="defaultMe" type="hidden" name="{{ field.name }}" value="off"/>
+                {% endif %}
+                {{ field.label }}
+                {{ field }}
+
+                <br/>
+            {% endfor %}
+
+            <br/>
+        </div>
+    </div>
+    {% if error %}
+        <p style = "color: red"><b>{{ error_message }}</b></p>
+    {% endif %}
+    {% if is_auth %}
+        <button class="w3-button w3-black w3-margin-bottom" type="button" onclick="add_auth();">Add auth</button>
+    {% endif %}
+    <script src='https://www.google.com/recaptcha/api.js?hl=en'></script>
+    {% if show_captcha %}
+    <div class="g-recaptcha" data-sitekey="6LdmCYkUAAAAANoznQpCpvIjaWvjEzy95SNNIeCA"></div><br/>
+    {% endif %}
+    <input class="w3-button w3-black w3-margin-bottom" type="submit" value="Create"/>
+    </div>
+</form>
+<script>
+    function add_auth() {
+        var question_formulary = $('#fields').clone().first();
+        var empty_input = question_formulary.find('input');
+        for (var i = 0; i < empty_input.length; i++) {
+            if ($(empty_input[i]).attr("type") == 'checkbox') {
+                $(empty_input[i]).prop("checked", false);
+            } else if ($(empty_input[i]).attr("type") != 'hidden') {
+                $(empty_input[i]).val("")
+            }
+        }
+        question_formulary.append("<button type=\"button\" onclick=\"remove_element(event);\">X</button>");
+        $('#content').append(question_formulary);
+    }
+
+    function remove_element(event) {
+        $(event.target).parent().remove();
+    }
+
+    function checkRestrictions(customUrlValue, maxAgeValue, minAgeValue) {
+        let result = true;
+
+        // This checks that no '/' are contained in custom url
+        if (String(customUrlValue).includes('/')) {
+            window.alert('Field \'custom URL\' contains forbidden character: \'/\'');
+            result = false;
+            // This checks that no whitespaces are contained in custom url
+        } else if (/\s/.test(String(customUrlValue))) {
+            window.alert('Field \'custom URL\' cannot contain whitespaces');
+            result = false;
+        } else if (parseInt(maxAgeValue) < parseInt(minAgeValue)) {
+            window.alert('Max age cannot be lower than min age');
+            result = false;
+        }
+
+        return result;
+    }
+
+</script>
+{% endblock content %}

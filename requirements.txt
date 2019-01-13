@@ -10,7 +10,11 @@ django-rest-swagger==2.2.0
 #Auth requirements
 django-rest-auth==0.9.3
 django-allauth==0.38.0
+selenium==3.141.0
 
 #Heroku requirements
 django-heroku
 gunicorn
+
+
+

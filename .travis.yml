@@ -12,6 +12,12 @@ before_install:
 - cd decide
 install:
 - pip install -r ../requirements.txt
+- wget -N http://chromedriver.storage.googleapis.com/2.30/chromedriver_linux64.zip -P ~/
+- unzip ~/chromedriver_linux64.zip -d ~/
+- rm ~/chromedriver_linux64.zip
+- sudo mv -f ~/chromedriver /usr/local/share/
+- sudo chmod +x /usr/local/share/chromedriver
+- sudo ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver
 before_script:
 - cp local_settings.example.py local_settings.py
 - psql -c "create user decide with password 'decide'"
@@ -20,17 +26,17 @@ before_script:
 - python manage.py migrate
 - python manage.py loaddata initial_data
 script:
-- python manage.py test
+- travis_wait 20 python manage.py test
 addons:
   postgresql: '9.6'
 jobs:
-    include:
-        - stage: deploy
-          script: skip
-          before_deploy:
-              - cd ..
-          deploy:
-            provider: heroku
-            api_key:
-                secure: tkG4eZ3+y1/La65S7X3y91rENvsrwRtis55oe+Wvhbmu4/J12AMbCy+KnteCrgxj4mFZRu0OXS86js+IfqHSHkhpKzfNJn6guH9S978T+sHYeLVeOADetoW4aTdBRa7DQ3Bd/6z+9gOtVE1kaxnxIJ7sSKvdxZGf+IsBzz8fhbhG8TwUIF2YahPc+G2u1SFZNVoRnQAxV7VtU+B9KRWx7ufUkEkXpWB6IQC9OM6BY3FFxTKsb/yeob4swfsVNHI72pyF9iXC84GgEZaIXRDUKKWvoO+U3UFxNqLgWjW4bJt5WT8BIDPZe2uy/fYACWAF+Fp/7XlUGQqY+vT0Ao79uFgMth7Zvi9soONw+/BezOoXVFt6dl/X3FqaY9Crh67PRZ0opwch/rLo7OByN4iWl/2U2EHeWvrAedoDyYPibAhmXDf+vn4QXfl8wYtOPowmNq7lJWHMTTCh0Yfjefj0pctDi5VoslMb2V544hioqNuCkM+vClicpnZU8yoPYalc0WUw4yablGp1tDct6DWmlQkg7WwjaGiP0AMQg4wH7m64yQ0vRJtUzq6fho/FSU88DVqRMsf+hwksBb6ZJxsocXMMmJePw0IIb8eVM4vuUxpgbjzv0VuYFzhv2QFFyUBdsPajluZCLhm6eT1DmXEYqWxJcTCEUSxnA7USK7SRnIk=
-            app: locaste-decide
+  include:
+  - stage: deploy
+    script: skip
+    before_deploy:
+    - cd ..
+    deploy:
+      provider: heroku
+      api_key:
+        secure: Ccx9q/ba1THnb3TprsuXPIrQdgRpXYVu8gtHVWDaBceOt/HCyMvCWII5MtFu2kbTaIR3jlP2RI+6y+bSrDDceXh1638GeW3b/vcMBcTr43RtNdSo3ZhvLKJZxDmp6QBqI0uj4kUWBVseCPJfZ/8Ilr/iovLPN/JscVX5tz6r9CvQXU4IBq1iie5dSUVgyEHU6c3YlAC1rS7JwpPKmNJEqWlKbPyTUra7v8bqRLlXaJl1McficEK1s0gwgl0JRLDCZyHBmTh8Jy/WSRiErh9L/Jf/nu0d6wbRMAX+mQFtl8l2SJR7Xcp4mTUuzRUEErYifpThXuLxDuCV45p0EZrNH3E4Qnkqwhp0WKPR2tGwLuVub64qS8RDnMf6CzsVVujK7J/r+APYvFPjtkolCPUykYcjfUFom+o0/pmT4SNNlbyDwqa8/+vUxOJhA6moYLVotlijRBl1bfwP2EN/67PVewfEPiC9CABJ9y70BZQCEkWi9kbIdCndn9iNZGPsjpGxt80PKS4TSGFDeZULdJAlaxJ+cB+SjoqUawZ4XoUbViJdVHQ6nvy0neF19gXlYMAjoWQlIuwUGY0xLZR+b5RMix6vNjKTBWG2zYsFV9Iv4tW9bAJcXuauAo7lUJTP2zoeylQHv/2gUTMlcC07enhseJibRhdcieZe2UbQPqWIRHA=
+      app: locaste-decide
