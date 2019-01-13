@@ -1,2 +1,2 @@
 % Launch!
-web: sh -c 'python3 bot.py'
+worker: sh -c 'python3 bot.py'
