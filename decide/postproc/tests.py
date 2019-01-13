@@ -54,7 +54,7 @@ class PostProcTestCase(APITestCase):
 
     def test_identity(self):
         data = {
-            'type': 'IDENTITY',
+            'type': None,
             'census': 23,
             'options': [
                 { 'option': 'Option 1', 'number': 1, 'votes': 5 },
