@@ -263,7 +263,7 @@ def save_voting(request):
 
             index = 0
             for options in question_option_forms:
-                indexNumber = 0
+                indexNumber = 1
                 for option in options:
                     if saved_questions[index].type == "Normal":
                         question_option = QuestionOption(option=option["option"].value(),
