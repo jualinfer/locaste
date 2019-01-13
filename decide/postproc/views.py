@@ -13,6 +13,26 @@ class PostProcView(APIView):
 
         return out
 
+    def percentage(self,census,options):
+        results = []
+        voters = sum(opt['votes'] for opt in options)
+
+        for opt in options:
+            votersOpt = opt['votes']
+            out = (votersOpt/census)*100
+            out = round(out,2)
+            results.append({
+                **opt,
+                'percentage':out
+            });
+
+        results.sort(key=lambda x: -x['percentage'])
+
+        part = self.participation(census,voters)
+        out = {'results':results,'participation':part}
+
+        return Response(out)
+
     def order(self, results):
         results.sort(key=lambda x: -x['postproc'])
 
@@ -199,5 +219,7 @@ class PostProcView(APIView):
             return self.majorrest(opts, seats, census)
         elif t=='SAINTELAGUEMOD':
             return self.saintelague(opts,seats,census,'modified')
+        elif t == 'PERCENTAGE':
+            return self.percentage(census,opts)
 
         return Response({})
