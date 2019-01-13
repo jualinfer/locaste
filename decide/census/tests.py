@@ -11,67 +11,121 @@ from base.tests import BaseTestCase
 
 class CensusTestCase(BaseTestCase):
 
+    def create_voters(self):
+        res = []
+        for i in range(10):
+            user_data = {'username': 'testvoter{}'.format(i),
+                         'password1': '1234abcd',
+                         'password2': '1234abcd',
+                         'gender': 'Male',
+                         'birthdate': '2001-12-08T00:00'}
+
+            response = self.client.post('/authentication/signup/', user_data, format='json')
+            self.assertEqual(response.status_code, 201)
+
+            user_id = User.objects.filter(username='testvoter{}'.format(i)).values('id')[0]['id']
+
+            res.append(user_id)
+        return res
+
     def setUp(self):
         super().setUp()
-        # self.census = Census.create(voting_id=1, voter_id=1)
-        # self.census.save()
+        self.login()
+        user_data = {'username': 'newUserGeneral',
+                     'password1': '1234abcd',
+                     'password2': '1234abcd',
+                     'gender': 'Male',
+                     'birthdate': '2001-12-08T00:00'}
+
+        response = self.client.post('/authentication/signup/', user_data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        voting_data = {
+            'name': 'test_voting_General',
+            'desc': 'Description example',
+            'question': 'I want a ',
+            'question_opt': ['cat', 'dog', 'horse']
+        }
+        response = self.client.post('/voting/', voting_data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        user_id = User.objects.filter(username='newUserGeneral').values('id')[0]['id']
+        voting_id = Voting.objects.filter(name='test_voting_General').values('id')[0]['id']
+
+        self.census = Census.create(voting_id=voting_id, voter_id=user_id)
+        self.census.save()
 
     def tearDown(self):
         super().tearDown()
         self.census = None
 
     def test_check_vote_permissions(self):
+        user_id = User.objects.filter(username='newUserGeneral').values('id')[0]['id']
+        voting_id = Voting.objects.filter(name='test_voting_General').values('id')[0]['id']
+
         response = self.client.get('/census/{}/?voter_id={}'.format(1, 2), format='json')
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json(), 'Invalid voter')
 
-        response = self.client.get('/census/{}/?voter_id={}'.format(1, 1), format='json')
+        response = self.client.get('/census/{}/?voter_id={}'.format(voting_id, user_id), format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Valid voter')
 
     def test_list_voting(self):
-        # response = self.client.get('/census/?voting_id={}'.format(1), format='json')
-        # self.assertEqual(response.status_code, 401)
+        voting_id = Voting.objects.filter(name='test_voting_General').values('id')[0]['id']
+        user_id = User.objects.filter(username='newUserGeneral').values('id')[0]['id']
+
+        response = self.client.get('/census/?voting_id={}'.format(voting_id), format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {'voters': [user_id]})
+
+        self.logout()
+        response = self.client.get('/census/?voting_id={}'.format(voting_id), format='json')
+        self.assertEqual(response.status_code, 401)
 
         # self.login(user='noadmin')
         # response = self.client.get('/census/?voting_id={}'.format(1), format='json')
         # self.assertEqual(response.status_code, 403)
-
-        # self.login()
-        response = self.client.get('/census/?voting_id={}'.format(1), format='json')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {'voters': [1]})
 
     def test_add_new_voters_conflict(self):
-        data = {'voting_id': 1, 'voters': [1]}
-        # response = self.client.post('/census/', data, format='json')
-        # self.assertEqual(response.status_code, 401)
+        user_id = User.objects.filter(username='newUserGeneral').values('id')[0]['id']
+        voting_id = Voting.objects.filter(name='test_voting_General').values('id')[0]['id']
 
-        # self.login(user='noadmin')
-        # response = self.client.post('/census/', data, format='json')
-        # self.assertEqual(response.status_code, 403)
-
-        # self.login()
+        data = {'voting_id': voting_id, 'voters': [user_id]}
         response = self.client.post('/census/', data, format='json')
         self.assertEqual(response.status_code, 409)
 
+        self.login(user='noadmin')
+        response = self.client.post('/census/', data, format='json')
+        self.assertEqual(response.status_code, 403)
+
+        self.logout()
+        response = self.client.post('/census/', data, format='json')
+        self.assertEqual(response.status_code, 401)
+
     def test_add_new_voters(self):
-        data = {'voting_id': 1, 'voters': [1, 2, 3, 4]}
-        # response = self.client.post('/census/', data, format='json')
-        # self.assertEqual(response.status_code, 401)
+        voters = self.create_voters()
+        voting_id = Voting.objects.filter(name='test_voting_General').values('id')[0]['id']
+        data = {'voting_id': voting_id, 'voters': voters}
 
-        # self.login(user='noadmin')
-        # response = self.client.post('/census/', data, format='json')
-        # self.assertEqual(response.status_code, 403)
-
-        # self.login()
         response = self.client.post('/census/', data, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(data.get('voters')), Census.objects.count() - 1)
 
+        self.login(user='noadmin')
+        response = self.client.post('/census/', data, format='json')
+        self.assertEqual(response.status_code, 403)
+
+        self.logout()
+        response = self.client.post('/census/', data, format='json')
+        self.assertEqual(response.status_code, 401)
+
     def test_destroy_voter(self):
-        data = {'voters': [1]}
-        response = self.client.delete('/census/{}/'.format(1), data, format='json')
+        user_id = User.objects.filter(username='newUserGeneral').values('id')[0]['id']
+        voting_id = Voting.objects.filter(name='test_voting_General').values('id')[0]['id']
+
+        data = {'voters': [user_id]}
+        response = self.client.delete('/census/{}/'.format(voting_id), data, format='json')
         self.assertEqual(response.status_code, 204)
         self.assertEqual(0, Census.objects.count())
 
