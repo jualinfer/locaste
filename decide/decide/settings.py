@@ -93,7 +93,7 @@ MODULES = [
     'voting',
 ]
 
-BASEURL = 'https://locaste-decide.herokuapp.com'
+BASEURL = 'https://decide-locaste-jmlf.herokuapp.com'
 
 APIS = {}
 
