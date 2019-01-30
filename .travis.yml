@@ -39,4 +39,4 @@ jobs:
       provider: heroku
       api_key:
         secure: pTpQDH/nTgH3PkIfjhXq6yl5IvrkrZPvRQZh5t6iNmHte7rTUxQnzfUllX7+BBrjvkUImyCEQz5xbC2Q8nmWPJ8bJB2vZNbkvY12sjBsRvMAwnWmbeqyJ4qL7QinSSMGZ9y57XVQL3jWBbd7eTpryz1hLXBvOEP5gb+xeA/JOPzXo6lNdaI2vhDWGdJaI4H2A4oasivMWB0+JmKo45xCjzTlETfUw/vDIImryxUOc1JYD+tqvGLgAYIK51DrH8AZClwRlAcGSceexYfuy/K4Eh7upcIBqWKk0A4DKdzK5qj2NqvTZaAxbw3SDXYS0CRR/67rZCucj3DQnLd8LqQBRknP485izqBe53H+uOgxCn9i6j85Q7gHKNtWF4j4xtUX/fr4IzwYonFyeSSBHWDC4MOjgkDD5fdiv2y/w6JFo66sf2rwtdFl91ACzx8QM2TdWUv0g2eUnuQYPEKm2jKoYydEumjrIKYe2lI1FP1PT01A6U5y55QQDnlzZ4XPQSzwxI+iTgQh4OKCccwohK6g469LkmlkVLxDukUTR3TePnMCC5jwEen3kM0rb6N4slqZ1ieGHu35JsAnGDpvUj0oPUSlmFBX6xlpHlE8n+kz/c/fRc8N6q/pap4GaFaBDhj6P8m3LQSwx/yqFbN6z2qzDBei/XUE4IxZX3dFMbfQyhw=
-      app: locaste-decide
+      app: decide-locaste-jmlf
