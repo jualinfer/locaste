@@ -1,77 +1,110 @@
-{% extends "base.html" %}
+{% extends "base_template.html" %}
 {% load i18n static %}
 
 {% block content %}
 <style>
-        .container {
-            height: auto;
-            width: 100%;
-        }
-        table, th, td {
-            border: 1px solid black;
-        }
-        .container-left {
-          width: 49%;
-          height:auto;
-          float:left;
-        }
+    h1 {
+        text-align: center;
+    }
+    table.cont {
+        width: 90%;
+        align: center;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    table.cont td {
+        width: 50%;
+        padding: 15px;
+        vertical-align: top;
+    }
+    div.bgColor {
+        background-color: #007BFF;
+        margin-bottom: 10px;
+        padding: 10px;
+        color: #FFFFFF;
+        font-weight: bold;
+    }
+    div.scrollingTable {
+        overflow-y: scroll;
+    }
+    table.censusTable {
+        width: 100%;
+    }
+    table.censusTable td.tdLeft {
+        padding: 5px;
+        border: 2px solid white;
+        width: 8%;
+        background-color: #007BFF;
+        color: #FFFFFF;
+        text-align: center;
+        font-weight: bold;
+    }
+    table.censusTable td.tdRight {
+        padding: 5px;
+        border: 2px solid white;
+        width: 94%;
+        background-color: #007BFF;
+        color: #FFFFFF;
+        font-weight: bold;
+    }
 </style>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/xlsx.full.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/jszip.js"></script>
 
 <h1>{{ voting.name }}</h1>
 
-<div id="census_form" class="container">
-    <div class="container-left">
-        <label for="voter_id">{% trans "User IDs" %}</label>
-        <input type="text" id="voter_id" name="voter_id" value=""/>
-        <p>{%trans "(You can put multiples IDs, separating them by commas)" %}</p>
-        <br/><br/>
+<table class="cont">
+    <tr>
+        <td>
+            <h3>Census edition form:</h3>
+            <div class="bgColor">
+                <p>MANUAL INSERTION</p>
+                <label for="voter_id">{% trans "User IDs:" %}</label>
+                <input type="text" id="voter_id" name="voter_id" value=""/>
+                <input type="submit" value="{% trans "Add to census" %}" onClick="addToCensus()"/>
+                <input type="submit" value="{% trans "Remove from census" %}" onClick="removeFromCensus()"/>
+                <div style="font-size:12px;padding:3px;">{%trans "NOTE: You can put multiples IDs, separating them by commas" %}</div>
 
-        <input type="submit" value="{% trans " Add to census" %}" onClick="addToCensus()"/>
-        <input type="submit" value="{% trans " Remove from census" %}" onClick="removeFromCensus()"/><br><br>
-
-        <input type="file" id="fileUpload"/>
-        <input type="button" id="upload" value=" {% trans " Add Excel to census" %}" onclick="Upload()"/> <br><br>
-
-        <p>
-            {%trans "Excel file must have the following format (no header, no commas, on sheet 1):" %}
-        </p>
-
-        <table>
-            <tr>
-                <th>
-                    1
-                </th>
-            </tr>
-            <tr>
-                <th>
-                    2
-                </th>
-            </tr>
-            <th>
-                3
-            </th>
-            <tr>
-                <th>
-                    4
-                </th>
-            <tr>
-                <th>
-                    5
-                </th>
-            </tr>
-        </table>
-
-    </div>
-
-    <div>
-        <input type="button" id="export" value="{% trans " Show voting's census" %}" onclick="Export()"/> <br><br>
-    </div>
-
-</div>
-
+            </div>
+            <div class="bgColor">
+                <p>IMPORT EXCEL FILE</p>
+                <input type="file" id="fileUpload"/>
+                <input type="button" id="upload" value="{% trans "Import Excel to census" %}" onclick="Upload()"/>
+                <div style="font-size:12px;padding:3px;">{%trans "NOTE: Excel file must have the users' IDs on the first column, without header, and on sheet 1" %}</div>
+            </div>
+        </td>
+        <td>
+            <h3>Current census:</h3>
+            <input type="button" id="export" value=" {% trans "Export census to Excel" %}" onclick="exportTableToExcel()"/>
+            <div class="scrollingTable">
+                <table id="censusTable" class="censusTable">
+                    {% for voter in voters %}
+                    <tr>
+                        <td class="tdLeft">{{ voter.id }}</td><td class="tdRight">{{ voter.first_name }} {{ voter.last_name }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </td>
+    </tr>
+</table>
 <script>
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
 
         function getData(url) {
             // Default options are marked with *
@@ -90,10 +123,12 @@
         }
 
         function postData(url, data) {
+            var csrftoken = getCookie('csrftoken');
             // Default options are marked with *
             var fdata = {
                 body: JSON.stringify(data),
                 headers: {
+                    'X-CSRFToken': csrftoken,
                     'content-type': 'application/json',
                 },
                 method: 'POST',
@@ -101,19 +136,22 @@
 
             return fetch(url, fdata)
             .then(response => {
-                if (response.status === 201) {
+                return response.json();
+                /*if (response.status === 201) {
                     return response.json();
                 } else {
                     return Promise.reject(response.statusText);
-                }
+                }*/
             });
         }
 
         function deleteData(url, data) {
+        var csrftoken = getCookie('csrftoken');
             // Default options are marked with *
             var fdata = {
                 body: JSON.stringify(data),
                 headers: {
+                    'X-CSRFToken': csrftoken,
                     'content-type': 'application/json',
                 },
                 method: 'DELETE',
@@ -124,7 +162,8 @@
                 if (response.status === 204) {
                     return "Voters deleted from census";
                 } else {
-                    return Promise.reject(response.statusText);
+                    return response.json();
+                    //return Promise.reject(response.statusText);
                 }
             });
         }
@@ -136,6 +175,21 @@
                 voters: voters
             };
             postData("{{census_url}}" + "/census/", data)
+            .then(data => {
+                alert(data);
+            })
+            .catch(error => {
+                alert("{% trans "Error: " %}" + error.json());
+                console.error(error);
+            });
+        }
+
+        function removeFromCensus() {
+            var voters = document.querySelector("#voter_id").value.split(",");
+            var data = {
+                voters: voters
+            };
+            deleteData("{{census_url}}" + "/census/" + {{voting.id}} + "/", data)
             .then(data => {
                 alert(data);
             })
@@ -245,10 +299,10 @@
 
         }
 
-        function exportTableToExcel(tablaID, filename = ''){
+        function exportTableToExcel(filename = ''){
             var downloadLink;
             var dataType = 'application/vnd.ms-excel';
-            var tableSelect = tablaID;
+            var tableSelect = censusTable;//tablaID;
             var tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
 
             // Especificar nombre de archivo
@@ -274,21 +328,6 @@
                 //Activando funcion
                 downloadLink.click();
             }
-        }
-
-        function removeFromCensus() {
-            var voters = document.querySelector("#voter_id").value.split(",");
-            var data = {
-                voters: voters
-            };
-            deleteData("{{census_url}}" + "/census/" + {{voting.id}} + "/", data)
-            .then(data => {
-                alert(data);
-            })
-            .catch(error => {
-                alert("{% trans "Error: " %}" + error);
-                console.error(error);
-            });
         }
 
         function isNumber(excelRows){

@@ -13,6 +13,7 @@ from rest_framework.status import (
     HTTP_409_CONFLICT as ST_409
 )
 
+from django.contrib.auth.models import User
 from .models import Census
 from django.http import Http404
 
@@ -28,7 +29,6 @@ class CensusCreate(generics.ListCreateAPIView):
     serializer_class = CensusSerializer
 
     def create(self, request, *args, **kwargs):
-
         voting_id = request.data.get('voting_id')
         voters = request.data.get('voters') or []
         voter_id = request.data.get('voter_id')
@@ -38,18 +38,18 @@ class CensusCreate(generics.ListCreateAPIView):
         try:
             voters = Census.public_or_private(voting_id, voters, request.user)
             if not voters:
-                return Response('No voter ids where provided', status=ST_400)
+                return Response('Error 400 - Bad Request: No voter ids where provided', status=ST_400)
             Census.check_restrictions_multiple_voters(voting_id, voters)
 
             for voter in voters:
                 census = Census.create(voting_id=voting_id, voter_id=voter)
                 census.save()
-        except IntegrityError:
-            return Response('Error trying to create census', status=ST_409)
         except ValidationError as e:
-            return Response(str(e), status=ST_400)
+            return Response('Error 400 - Bad Request: '+str(e), status=ST_400)
         except PermissionDenied as p:
-            return Response(str(p), status=ST_403)
+            return Response('Error 403 - Forbidden: '+str(p), status=ST_403)
+        except IntegrityError as i:
+            return Response('Error 409 - Conflict: '+str(i), status=ST_409)
         return Response('Census created', status=ST_201)
 
     def list(self, request, *args, **kwargs):
@@ -93,7 +93,13 @@ class CensusView(TemplateView):
         try:
             r = mods.get('voting', params={'id': vid})
             context['voting'] = r[0]
-        except:
+            voters = Census.objects.filter(voting_id=vid).values_list('voter_id', flat=True)
+            voters_list = []
+            for voter in voters:
+                voters_list.append(User.objects.filter(id=voter)[0])
+            context['voters'] = voters_list
+        except Exception as e:
+            print(e)
             raise Http404
 
         return context

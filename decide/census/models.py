@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.exceptions import ValidationError, PermissionDenied, ObjectDoesNotExist
 from django.db.utils import IntegrityError
 from django.contrib.auth.models import User
 from voting.models import Voting
@@ -35,14 +35,20 @@ class Census(models.Model):
 
         # This will fail if any of the elements does not exist
         voting = Voting.objects.get(id=voting_id)
-        users = [User.objects.get(id=voter_id) for voter_id in voters]
-
+        users = []
+        invalid_ids = []
         for voter_id in voters:
-            if Census.objects.filter(voting_id=voting_id, voter_id=voter_id).count():
-                raise IntegrityError(
-                    'Conflict: The census (voting_id:{},voter_id:{}) already exists'.format(voting_id, voter_id))
+            try:
+                users.append(User.objects.get(id=voter_id))
+            except ObjectDoesNotExist:
+                invalid_ids.append(voter_id)
+
+        if len(invalid_ids) > 0:
+            raise ValidationError('The following user IDs aren\'t valid: {}'.format(invalid_ids))
 
         for user in users:
+            if Census.objects.filter(voting_id=voting_id, voter_id=user.id).count():
+                raise IntegrityError('The user "{}" with id "{}" is already in this census'.format(user.username, user.id))
             Census.gender_and_age(voting, user)
 
         return True
@@ -84,6 +90,6 @@ class Census(models.Model):
             if not user.is_staff:
                 res = [user.id]
         elif not user.is_staff:
-            raise PermissionDenied("This voting is private and you are not a staff member.")
+            raise PermissionDenied("This voting is private and you are not a staff member")
 
         return res
